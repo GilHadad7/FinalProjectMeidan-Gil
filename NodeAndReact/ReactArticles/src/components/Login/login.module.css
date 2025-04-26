@@ -1,0 +1,110 @@
+.container {
+  background-image: url("../../../public/img/loginPic2.jpg");
+  background-size: cover;
+  background-position: center;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.loginBox {
+  background-color: rgba(255, 255, 255, 0.85);
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  width: 450px;
+  text-align: center;
+}
+
+.loginBox h1 {
+  font-size: 36px;
+  margin-bottom: 20px;
+  font-weight: 600;
+  letter-spacing: 2px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+label {
+  align-self: flex-start;
+  margin-left: 10px;
+  font-weight: 500;
+  margin-top: 10px;
+}
+
+input {
+  width: 100%;
+  padding: 12px;
+  margin-top: 5px;
+  border: 1px solid #888;
+  border-radius: 6px;
+  background-color: #fefefe;
+}
+
+button {
+  margin-top: 20px;
+  padding: 12px;
+  width: 100%;
+  background-color: #c9b7a3;
+  border: none;
+  color: black;
+  font-weight: 600;
+  letter-spacing: 1px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #b6a48e;
+}
+
+.forgot,
+.link,
+.footer {
+  margin-top: 15px;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.forgot {
+  cursor: pointer;
+  color: #555;
+  text-decoration: underline;
+}
+
+.link a {
+  color: #000;
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+.error {
+  color: red;
+  margin-top: 10px;
+}
+.topBar {
+  position: absolute;
+  top: 30px;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  z-index: 10;
+}
+
+.topTitle {
+  display: inline-block; /* חשוב */
+  padding: 7px 12px;
+  background-color: #c9b7a3;
+  color: white;
+  font-size: 2.1rem;
+  font-weight: bold;
+  border-radius: 6px;
+  text-shadow: 1px 2px 5px rgba(0, 0, 0, 0.4);
+}
