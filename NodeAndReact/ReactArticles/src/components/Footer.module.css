@@ -1,0 +1,9 @@
+.footer {
+  width: 100%;
+  padding: 10px 0;
+  border-top: 1px solid #ccc; /* קו דק למעלה */
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+  background-color: #f9f9f9;
+}

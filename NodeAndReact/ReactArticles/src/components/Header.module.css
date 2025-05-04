@@ -1,0 +1,35 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #b8925c;
+  padding: 10px 30px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.logoSection {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.logo {
+  height: 50px;
+  margin-right: 10px;
+}
+
+.slogan {
+  font-size: 22px;
+  font-weight: bold;
+  color: #4b3b2a;
+}
+
+.settings {
+  font-size: 28px;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.settings:hover {
+  color: #555;
+}

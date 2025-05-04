@@ -1,0 +1,12 @@
+.PageContainer {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: white;
+  
+}
+
+.PageContent {
+  flex: 1;
+}
+
