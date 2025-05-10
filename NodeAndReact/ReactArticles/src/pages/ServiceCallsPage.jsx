@@ -1,20 +1,33 @@
-import React from "react";
-import ServiceCallForm from '../components/ServiceCallForm';
+import React, { useState } from "react";
+
+import ServiceCallForm from "../components/ServiceCallForm";
 import ServiceCallsTable from "../components/ServiceCallsTable";
 
 function ServiceCallsPage() {
   const user = JSON.parse(sessionStorage.getItem("user"));
-  const role = user?.role
-  ; // 'admin' / 'worker' / 'tenant'
+  const role = user?.role;
+
+  const [refreshFlag, setRefreshFlag] = useState(false);
+
+  const triggerRefresh = () => {
+    setRefreshFlag((prev) => !prev); // הפוך כל פעם
+  };
 
   return (
-    <div className="container" style={{ padding: "2rem" }}>
-      <h1>Service Calls</h1>
-      <p style={{ fontStyle: "italic" }}>Role: {role}</p>
+    <div style={{ display: "flex", padding: "2rem", gap: "2rem", direction: "rtl" }}>
+      
+      {/* צד ימין – טופס */}
+      <div style={{ flex: 0.7 }}>
+        <h1>Service Calls</h1>
+        <p style={{ fontStyle: "italic" }}>Role: {role}</p>
+        <ServiceCallForm role={role} onSuccess={triggerRefresh} />
+      </div>
 
-      <ServiceCallForm role={role} />
-      <hr style={{ margin: "2rem 0" }} />
-      <ServiceCallsTable role={role} />
+      {/* צד שמאל – טבלה */}
+      <div style={{ flex: 1.3 }} >
+        <ServiceCallsTable role={role} refreshFlag={refreshFlag} setRefreshFlag={setRefreshFlag} />
+      </div>
+
     </div>
   );
 }

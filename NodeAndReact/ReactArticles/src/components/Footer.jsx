@@ -1,16 +1,12 @@
-import React from 'react'
+import React from "react";
+import classes from "./Footer.module.css";
 
 function Footer() {
   return (
-	 <footer>
-		<div className="container ">
-			<div className="footer__wrap">
-
-			</div>
-		</div>
-		Footer
-	 </footer>
-  )
+    <footer className={classes.footer}>
+      <p>© C&H Building Management</p>
+    </footer>
+  );
 }
 
-export default Footer
+export default Footer;

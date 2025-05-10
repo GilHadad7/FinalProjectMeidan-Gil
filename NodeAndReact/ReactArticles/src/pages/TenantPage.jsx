@@ -1,93 +1,66 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
+import classes from "./TenantPage.module.css";
 
 const navItems = [
-  "Service calls",
-  "Schedule",
-  "Payments",
-  "Reports"
+  { label: "Service calls", path: "/tenant/service-calls" },
+  { label: "Schedule", path: "/tenant/schedule" },
+  { label: "Payments", path: "/tenant/payments" },
+  { label: "Reports", path: "/tenant/reports" },
 ];
 
 export default function TenantPage() {
+  const navigate = useNavigate();
   const colors = [
     "brown", "orange", "blue", "purple", "green", "gray", "skyblue", "gold"
   ];
 
   return (
-    <div style={{ fontFamily: "serif", backgroundColor: "#fefdf6", padding: 20, textAlign: "center" }}>
-      <h1 style={{ fontSize: "28px", fontWeight: "bold" }}>TENANT VIEW</h1>
+    <div className={classes.container}>
+      <h1 className={classes.title}>TENANT VIEW</h1>
 
       {/* Navigation Bar */}
-      <div style={{
-        display: "flex",
-        flexWrap: "nowrap",
-        overflowX: "auto",
-        justifyContent: "center",
-        gap: 10,
-        marginBottom: 30,
-        padding: 10
-      }}>
+      <div className={classes.navBar}>
         {navItems.map((item) => (
-          <button key={item} style={{
-            padding: "10px 20px",
-            backgroundColor: "#e0d3b8",
-            borderRadius: 20,
-            border: "none",
-            whiteSpace: "nowrap",
-            fontSize: "14px",
-            cursor: "pointer"
-          }}>
-            {item}
+          <button
+            key={item.label}
+            className={classes.navButton}
+            onClick={() => navigate(item.path)}
+          >
+            {item.label}
           </button>
         ))}
       </div>
 
-      <h2 style={{ marginBottom: 30, fontSize: "18px" }}>Welcome, dear tenant 🏡</h2>
+      <h2 className={classes.subtitle}>Welcome, dear tenant 🏡</h2>
 
       {/* Content Area */}
-      <div style={{ display: "flex", justifyContent: "space-around", flexWrap: "wrap", gap: 40 }}>
+      <div className={classes.mainContent}>
         {/* Notifications */}
-        <div>
-          <h3 style={{ fontSize: "16px", fontWeight: "bold" }}>
-            INSTANT NOTIFICATION'S <span style={{ fontSize: "13px" }}>(התראות דחופות לדייר)</span>
+        <div className={classes.notifications}>
+          <h3 className={classes.sectionTitle}>
+            INSTANT NOTIFICATION'S <span className={classes.smallText}>(התראות דחופות לדייר)</span>
           </h3>
-          <div style={{
-            width: 380,
-            height: 180,
-            border: "2px solid black",
-            backgroundImage: "linear-gradient(to top, #a8d08d, #dbeef3)",
-            position: "relative",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.2)"
-          }}>
-            <div style={{ backgroundColor: "#f8d697", height: 20, width: "100%", position: "absolute", top: 0 }}></div>
-            <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ color: "#333" }}>No new alerts</span>
+          <div className={classes.notificationBox}>
+            <div className={classes.notificationHeader}></div>
+            <div className={classes.notificationContent}>
+              <span>No new alerts</span>
             </div>
           </div>
         </div>
 
         {/* Schedule Grid */}
-        <div>
-          <h3 style={{ fontSize: "16px", fontWeight: "bold" }}>
-            SCHEDULE <span style={{ fontSize: "13px" }}>(לוח זמנים של הבניין)</span>
+        <div className={classes.schedule}>
+          <h3 className={classes.sectionTitle}>
+            SCHEDULE <span className={classes.smallText}>(לוח זמנים של הבניין)</span>
           </h3>
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(7, 40px)",
-            gap: 5,
-            border: "1px solid #000",
-            padding: 10,
-            backgroundColor: "#fff",
-            borderRadius: 6,
-            boxShadow: "0 2px 6px rgba(0,0,0,0.1)"
-          }}>
+          <div className={classes.scheduleGrid}>
             {Array.from({ length: 35 }).map((_, i) => (
-              <div key={i} style={{
-                width: 40,
-                height: 40,
-                border: "1px solid #ccc",
-                borderRadius: "50%",
-                backgroundColor: colors[i % colors.length]
-              }}></div>
+              <div
+                key={i}
+                className={classes.scheduleDay}
+                style={{ backgroundColor: colors[i % colors.length] }}
+              ></div>
             ))}
           </div>
         </div>

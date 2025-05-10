@@ -1,13 +1,19 @@
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import classes from "./AdminPage.module.css";
+
 export default function AdminPage() {
+  const navigate = useNavigate();
+
   const navItems = [
-    "Service calls",
-    "Schedule",
-    "Payments",
-    "Details of buildings",
-    "Assignment of tasks",
-    "User management",
-    "External suppliers",
-    "Reports",
+    { label: "Service calls", path: "/manager/service-calls" },
+    { label: "Schedule", path: "/manager/schedule" },
+    { label: "Payments", path: "/manager/payments" },
+    { label: "Details of buildings", path: "/manager/buildings" },
+    { label: "Assignment of tasks", path: "/manager/assignments" },
+    { label: "User management", path: "/manager/users" },
+    { label: "External suppliers", path: "/manager/suppliers" },
+    { label: "Reports", path: "/manager/reports" },
   ];
 
   const colors = [
@@ -22,93 +28,39 @@ export default function AdminPage() {
   ];
 
   return (
-    <div
-      style={{
-        fontFamily: "serif",
-        backgroundColor: "#fefdf6",
-        padding: 20,
-        textAlign: "center",
-      }}
-    >
+    <div className={classes.container}>
       <h1>MANAGER VIEW</h1>
 
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "nowrap", // אין ירידת שורות
-          overflowX: "auto", // גלילה אופקית במקרה הצורך
-          justifyContent: "center",
-          gap: 10,
-          marginBottom: 20,
-        }}
-      >
+      <div className={classes.navBar}>
         {navItems.map((item) => (
           <button
-            key={item}
-            style={{
-              padding: "10px 20px",
-              backgroundColor: "#e0d3b8",
-              borderRadius: 20,
-              border: "none",
-            }}
+            key={item.label}
+            className={classes.navButton}
+            onClick={() => navigate(item.path)}
           >
-            {item}
+            {item.label}
           </button>
         ))}
       </div>
 
       <h2>WELCOME TO “XXXXXXXXXXXXXX” BUILDING</h2>
 
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-around",
-          flexWrap: "wrap",
-          gap: 40,
-        }}
-      >
-        <div>
+      <div className={classes.mainContent}>
+        <div className={classes.notifications}>
           <h3>INSTANT NOTIFICATION'S (התראות דחופות)</h3>
-          <div
-            style={{
-              width: 380,
-              height: 180,
-              border: "2px solid black",
-              backgroundImage: "linear-gradient(to top, #a8d08d, #dbeef3)",
-              position: "relative",
-            }}
-          >
-            <div
-              style={{
-                backgroundColor: "#f8d697",
-                height: 20,
-                width: "100%",
-                position: "absolute",
-                top: 0,
-              }}
-            ></div>
+          <div className={classes.notificationBox}>
+            <div className={classes.notificationHeader}></div>
           </div>
         </div>
 
-        <div>
+        <div className={classes.schedule}>
           <h3>SCHEDULE (לוח זמנים של חברת XXXX)</h3>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(7, 40px)",
-              gap: 5,
-            }}
-          >
+          <div className={classes.scheduleGrid}>
             {Array.from({ length: 35 }).map((_, i) => (
               <div
                 key={i}
-                style={{
-                  width: 40,
-                  height: 40,
-                  border: "1px solid #ccc",
-                  borderRadius: "50%",
-                  backgroundColor: colors[i % colors.length],
-                }}
+                className={classes.scheduleDay}
+                style={{ backgroundColor: colors[i % colors.length] }}
               ></div>
             ))}
           </div>

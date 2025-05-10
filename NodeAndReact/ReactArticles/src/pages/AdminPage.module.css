@@ -1,0 +1,72 @@
+.container {
+  font-family: serif;
+  background-color: #fefdf6;
+  padding: 20px;
+  text-align: center;
+}
+
+.navBar {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.navButton {
+  padding: 10px 20px;
+  background-color: #e0d3b8;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.navButton:hover {
+  background-color: #d0c0a0;
+}
+
+.mainContent {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 40px;
+}
+
+.notifications {
+  width: 400px;
+}
+
+.notificationBox {
+  width: 380px;
+  height: 180px;
+  border: 2px solid black;
+  background-image: linear-gradient(to top, #a8d08d, #dbeef3);
+  position: relative;
+}
+
+.notificationHeader {
+  background-color: #f8d697;
+  height: 20px;
+  width: 100%;
+  position: absolute;
+  top: 0;
+}
+
+.schedule {
+  width: 400px;
+}
+
+.scheduleGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 40px);
+  gap: 5px;
+}
+
+.scheduleDay {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+}

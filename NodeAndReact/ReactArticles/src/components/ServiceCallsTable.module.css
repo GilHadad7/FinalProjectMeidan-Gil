@@ -1,0 +1,174 @@
+/* 🎨 שורת עריכה */
+.editRow {
+    background-color: #fffbe6;
+    transition: all 0.3s ease;
+}
+  
+.editRow td {
+    padding: 12px 8px !important;
+    vertical-align: top;
+}
+
+/* 🎨 שורת עריכה חדשה ומודרנית */
+.editRowModern {
+    background: #f8fafc;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+    border-radius: 18px;
+    transition: box-shadow 0.3s;
+    border: none;
+}
+.editContainer {
+    padding: 32px 24px 18px 24px;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.13);
+    margin: 8px 0;
+}
+.editHeader {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #1976d2;
+    margin-bottom: 18px;
+    letter-spacing: 0.5px;
+    text-align: right;
+    border-bottom: 2px solid #e3e8ee;
+    padding-bottom: 8px;
+}
+.editGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px 32px;
+    margin-bottom: 18px;
+}
+.editField {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 1.11rem;
+    text-align: right;
+}
+.editField > div:not(:has(label)), .editField > div.value {
+    font-size: 1.13em;
+    color: #1a1a1a;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    margin-bottom: 0.5em;
+}
+.editField label {
+    font-weight: bold;
+    color: #222;
+    margin-bottom: 2px;
+    font-size: 1.13em;
+    letter-spacing: 0.5px;
+}
+.editInputUnderline, .editGrid select, .editGrid input[type="text"], .editGrid textarea {
+    border: none;
+    border-bottom: 2px solid #bdbdbd;
+    border-radius: 0;
+    background: #f4f8fb;
+    padding: 8px 6px;
+    font-size: 15px;
+    transition: border-color 0.2s;
+    outline: none;
+    box-shadow: none;
+}
+.editGrid textarea, .editInputUnderline[type="textarea"] {
+    resize: none !important;
+}
+.editInputUnderline:focus, .editGrid select:focus, .editGrid input[type="text"]:focus, .editGrid textarea:focus {
+    border-bottom: 2.5px solid #1976d2;
+    background: #eaf3fa;
+}
+.editActionsRow {
+    display: flex;
+    gap: 14px;
+    justify-content: flex-end;
+    margin-top: 12px;
+}
+/* עמודת פעילויות (אחרונה) */
+th:last-child, td:last-child {
+  min-width: 80px;
+  width: 80px;
+  max-width: 90px;
+}
+/* עמודת תאריך פתיחה */
+th:nth-child(2), td:nth-child(2) {
+  min-width: 140px;
+  width: 140px;
+  max-width: 160px;
+}
+/* עמודת סוג תקלה */
+th:nth-child(6), td:nth-child(6) {
+  min-width: 120px;
+  width: 120px;
+}
+/* עמודת סטטוס */
+th:nth-child(7), td:nth-child(7) {
+  min-width: 120px;
+  width: 120px;
+}
+.editInput,
+.editFileInput,
+textarea,
+.editRow select,
+.editRow input[type="text"],
+.editRow textarea {
+  width: 100%;
+  text-align: center;
+  border-collapse: collapse;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+/* ✍️ שדה תיאור */
+textarea,
+.editRow textarea {
+    min-height: 70px;
+    max-height: 200px;
+}
+/* 🖼️ תמונה */
+.previewImg {
+    width: 110px;
+    height: 110px;
+    object-fit: cover;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 1.5px solid #c7d0db;
+    background-color: #f9f9f9;
+    margin-bottom: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.09);
+}
+.editFileInput {
+    margin-top: 6px;
+    font-size: 13px;
+    background: none;
+    border: none;
+    direction: rtl;
+}
+/* 🔘 כפתורים */
+.editBtn {
+    padding: 8px 22px;
+    margin: 0 0 0 8px;
+    font-size: 15px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 6px rgba(33, 150, 243, 0.07);
+    letter-spacing: 0.5px;
+}
+.editBtn:hover {
+    opacity: 0.93;
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.13);
+}
+.save {
+    background-color: #4caf50;
+    color: white;
+}
+.cancel {
+    background-color: #f44336;
+    color: white;
+}
