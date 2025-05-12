@@ -11,7 +11,7 @@ export default function AdminPage() {
     { label: "Payments", path: "/manager/payments" },
     { label: "Details of buildings", path: "/manager/buildings" },
     { label: "Assignment of tasks", path: "/manager/assignments" },
-    { label: "User management", path: "/manager/users" },
+    { label: "User management", path: "/manager/UserManagement" },
     { label: "External suppliers", path: "/manager/suppliers" },
     { label: "Reports", path: "/manager/reports" },
   ];

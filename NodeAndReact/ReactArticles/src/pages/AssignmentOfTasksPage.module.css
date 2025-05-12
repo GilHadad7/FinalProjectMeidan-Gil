@@ -1,0 +1,148 @@
+.assignmentPage {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 40px;
+  padding: 40px 0 0 0;
+  font-family: inherit;
+  background: #f9f8f4;
+  min-height: 100vh;
+}
+
+.formSection {
+  width: 340px;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 3px 18px #0001;
+  padding: 30px 20px 20px 20px;
+  margin-right: 20px;
+}
+.formTitle {
+  margin-bottom: 18px;
+  color: #4b4b4b;
+  font-size: 1.17em;
+}
+.form label {
+  display: block;
+  margin-bottom: 12px;
+  color: #333;
+}
+.form input {
+  width: 100%;
+  padding: 7px 10px;
+  margin-top: 3px;
+  border-radius: 7px;
+  border: 1px solid #ccc;
+  background: #fafafa;
+}
+.addButton {
+  margin-top: 18px;
+  width: 100%;
+  padding: 10px 0;
+  background: linear-gradient(90deg, #bca98c 20%, #e2d3bc 100%);
+  border: none;
+  border-radius: 22px;
+  color: #333;
+  font-size: 1.1em;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 8px #0002;
+  transition: background 0.2s;
+}
+.addButton:hover {
+  background: linear-gradient(90deg, #e2d3bc 20%, #bca98c 100%);
+}
+
+.tableSection {
+  flex: 1;
+  min-width: 600px;
+}
+
+.editInput {
+  width: 100%;
+  min-width: 90px;
+  box-sizing: border-box;
+  padding: 7px 10px;
+  border: 1.5px solid #bca98c;
+  border-radius: 8px;
+  font-size: 1em;
+  direction: rtl;
+  text-align: right;
+  background: #fffbe8;
+  height: 34px;
+  transition: border 0.2s;
+}
+.editInput:focus {
+  outline: none;
+  border-color: #8b7d5a;
+  background: #f7f3e6;
+}
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.titleBox {
+  background: #e2d3bc;
+  border-radius: 18px;
+  padding: 12px 40px;
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #3d3d3d;
+  box-shadow: 0 2px 8px #0002;
+}
+.searchBox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.1em;
+}
+.searchInput {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1em;
+}
+.tasksTable {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 6px;
+  background: none;
+  table-layout: fixed;
+}
+.tasksTable th, .tasksTable td {
+  overflow: visible;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  padding: 8px 6px;
+  border-bottom: 1px solid #eee;
+}
+.tasksTable th {
+  background: #f3ede2;
+  color: #4b4b4b;
+  font-weight: bold;
+}
+.tasksTable tr:last-child td {
+  border-bottom: none;
+}
+.actionsCol {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  text-align: center;
+}
+.iconEdit, .iconDelete {
+  margin: 0 5px;
+  cursor: pointer;
+  font-size: 1.2em;
+}
+.iconEdit:hover {
+  color: #bca98c;
+}
+.iconDelete:hover {
+  color: #e57373;
+}

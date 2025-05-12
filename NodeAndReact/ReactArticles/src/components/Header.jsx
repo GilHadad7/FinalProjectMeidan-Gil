@@ -17,8 +17,14 @@ function Header() {
   };
 
   const handleSettingsClick = () => {
-    navigate("/settings");
+    const user = JSON.parse(sessionStorage.getItem("user"));
+    if (user && user.role) {
+      navigate(`/${user.role}/settings`);
+    } else {
+      navigate("/settings");
+    }
   };
+
 
   return (
     <header className={classes.header}>

@@ -1,0 +1,262 @@
+/* עיצוב עמוד ניהול משתמשים בהתאמה לסקיצה */
+
+.pageWrapper {
+  display: flex;
+  direction: rtl;
+  background: #f8f6f3;
+  min-height: 100vh;
+  font-family: 'Heebo', Arial, sans-serif;
+}
+
+.leftPanel {
+  width: 320px;
+  background: #f8f6f3;
+  padding: 32px 16px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  border-left: 1px solid #e0dbd2;
+}
+
+.addUserTitle {
+  color: #7a6c5d;
+  font-size: 1.15rem;
+  margin-bottom: 16px;
+  font-weight: bold;
+}
+
+.addUserForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.input {
+  border-radius: 12px;
+  border: none;
+  background: #e4dbcf;
+  padding: 10px 16px;
+  font-size: 1rem;
+  margin-bottom: 0;
+  outline: none;
+  transition: box-shadow 0.2s;
+}
+.input:focus {
+  box-shadow: 0 0 0 2px #bfae9e;
+}
+
+.addUserBtn {
+  margin-top: 16px;
+  background: linear-gradient(90deg, #e0cfc1 0%, #cbb7a0 100%);
+  color: #5a4a3b;
+  font-weight: bold;
+  border: none;
+  border-radius: 18px;
+  padding: 10px 0;
+  width: 100%;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: 0 2px 6px #00000008;
+  transition: background 0.2s;
+}
+.addUserBtn:hover {
+  background: linear-gradient(90deg, #cbb7a0 0%, #e0cfc1 100%);
+}
+
+.rightPanel {
+  flex: 1;
+  padding: 32px 40px 16px 40px;
+  background: #f8f6f3;
+  display: flex;
+  flex-direction: column;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 24px;
+}
+
+.headerTitle {
+  font-size: 1.5rem;
+  color: #6e5c49;
+  background: #e5dfd7;
+  padding: 8px 40px;
+  border-radius: 22px;
+  font-family: inherit;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.searchBarRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  justify-content: flex-end;
+}
+
+.filterBarRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 0;
+  justify-content: flex-end;
+}
+
+.filterLabel {
+  font-size: 1rem;
+  color: #bfae9e;
+  margin: 0 4px 0 0;
+}
+
+.searchInput {
+  border-radius: 18px;
+  border: none;
+  padding: 6px 18px;
+  font-size: 1rem;
+  background: #ede8e0;
+  margin: 0 8px;
+  min-width: 110px;
+  max-width: 180px;
+  height: 34px;
+  box-sizing: border-box;
+}
+
+.filterBtn {
+  background: #d3c2ae;
+  border: none;
+  border-radius: 18px;
+  color: #7a6248;
+  font-weight: 600;
+  padding: 6px 18px;
+  margin: 0 2px;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+  height: 34px;
+  display: flex;
+  align-items: center;
+}
+
+.filterSelect {
+  border-radius: 18px;
+  border: none;
+  background: #ede8e0;
+  color: #7a6248;
+  font-size: 1rem;
+  height: 34px;
+  padding: 0 18px;
+  margin: 0 8px;
+  min-width: 90px;
+  max-width: 120px;
+  outline: none;
+  appearance: none;
+  font-weight: 600;
+  box-shadow: none;
+  transition: background 0.18s, color 0.18s;
+}
+
+.filterSelect:focus {
+  background: #e2dbd1;
+  color: #5d4732;
+}
+
+.filterBtn.active, .filterBtn:hover {
+  background: #bfae9e;
+  color: #fff;
+}
+
+.pageTitle {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #7a6248;
+  background: #ede8e0;
+  border-radius: 22px;
+  padding: 8px 36px;
+  margin-left: 18px;
+  letter-spacing: 0.5px;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+}
+
+.usersTable {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 7px;
+  background: transparent;
+}
+
+.usersTable th {
+  background: #e4dbcf;
+  color: #7a6c5d;
+  font-weight: bold;
+  padding: 10px 0;
+  border-radius: 10px 10px 0 0;
+  text-align: center;
+  font-size: 1rem;
+}
+
+.usersTable td {
+  background: #fff;
+  color: #4a3a2a;
+  padding: 10px 6px;
+  text-align: center;
+  border-bottom: 1px solid #e4dbcf;
+  border-radius: 0 0 10px 10px;
+  font-size: 1rem;
+}
+
+.usersTable tr {
+  box-shadow: 0 2px 6px #00000008;
+}
+
+.actionIcon {
+  cursor: pointer;
+  margin: 0 5px;
+  font-size: 1.1rem;
+  transition: color 0.18s;
+}
+.actionIcon:hover {
+  color: #bfae9e;
+}
+
+.editActionBtn {
+  width: 26px;
+  height: 26px;
+  font-size: 16px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0 2px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editActionsCell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+}
+
+@media (max-width: 900px) {
+  .pageWrapper {
+    flex-direction: column;
+  }
+  .leftPanel, .rightPanel {
+    width: 100%;
+    padding: 16px;
+  }
+  .headerTitle {
+    padding: 8px 10px;
+    font-size: 1.1rem;
+  }
+}

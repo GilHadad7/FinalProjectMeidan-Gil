@@ -1,0 +1,288 @@
+/* עיצוב דף דוחות מודרני */
+.reportsRoot {
+  padding: 36px 0 0 0;
+  background: #f9f7f3;
+  min-height: 100vh;
+  font-family: inherit;
+}
+
+.filtersBar {
+  direction: rtl;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+.filterItem {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.filterLabel {
+  font-weight: bold;
+  margin-left: 4px;
+  min-width: 60px;
+  text-align: right;
+  font-size: 15px;
+}
+
+.formRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  direction: rtl;
+}
+.formLabel {
+  font-weight: bold;
+  min-width: 80px;
+  text-align: right;
+  font-size: 15px;
+}
+
+.previewDetailsRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 7px;
+  direction: rtl;
+}
+.previewLabel {
+  font-weight: bold;
+  min-width: 90px;
+  text-align: right;
+  font-size: 15px;
+}
+
+.previewContainer {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.filterLabel {
+  margin-right: 8px;
+  color: #4b3b2a;
+  font-weight: bold;
+  font-size: 15px;
+}
+
+.searchInput {
+  border: 1px solid #b8925c;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 15px;
+  background: #fff;
+  min-width: 140px;
+}
+
+.addReportBtn {
+  background: #b8925c;
+  color: #fff;
+  border: none;
+  border-radius: 24px;
+  padding: 10px 28px;
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+  margin-left: 12px;
+  margin-right: 12px;
+}
+.addReportBtn:hover {
+  background: #a07d4e;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.15);
+}
+
+
+
+.actionsCell {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+.actionBtn {
+  background: none;
+  border: none;
+  color: #b8925c;
+  font-size: 20px;
+  cursor: pointer;
+  transition: color 0.2s;
+  padding: 4px;
+}
+.actionBtn:hover {
+  color: #a07d4e;
+}
+.statusTag {
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: bold;
+  display: inline-block;
+}
+.statusTag[data-status="מאושר"] {
+  background: #e0f7e9;
+  color: #219150;
+}
+.statusTag[data-status="ממתין"] {
+  background: #fff3cd;
+  color: #b88b00;
+}
+.statusTag[data-status="נדחה"] {
+  background: #ffe0e0;
+  color: #d32f2f;
+}
+.dateCell {
+  font-size: 14px;
+  color: #888;
+  text-align: center;
+}
+.exportBtn {
+  background: #2196f3;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 16px;
+  font-size: 15px;
+  margin-left: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.exportBtn:hover {
+  background: #1769aa;
+}
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 15px;
+}
+.pageBtn {
+  background: none;
+  border: none;
+  color: #b8925c;
+  font-size: 17px;
+  padding: 4px 9px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.pageBtn.active, .pageBtn:focus {
+  background: #b8925c;
+  color: #fff;
+}
+
+.tableWrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.reportsTable {
+  border-collapse: collapse;
+  background: #fff;
+  min-width: 640px;
+  max-width: 98vw;
+  box-shadow: 0 3px 18px rgba(0,0,0,0.08);
+  border-radius: 14px;
+  overflow: hidden;
+  direction: rtl;
+}
+
+.reportsTable th, .reportsTable td {
+  border: 1.5px solid #4b3b2a;
+  padding: 12px 10px;
+  text-align: center;
+}
+
+.reportsTable th {
+  background: #b8925c;
+  color: #fff;
+  font-size: 17px;
+}
+
+.reportRow {
+  transition: background 0.2s;
+}
+.reportRow:hover {
+  background: #f5e7d0;
+}
+
+.status-מאושר {
+  color: #22b573;
+  font-weight: bold;
+}
+.status-ממתין {
+  color: #e6b800;
+  font-weight: bold;
+}
+.status-נדחה {
+  color: #d43f3a;
+  font-weight: bold;
+}
+
+.iconBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  margin: 0 5px;
+  color: #4b3b2a;
+  transition: color 0.2s;
+}
+.iconBtn:hover {
+  color: #b8925c;
+}
+
+/* פופאפ תצוגה מקדימה */
+.previewOverlay {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+}
+.previewModal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 32px 30px;
+  box-shadow: 0 6px 32px rgba(0,0,0,0.17);
+  min-width: 320px;
+  max-width: 90vw;
+  text-align: right;
+  position: relative;
+}
+.closePreviewBtn {
+  background: #e0d3b8;
+  color: #4b3b2a;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 16px;
+  font-size: 15px;
+  cursor: pointer;
+  margin-top: 18px;
+  transition: background 0.2s;
+}
+.closePreviewBtn:hover {
+  background: #d0c0a0;
+}
+
+@media (max-width: 700px) {
+  .reportsTable {
+    min-width: 98vw;
+    font-size: 13px;
+  }
+  .previewModal {
+    padding: 18px 7vw;
+    min-width: unset;
+  }
+}

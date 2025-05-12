@@ -1,0 +1,150 @@
+.container {
+    font-family: serif;
+    background-color: #fefdf6;
+    padding: 20px;
+    text-align: center;
+    min-height: calc(100vh - 120px);
+    direction: rtl;
+  }
+  
+  .settingsCard {
+    max-width: 600px;
+    margin: 20px auto;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+  
+  .userInfo {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e0d3b8;
+  }
+  
+  .userIcon {
+    font-size: 60px;
+    color: #b8925c;
+    background-color: #f5f0e6;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .userDetails {
+    text-align: right;
+  }
+  
+  .userDetails h2 {
+    margin: 0 0 10px 0;
+    color: #4b3b2a;
+  }
+  
+  .userDetails p {
+    margin: 5px 0;
+    color: #666;
+  }
+  
+  .settingsOptions {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .settingsButton {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 15px;
+    padding: 15px 20px;
+    background-color: #e0d3b8;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-size: 16px;
+    color: #4b3b2a;
+    text-align: right;
+  }
+  
+  .settingsButton:hover {
+    background-color: #d0c0a0;
+  }
+  
+  .icon {
+    font-size: 24px;
+    width: 30px;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .modal {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    text-align: center;
+  }
+  
+  .modal h3 {
+    margin-top: 0;
+    color: #4b3b2a;
+  }
+  
+  .modalButtons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+  }
+  
+  .modalButton {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+  }
+  
+  .confirmButton {
+    background-color: #b8925c;
+    color: white;
+  }
+  
+  .confirmButton:hover {
+    background-color: #a07c48;
+  }
+  
+  .cancelButton {
+    background-color: #e0e0e0;
+    color: #333;
+  }
+  
+  .cancelButton:hover {
+    background-color: #d0d0d0;
+  }
+  
