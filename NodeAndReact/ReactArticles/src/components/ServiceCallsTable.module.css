@@ -148,6 +148,62 @@ textarea,
     direction: rtl;
 }
 /* 🔘 כפתורים */
+.exportBtn {
+  background: #ede6dd;
+  color: #6c665c;
+  border: none;
+  border-radius: 14px;
+  padding: 6px 18px;
+  font-size: 1rem;
+  margin-right: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.exportBtn:hover {
+  background: #bdb09c;
+  color: #fff;
+}
+
+.iconBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  margin: 0 3px;
+  color: #6c665c;
+  transition: color 0.2s;
+}
+.iconBtn:hover {
+  color: #c94f4f;
+}
+
+.advancedFilterBar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 10px;
+  align-items: center;
+  justify-content: flex-end;
+}
+.advancedFilterBar label {
+  font-size: 1rem;
+  color: #6c665c;
+  margin-left: 4px;
+}
+.advancedFilterInput, .advancedFilterSelect {
+  border: 1px solid #bdb09c;
+  border-radius: 10px;
+  padding: 5px 10px;
+  font-size: 1rem;
+}
+
+@media (max-width: 700px) {
+  .advancedFilterBar {
+    flex-direction: column;
+    gap: 4px;
+    align-items: stretch;
+  }
+}
+
 .editBtn {
     padding: 8px 22px;
     margin: 0 0 0 8px;

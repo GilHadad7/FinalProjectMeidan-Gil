@@ -10,6 +10,7 @@ import WorkerPage from "../pages/WorkerPage";
 import SettingsPage from "../pages/SettingsPage";
 import classes from "./MyRoutes.module.css";
 import ServiceCallsPage from "../pages/ServiceCallsPage";
+ import SchedulePage from "../pages/SchedulePage";
 
 function MyRoutes() {
   return (
@@ -123,6 +124,22 @@ function MyRoutes() {
               <Header />
               <main className={classes.PageContent}>
                 <ServiceCallsPage />
+              </main>
+              <Footer />
+            </div>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* דף משימות למנהל */}
+      <Route
+        path="/manager/schedule"
+        element={
+          <ProtectedRoute>
+            <div className={classes.PageContainer}>
+              <Header />
+              <main className={classes.PageContent}>
+                <SchedulePage />
               </main>
               <Footer />
             </div>
