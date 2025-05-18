@@ -1,0 +1,116 @@
+.title {
+    color: #7a6c5d;
+    font-size: 1.9rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    text-align: right;
+  }
+  
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .input {
+    border-radius: 12px;
+    border: 1px solid #ccc;
+    background: #e4dbcf;
+    padding: 10px 16px;
+    font-size: 1.6rem;
+    direction: rtl;
+  }
+  
+  .button {
+    margin-top: 16px;
+    background: linear-gradient(90deg, #e0cfc1 0%, #cbb7a0 100%);
+    color: #5a4a3b;
+    font-weight: bold;
+    border: none;
+    border-radius: 22px;
+    padding: 12px 0;
+    width: 100%;
+    font-size: 1.1rem;
+    cursor: pointer;
+    box-shadow: 0 2px 6px #00000008;
+    transition: background 0.2s;
+  }
+  
+  .button:hover {
+    background: linear-gradient(90deg, #cbb7a0 0%, #e0cfc1 100%);
+  }
+  .selectBtn,.selectBtnFrequency{
+    border-radius: 12px;
+    border: 1px solid #ccc;
+    background: #e4dbcf;
+    padding: 10px 67px;
+    font-size: 1.6rem;
+    direction: rtl;
+    cursor: pointer;
+    transition: box-shadow 0.2s ease;
+    text-align: right;
+  }
+  .selectBtnFrequency{
+    padding: 10px 100px;
+  }
+  .timeRow {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    direction: ltr; /* ← הופך את הכיוון לשמאל לימין */
+    margin-top: 8px;
+  }
+  
+  .selectTime {
+    padding: 10px 12px;
+    font-size: 1.6rem;
+    background: #e4dbcf;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    width: 90px;
+    text-align: center;
+    color: #4b3f35;
+  }
+  
+ /* הגדלה אמיתית של הפופאפ */
+ .datePopper .react-datepicker {
+  font-size: 1.6rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px #0002;
+}
+
+.datePopper .react-datepicker__header {
+  background-color: #f3ede2;
+  border-bottom: 1px solid #d7cfc2;
+  padding: 10px 0;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+}
+
+.datePopper .react-datepicker__day,
+.datePopper .react-datepicker__day-name {
+  width: 3.2rem;
+  height: 3.2rem;
+  line-height: 3.2rem;
+  margin: 4px;
+  font-size: 1.4rem;
+  border-radius: 6px;
+}
+
+.datePopper .react-datepicker__current-month {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #4b4b4b;
+}
+
+.datePopper .react-datepicker__day--selected,
+.datePopper .react-datepicker__day--keyboard-selected {
+  background-color: #bca98c;
+  color: white;
+}
+
+
+  
+  
+  

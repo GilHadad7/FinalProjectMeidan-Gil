@@ -9,3 +9,43 @@ body {
   flex-direction: column;
   min-height: 100vh;
 }
+/* הגדלה אמיתית של לוחח שנה  */
+.react-datepicker-popper {
+  z-index: 9999;
+}
+
+.react-datepicker {
+  font-size: 1.6rem !important;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px #0002;
+}
+
+.react-datepicker__header {
+  background-color: #f3ede2;
+  border-bottom: 1px solid #d7cfc2;
+  padding: 10px 0;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+}
+
+.react-datepicker__day,
+.react-datepicker__day-name {
+  width: 3.2rem;
+  height: 3.2rem;
+  line-height: 3.2rem;
+  margin: 4px;
+  font-size: 1.4rem;
+  border-radius: 6px;
+}
+
+.react-datepicker__current-month {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #4b4b4b;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  background-color: #bca98c;
+  color: white;
+}

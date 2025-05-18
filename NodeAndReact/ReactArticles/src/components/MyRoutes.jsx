@@ -172,7 +172,7 @@ function MyRoutes() {
         }
       />
 
-      {/* דף משימות למנהל */}
+      {/* דף לוח זמנים למנהל */}
       <Route
         path="/manager/schedule"
         element={
@@ -185,8 +185,40 @@ function MyRoutes() {
               <Footer />
             </div>
           </ProtectedRoute>
+        } 
+      />
+       {/* דף לוח זמנים לעובד */}
+       <Route
+        path="/worker/schedule"
+        element={
+          <ProtectedRoute>
+            <div className={classes.PageContainer}>
+              <Header />
+              <main className={classes.PageContent}>
+                <SchedulePage />
+              </main>
+              <Footer />
+            </div>
+          </ProtectedRoute>
         }
       />
+      {/* דף לוח זמנים לדייר */}
+      <Route
+        path="/tenant/schedule"
+        element={
+          <ProtectedRoute>
+            <div className={classes.PageContainer}>
+              <Header />
+              <main className={classes.PageContent}>
+                <SchedulePage />
+              </main>
+              <Footer />
+            </div>
+          </ProtectedRoute>
+        }
+      />
+
+      
       {/* 🔐 דף הגדרות */}
       {/* 🔐 דף הגדרות למנהל */}
       <Route
@@ -233,7 +265,7 @@ function MyRoutes() {
           </ProtectedRoute>
         }
       />
-      {/* 🔐 דף הגדרות כללי (אופציונלי) */}
+      {/* 🔐 דף הגדרות כללי (אופציונלי)
       <Route
         path="/settings"
         element={
@@ -247,7 +279,7 @@ function MyRoutes() {
             </div>
           </ProtectedRoute>
         }
-      />
+      /> */}
 
 
       {/*  דף דוחות למנהל  */}

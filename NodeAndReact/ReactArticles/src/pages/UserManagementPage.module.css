@@ -157,6 +157,7 @@
   font-weight: 600;
   box-shadow: none;
   transition: background 0.18s, color 0.18s;
+  text-align: center;
 }
 
 .filterSelect:focus {

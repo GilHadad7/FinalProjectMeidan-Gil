@@ -1,0 +1,74 @@
+.usersTable {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 7px;
+    background: transparent;
+    font-family: 'Heebo', Arial, sans-serif;
+    direction: rtl;
+  }
+  
+  .usersTable th {
+    background: #e4dbcf;
+    color: #7a6c5d;
+    font-weight: bold;
+    padding: 10px 0;
+    border-radius: 10px 10px 0 0;
+    text-align: center;
+    font-size: 1rem;
+  }
+  
+  .usersTable td {
+    background: #fff;
+    color: #4a3a2a;
+    padding: 10px 6px;
+    text-align: center;
+    border-bottom: 1px solid #e4dbcf;
+    border-radius: 0 0 10px 10px;
+    font-size: 1rem;
+  }
+  
+  .usersTable tr {
+    box-shadow: 0 2px 6px #00000008;
+  }
+  
+  .input {
+    width: 100%;
+    padding: 7px 10px;
+    border-radius: 6px;
+    border: 1px solid #bca98c;
+    font-size: 1rem;
+    background: #fffbe8;
+  }
+  
+  button {
+    background: #d2bba0;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.2s;
+    margin: 0 3px;
+  }
+  
+  button:hover {
+    background: #bfae9e;
+  }
+  
+  .actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+  }
+  .usersTable th:last-child,
+.usersTable td:last-child {
+  min-width: 120px;
+}
+.actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px; /* רווח ביניהם */
+  flex-wrap: nowrap; /* שלא יגלשו שורה */
+}

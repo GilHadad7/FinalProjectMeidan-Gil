@@ -1,0 +1,56 @@
+.usersTable {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 7px;
+    background: transparent;
+    font-family: 'Heebo', Arial, sans-serif;
+    direction: rtl;
+}
+
+.usersTable th {
+    background: #e4dbcf;
+    color: #7a6c5d;
+    font-weight: bold;
+    padding: 10px 0;
+    text-align: center;
+    border-radius: 10px 10px 0 0;
+  }
+  
+  .table td {
+    background: #fff;
+    padding: 10px 12px;
+    text-align: center;
+    border-bottom: 1px solid #e4dbcf;
+    border-radius: 0 0 10px 10px;
+    color: #4a3a2a;
+  }
+  
+  .input {
+    width: 100%;
+    padding: 7px 10px;
+    border-radius: 6px;
+    border: 1px solid #bca98c;
+    font-size: 1rem;
+    background: #fffbe8;
+  }
+  
+  .actions {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+  }
+  
+  .actions button {
+    background: #d2bba0;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.2s;
+  }
+  
+  .actions button:hover {
+    background: #bfae9e;
+  }
+  

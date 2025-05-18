@@ -1,0 +1,104 @@
+.addUserTitle {
+    color: #7a6c5d;
+    font-size: 1.15rem;
+    margin-bottom: 16px;
+    font-weight: bold;
+  }
+  
+  .addUserForm {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+  }
+  
+  .input, .inputPassword {
+    border-radius: 12px;
+    border: none;
+    background: #e4dbcf;
+    padding: 10px 16px;
+    font-size: 1rem;
+    margin-bottom: 0;
+    outline: none;
+    transition: box-shadow 0.2s;
+  }
+  
+  .input:focus {
+    box-shadow: 0 0 0 2px #bfae9e;
+  }
+  
+  .addUserBtn {
+    margin-top: 16px;
+    background: linear-gradient(90deg, #e0cfc1 0%, #cbb7a0 100%);
+    color: #5a4a3b;
+    font-weight: bold;
+    border: none;
+    border-radius: 18px;
+    padding: 10px 0;
+    width: 100%;
+    font-size: 1.1rem;
+    cursor: pointer;
+    box-shadow: 0 2px 6px #00000008;
+    transition: background 0.2s;
+  }
+  
+  .addUserBtn:hover {
+    background: linear-gradient(90deg, #cbb7a0 0%, #e0cfc1 100%);
+  }
+  
+  .error {
+    color: #ff0000;
+    margin-top: 8px;
+    font-size: 0.8rem;
+  }
+
+.passwordWrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+.inputPassword {
+    border-radius: 12px;
+    border: none;
+    background: #e4dbcf;
+    padding: 10px 16px 10px 48px; /* left padding for button */
+    font-size: 1rem;
+    margin-bottom: 0;
+    outline: none;
+    transition: box-shadow 0.2s;
+    width: 100%;
+    direction: rtl;
+    text-align: right;
+}
+.inputPassword:focus {
+    box-shadow: 0 0 0 2px #bfae9e;
+}
+.toggleBtn {
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #f2ece4;
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.1rem;
+    color: #7a6c5d;
+    z-index: 2;
+    transition: background 0.2s, box-shadow 0.2s;
+    box-shadow: 0 1px 4px #0001;
+    padding: 0;
+}
+.toggleBtn:hover {
+    background: #e4dbcf;
+    box-shadow: 0 2px 8px #0002;
+}
+.inputPassword {
+    padding: 10px 16px 10px 40px; /* left padding for small button */
+}

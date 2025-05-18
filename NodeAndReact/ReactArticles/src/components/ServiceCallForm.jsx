@@ -108,7 +108,7 @@ export default function ServiceCallForm({ onSuccess }) {
           <option value="חשמל">חשמל</option>
           <option value="נזילה">נזילה</option>
           <option value="תקלה טכנית">תקלה טכנית</option>
-          <option value="תקלה אישית">תקלה אישית</option>
+          <option value="אינסטלציה">אינסטלציה</option>
           <option value="נזק">נזק</option>
           <option value="אחר">אחר</option>
         </select>
