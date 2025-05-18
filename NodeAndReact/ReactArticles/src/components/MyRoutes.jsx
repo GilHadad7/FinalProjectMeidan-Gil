@@ -18,9 +18,6 @@ import UserManagementPage from "../pages/UserManagementPage";
 import DetailsOfBuildingsPage from "../pages/DetailsOfBuildingsPage";
 import PaymentsPage from "../pages/PaymentsPage";
 
-
-
-
 function MyRoutes() {
   return (
     <Routes>
@@ -42,7 +39,6 @@ function MyRoutes() {
           </ProtectedRoute>
         }
       />
-
       {/* 🔐 דף עובד */}
       <Route
         path="/worker"
@@ -58,7 +54,6 @@ function MyRoutes() {
           </ProtectedRoute>
         }
       />
-
       {/* 🔐 דף דייר */}
       <Route
         path="/tenant"

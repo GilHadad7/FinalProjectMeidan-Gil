@@ -20,7 +20,9 @@ function Login() {
 
       const user = response.data;
       console.log("user from server:", user); // ✅ תדפיס את המשתמש שהתקבל מהשרת
+      console.log('??')
       sessionStorage.setItem("user", JSON.stringify(user));
+     localStorage.setItem("user", JSON.stringify(user));
       setTimeout(() => {
         alert(`Welcome ${user.name} (${user.role})`);
       }, 200);
