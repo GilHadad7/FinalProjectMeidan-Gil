@@ -1,0 +1,66 @@
+/* 📄 WorkerReportsTable.module.css – עיצוב טבלת דוחות עובדים */
+.table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+    font-family: "Heebo", sans-serif;
+    direction: rtl;
+    font-size: 1.1rem;
+    background: none;
+  }
+  
+  .table th {
+    background: #f3ede2;
+    color: #4b4b4b;
+    padding: 12px 10px;
+    font-weight: bold;
+    text-align: center;
+    border-radius: 10px 10px 0 0;
+  }
+  
+  .table td {
+    background: #fff;
+    padding: 10px 12px;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+    border-radius: 0 0 10px 10px;
+    color: #3d3d3d;
+  }
+  
+  .input {
+    width: 100%;
+    padding: 7px 10px;
+    border-radius: 6px;
+    border: 1px solid #bca98c;
+    font-size: 1rem;
+    background: #fffbe8;
+  }
+  
+  .paidBtn {
+    background: #d2bba0;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: background 0.2s;
+  }
+  
+  .paidBtn:hover {
+    background: #bfae9e;
+  }
+  
+  button {
+    background: #e6e1d6;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin: 0 3px;
+    font-size: 1.1rem;
+  }
+  
+  button:hover {
+    background: #cfc6b4;
+  }
+  
