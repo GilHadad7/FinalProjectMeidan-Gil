@@ -12,9 +12,9 @@ const userRoutes = require("./routes/UserManagement");
 // הפוך את התיקייה uploads לציבורית
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 const suppliersRoutes = require("./routes/externalSuppliers.routes");
-
-
-
+const workerReportsRoutes = require("./routes/workerReports.routes");
+const monthlyReportsRoutes = require("./routes/monthlyReports.routes");
+const buildingReportsRoutes = require("./routes/buildingReports.routes");
 
 
 app.use(cors()); // ← חייב להיות לפני הראוטים שלך
@@ -27,6 +27,9 @@ app.use("/api", scheduleRoutes);
 app.use("/api/service-calls", serviceCallsRoutes);
 app.use('/api', authRoutes); // חדש – לכל מה שקשור ל-Login
 app.use("/api/suppliers", suppliersRoutes);
+app.use("/api/worker-reports", workerReportsRoutes);
+app.use("/api/monthly-reports", monthlyReportsRoutes);
+app.use("/api/building-reports", buildingReportsRoutes);
 
 // Error handler
 app.use((err, req, res, next) => {
