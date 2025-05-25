@@ -6,19 +6,23 @@ export default function MonthlySummaryTable({ data }) {
     <table className={classes.table}>
       <thead>
         <tr>
-          <th>כותרת</th>
+          <th>חודש</th>
+          <th>הכנסות</th>
+          <th>הוצאות</th>
+          <th>חובות פתוחים</th>
+          <th>רווח תפעולי</th>
         </tr>
       </thead>
       <tbody>
-        {Array.isArray(data) && data.length > 0 ? (
-          data.map((row, idx) => (
-            <tr key={idx}>
-              <td>{JSON.stringify(row)}</td>
-            </tr>
-          ))
-        ) : (
-          <tr><td>אין נתונים</td></tr>
-        )}
+        {data.map((row, i) => (
+          <tr key={i}>
+            <td>{row.month}</td>
+            <td>₪{row.income.toLocaleString()}</td>
+            <td>₪{row.expenses.toLocaleString()}</td>
+            <td>₪{row.debt.toLocaleString()}</td>
+            <td>₪{row.profit.toLocaleString()}</td>
+          </tr>
+        ))}
       </tbody>
     </table>
   );

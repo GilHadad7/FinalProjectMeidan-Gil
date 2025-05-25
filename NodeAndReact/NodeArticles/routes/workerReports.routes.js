@@ -5,11 +5,17 @@ const db = require("../db"); // ← חיבור למסד הנתונים
 // שליפת כל הדוחות
 router.get("/", (req, res) => {
   const sql = `
-    SELECT r.*, u.name AS employee_name
-    FROM employee_reports r
-    JOIN users u ON r.employee_id = u.user_id
-    ORDER BY r.month DESC
-  `;
+  SELECT 
+    r.report_id,
+    r.month,
+    r.salary,
+    r.paid,
+    u.name AS employee_name
+  FROM employee_reports r
+  JOIN users u ON r.employee_id = u.user_id
+  ORDER BY r.month DESC
+`;
+
   db.query(sql, (err, results) => {
     if (err) return res.status(500).send("Error loading worker reports");
     res.json(results);

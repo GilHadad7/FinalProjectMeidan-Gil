@@ -1,29 +1,36 @@
 // 📄 ReportsPage.jsx – דף ניהול הדוחות הראשי למנהל
 import React, { useEffect, useState } from "react";
 import WorkerReportsTable from "../components/WorkerReportsTable";
-import MonthlySummaryTable from "../components/MonthlySummaryTable";
 import BuildingsFinanceTable from "../components/BuildingsFinanceTable";
+import WorkerReportsSummary from "../components/WorkerReportsSummary";
+import BuildingsSummaryCard from "../components/BuildingsSummaryCard";
 import classes from "./ReportsPage.module.css";
+import { Tabs, TabList, Tab, TabPanel } from "react-tabs";
+import "react-tabs/style/react-tabs.css";
+
 
 export default function ReportsPage() {
   const [workerReports, setWorkerReports] = useState([]);
-  const [monthlySummary, setMonthlySummary] = useState([]);
   const [buildingsSummary, setBuildingsSummary] = useState([]);
 
   // טעינת הנתונים בהתחלה
   useEffect(() => {
     fetch("http://localhost:3000/api/reports/workers")
       .then(res => res.json())
-      .then(data => setWorkerReports(data));
-
-    fetch("http://localhost:3000/api/reports/monthly")
+      .then(data => {
+        console.log("🚀 דוח עובדים:", data);
+        setWorkerReports(data);
+      });
+  
+    fetch("http://localhost:3000/api/reports/buildings")
       .then(res => res.json())
-      .then(data => setMonthlySummary(data));
-
-    fetch("http://localhost:3000/api/building-reports")
-      .then(res => res.json())
-      .then(data => setBuildingsSummary(data));
+      .then(data => {
+        console.log("🏢 דוח בניינים:", data);
+        setBuildingsSummary(data);
+      });
   }, []);
+  
+
 
   const handleEditSalary = async (reportId, newSalary) => {
     await fetch(`http://localhost:3000/api/reports/workers/${reportId}`, {
@@ -52,26 +59,30 @@ export default function ReportsPage() {
   return (
     <div className={classes.reportsPage}>
       <h2 className={classes.title}>דוחות</h2>
+  
+      <Tabs>
+  <TabList>
+    <Tab>דוח עובדים</Tab>
+    <Tab>דוח לפי בניינים</Tab>
+  </TabList>
 
-      <section className={classes.section}>
-        <h3>דוח עובדים</h3>
-        <WorkerReportsTable
-          reports={workerReports}
-          onEdit={handleEditSalary}
-          onTogglePaid={handleTogglePaid}
-          onUploadPDF={handleUploadPDF}
-        />
-      </section>
+  <TabPanel>
+    <WorkerReportsSummary reports={workerReports} />
+    <WorkerReportsTable
+      reports={workerReports}
+      onEdit={handleEditSalary}
+      onTogglePaid={handleTogglePaid}
+      onUploadPDF={handleUploadPDF}
+    />
+  </TabPanel>
 
-      <section className={classes.section}>
-        <h3>דוח חודשי כללי</h3>
-        <MonthlySummaryTable data={monthlySummary} />
-      </section>
+  <TabPanel>
+    <BuildingsSummaryCard buildings={buildingsSummary} />
+    <BuildingsFinanceTable data={buildingsSummary} />
+  </TabPanel>
+</Tabs>
 
-      <section className={classes.section}>
-        <h3>דוח לפי בניינים</h3>
-        <BuildingsFinanceTable data={buildingsSummary} />
-      </section>
     </div>
   );
+  
 }

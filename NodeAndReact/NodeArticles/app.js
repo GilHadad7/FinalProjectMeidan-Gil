@@ -13,8 +13,10 @@ const userRoutes = require("./routes/UserManagement");
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 const suppliersRoutes = require("./routes/externalSuppliers.routes");
 const workerReportsRoutes = require("./routes/workerReports.routes");
-const monthlyReportsRoutes = require("./routes/monthlyReports.routes");
 const buildingReportsRoutes = require("./routes/buildingReports.routes");
+
+app.use("/api/reports/workers", workerReportsRoutes);
+app.use("/api/reports/buildings", buildingReportsRoutes);
 
 
 app.use(cors()); // ← חייב להיות לפני הראוטים שלך
@@ -28,7 +30,6 @@ app.use("/api/service-calls", serviceCallsRoutes);
 app.use('/api', authRoutes); // חדש – לכל מה שקשור ל-Login
 app.use("/api/suppliers", suppliersRoutes);
 app.use("/api/worker-reports", workerReportsRoutes);
-app.use("/api/monthly-reports", monthlyReportsRoutes);
 app.use("/api/building-reports", buildingReportsRoutes);
 
 // Error handler
