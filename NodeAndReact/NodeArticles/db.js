@@ -2,9 +2,9 @@ const mysql = require("mysql2");
 
 const db = mysql.createConnection({
   host: "localhost",
-  user: "root", // שנה לפי המשתמש שלך
-  password: "", // אם יש סיסמה תוסיף כאן
-  database: "building_maintenance", // שם הדאטהבייס שלך
+  user: "root",
+  password: "",
+  database: "building_maintenance"
 });
 
 db.connect((err) => {

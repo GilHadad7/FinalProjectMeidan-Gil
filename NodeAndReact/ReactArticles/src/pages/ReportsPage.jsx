@@ -4,10 +4,10 @@ import WorkerReportsTable from "../components/WorkerReportsTable";
 import BuildingsFinanceTable from "../components/BuildingsFinanceTable";
 import WorkerReportsSummary from "../components/WorkerReportsSummary";
 import BuildingsSummaryCard from "../components/BuildingsSummaryCard";
+import OverviewReports from "../components/OverviewReports"; // ✅ חדש
 import classes from "./ReportsPage.module.css";
 import { Tabs, TabList, Tab, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
-
 
 export default function ReportsPage() {
   const [workerReports, setWorkerReports] = useState([]);
@@ -21,7 +21,7 @@ export default function ReportsPage() {
         console.log("🚀 דוח עובדים:", data);
         setWorkerReports(data);
       });
-  
+
     fetch("http://localhost:3000/api/reports/buildings")
       .then(res => res.json())
       .then(data => {
@@ -29,8 +29,6 @@ export default function ReportsPage() {
         setBuildingsSummary(data);
       });
   }, []);
-  
-
 
   const handleEditSalary = async (reportId, newSalary) => {
     await fetch(`http://localhost:3000/api/reports/workers/${reportId}`, {
@@ -45,7 +43,9 @@ export default function ReportsPage() {
   };
 
   const handleTogglePaid = async (reportId) => {
-    await fetch(`http://localhost:3000/api/reports/workers/${reportId}/toggle`, { method: "PATCH" });
+    await fetch(`http://localhost:3000/api/reports/workers/${reportId}/toggle`, {
+      method: "PATCH"
+    });
     const updated = workerReports.map(r =>
       r.report_id === reportId ? { ...r, paid: !r.paid } : r
     );
@@ -59,30 +59,39 @@ export default function ReportsPage() {
   return (
     <div className={classes.reportsPage}>
       <h2 className={classes.title}>דוחות</h2>
-  
+
       <Tabs>
-  <TabList>
-    <Tab>דוח עובדים</Tab>
-    <Tab>דוח לפי בניינים</Tab>
-  </TabList>
+        <TabList>
+          <Tab>📊 סקירה כללית</Tab>
+          <Tab>👷 דוח עובדים</Tab>
+          <Tab>🏢 דוח לפי בניינים</Tab>
+        </TabList>
 
-  <TabPanel>
-    <WorkerReportsSummary reports={workerReports} />
-    <WorkerReportsTable
-      reports={workerReports}
-      onEdit={handleEditSalary}
-      onTogglePaid={handleTogglePaid}
-      onUploadPDF={handleUploadPDF}
-    />
-  </TabPanel>
+        {/* סקירה כללית */}
+        <TabPanel>
+          <OverviewReports
+            workers={workerReports}
+            buildings={buildingsSummary}
+          />
+        </TabPanel>
 
-  <TabPanel>
-    <BuildingsSummaryCard buildings={buildingsSummary} />
-    <BuildingsFinanceTable data={buildingsSummary} />
-  </TabPanel>
-</Tabs>
+        {/* דוחות עובדים */}
+        <TabPanel>
+          <WorkerReportsSummary reports={workerReports} />
+          <WorkerReportsTable
+            reports={workerReports}
+            onEdit={handleEditSalary}
+            onTogglePaid={handleTogglePaid}
+            onUploadPDF={handleUploadPDF}
+          />
+        </TabPanel>
 
+        {/* דוחות בניינים */}
+        <TabPanel>
+          <BuildingsSummaryCard buildings={buildingsSummary} />
+          <BuildingsFinanceTable data={buildingsSummary} />
+        </TabPanel>
+      </Tabs>
     </div>
   );
-  
 }

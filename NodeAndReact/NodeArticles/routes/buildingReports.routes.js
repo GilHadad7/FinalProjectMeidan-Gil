@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db");
 
-// שליפת דוח כספי לפי בניינים
 router.get("/", (req, res) => {
   const sql = `
     SELECT 
@@ -16,12 +15,10 @@ router.get("/", (req, res) => {
     ORDER BY b.name ASC
   `;
   db.query(sql, (err, results) => {
-    if (err) {
-      console.error("Error loading building reports:", err);
-      return res.status(500).send("Error loading building reports");
-    }
+    if (err) return res.status(500).send("Error loading building reports");
     res.json(results);
   });
 });
+
 
 module.exports = router;

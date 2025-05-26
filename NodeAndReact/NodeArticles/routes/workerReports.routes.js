@@ -10,11 +10,13 @@ router.get("/", (req, res) => {
     r.month,
     r.salary,
     r.paid,
-    u.name AS employee_name
+    u.name AS employee_name,
+    u.position
   FROM employee_reports r
   JOIN users u ON r.employee_id = u.user_id
   ORDER BY r.month DESC
 `;
+
 
   db.query(sql, (err, results) => {
     if (err) return res.status(500).send("Error loading worker reports");
