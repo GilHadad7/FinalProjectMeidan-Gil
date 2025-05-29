@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import classes from "./UserForm.module.css";
 
+
+// להוסיף תז על טופס חייב
 export default function UserForm({ onAdd }) {
     const [error, setError] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -18,13 +20,29 @@ export default function UserForm({ onAdd }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.name || !form.role || !form.phone || !form.email || !form.password) {
-      setError("Please fill in all fields");
+    setError(""); // איפוס
+  
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(form.email)) {
+      setError("כתובת מייל לא תקינה");
       return;
     }
+  
+    if (!/^[0-9]{7,10}$/.test(form.phone)) {
+      setError("מספר טלפון חייב להכיל 7 עד 10 ספרות בלבד");
+      return;
+    }
+  
+    if (!form.name || !form.role || !form.phone || !form.email || !form.password) {
+      setError("יש למלא את כל השדות");
+      return;
+    }
+  
     await onAdd(form);
     setForm({ name: "", role: "", phone: "", email: "", password: "" });
   };
+  
 
   return (
     <>
@@ -42,8 +60,15 @@ export default function UserForm({ onAdd }) {
           name="phone"
           placeholder="טלפון"
           value={form.phone}
-          onChange={handleChange}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (/^[0-9]*$/.test(value) && value.length <= 10) {
+              setForm({ ...form, phone: value });
+            }
+          }}
+          inputMode="numeric"
         />
+
         {error && <div className={classes.error}>{error}</div>}
         <input className={classes.input} name="email" placeholder="מייל" value={form.email} onChange={handleChange} />
         <div className={classes.passwordWrapper}>

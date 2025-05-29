@@ -107,10 +107,11 @@ export default function ServiceCallsTable({ refreshFlag, setRefreshFlag }) {
                       <div className={classes.editField}><label>סוג תקלה:</label>
                         <select className={classes.editInputUnderline} value={editedType} onChange={(e) => setEditedType(e.target.value)}>
                           <option value="">בחר</option>
-                          <option value="נזילה">נזילה</option>
                           <option value="חשמל">חשמל</option>
+                          <option value="נזילה">נזילה</option>
+                          <option value="תקלה טכנית">תקלה טכנית</option>
                           <option value="אינסטלציה">אינסטלציה</option>
-                          <option value="מעלית">מעלית</option>
+                          <option value="נזק">נזק</option>
                           <option value="אחר">אחר</option>
                         </select>
                       </div>

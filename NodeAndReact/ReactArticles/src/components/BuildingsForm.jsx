@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import classes from "./BuildingsForm.module.css"; // תוכל להוסיף קובץ סטייל נפרד אם תרצה
+import React, { useState, useEffect } from "react";
+import classes from "./BuildingsForm.module.css";
+import Select from "react-select";
 
 export default function BuildingsForm({ onSuccess }) {
   const [form, setForm] = useState({
@@ -10,6 +11,16 @@ export default function BuildingsForm({ onSuccess }) {
     committee: "",
     phone: ""
   });
+
+  const [workers, setWorkers] = useState([]);
+  const [selectedWorkerIds, setSelectedWorkerIds] = useState([]);
+
+  useEffect(() => {
+    fetch("http://localhost:3000/api/users?role=worker")
+      .then(res => res.json())
+      .then(data => setWorkers(data))
+      .catch(err => console.error("שגיאה בשליפת עובדים:", err));
+  }, []);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -26,7 +37,8 @@ export default function BuildingsForm({ onSuccess }) {
       apartments: form.apartments,
       floors: form.floors,
       committee: form.committee,
-      phone: form.phone
+      phone: form.phone,
+      assigned_workers: selectedWorkerIds.join(",") // ⬅️ שומר מזהים בפורמט פסיקים
     };
 
     const res = await fetch("http://localhost:3000/api/buildings", {
@@ -36,19 +48,20 @@ export default function BuildingsForm({ onSuccess }) {
     });
 
     if (res.ok) {
-        setForm({
-          name: "",
-          address: "",
-          apartments: "",
-          floors: "",
-          committee: "",
-          phone: ""
-        });
-        alert("בניין התווסף בהצלחה ✅"); // ✅ זו השורה החדשה
-        onSuccess(); // טריגר לרענון
-      } else {
-        alert("שגיאה בהוספת בניין");
-      }
+      setForm({
+        name: "",
+        address: "",
+        apartments: "",
+        floors: "",
+        committee: "",
+        phone: ""
+      });
+      setSelectedWorkerIds([]); // ניקוי הבחירה
+      alert("בניין התווסף בהצלחה ✅");
+      onSuccess(); // רענון
+    } else {
+      alert("שגיאה בהוספת בניין");
+    }
   };
 
   return (
@@ -57,14 +70,40 @@ export default function BuildingsForm({ onSuccess }) {
       <form className={classes.form} onSubmit={handleSubmit}>
         <input className={classes.input} name="name" placeholder="שם הבניין" value={form.name} onChange={handleChange} />
         <input className={classes.input} name="address" placeholder="כתובת" value={form.address} onChange={handleChange} />
-        <input className={classes.input} name="apartments" placeholder="מס דירות" value={form.apartments} onChange={handleChange}  />
+        <input className={classes.input} name="apartments" placeholder="מס דירות" value={form.apartments} onChange={handleChange} />
         <input className={classes.input} name="floors" placeholder="מס קומות" value={form.floors} onChange={handleChange} />
         <input className={classes.input} name="committee" placeholder="שם ועד בית" value={form.committee} onChange={handleChange} />
-        <input className={classes.input} name="phone" placeholder="טלפון ועד בית" value={form.phone} onChange={(e) => {
-                                                                                    const onlyNums = e.target.value.replace(/\D/g, ""); // מסנן כל מה שהוא לא ספרה
-                                                                                    setForm({ ...form, phone: onlyNums });
-                                                                                    }}
-                                                                                    maxLength={10} />
+        <input
+          className={classes.input}
+          name="phone"
+          placeholder="טלפון ועד בית"
+          value={form.phone}
+          onChange={(e) => {
+            const onlyNums = e.target.value.replace(/\D/g, "");
+            setForm({ ...form, phone: onlyNums });
+          }}
+          maxLength={10}
+        />
+              <div className={classes.inputGroup}>
+              <label className={classes.labelWorker}>שייך עובדים:</label>
+                <Select
+                isMulti
+                options={workers.map((worker) => ({
+              value: worker.user_id,
+              label: worker.name
+            }))}
+            className={classes.reactSelect}
+            value={workers
+              .filter((worker) => selectedWorkerIds.includes(worker.user_id))
+              .map((w) => ({ value: w.user_id, label: w.name }))}
+            onChange={(selectedOptions) => {
+              setSelectedWorkerIds(selectedOptions.map((opt) => opt.value));
+            }}
+            placeholder="בחר עובדים..."
+          />
+        </div>
+
+
         <button className={classes.button} type="submit">הוסף בניין</button>
       </form>
     </div>

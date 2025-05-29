@@ -24,20 +24,29 @@ router.post("/", (req, res) => {
     floors,
     committee,
     phone,
+    assigned_workers // ← נלקח מהגוף של הבקשה
   } = req.body;
 
   const sql = `
-    INSERT INTO buildings (name, full_address, maintenance_type, apartments, floors, committee, phone)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO buildings (
+      name, full_address, maintenance_type,
+      apartments, floors, committee, phone,
+      assigned_workers
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
-  db.query(sql, [name, full_address, maintenance_type, apartments, floors, committee, phone], (err, result) => {
-    if (err) {
-      console.error("Error inserting building:", err);
-      return res.status(500).json({ error: "Insert failed" });
+  db.query(
+    sql,
+    [name, full_address, maintenance_type, apartments, floors, committee, phone, assigned_workers],
+    (err, result) => {
+      if (err) {
+        console.error("Error inserting building:", err);
+        return res.status(500).json({ error: "Insert failed" });
+      }
+      res.json({ success: true, insertedId: result.insertId });
     }
-    res.json({ success: true, insertedId: result.insertId });
-  });
+  );
 });
 
 // 🔹 Delete building by ID
@@ -52,7 +61,8 @@ router.delete("/:id", (req, res) => {
     res.json({ success: true });
   });
 });
-// Update existing building
+
+// 🔹 Update existing building
 router.put("/:id", (req, res) => {
   const { id } = req.params;
   const {
@@ -62,19 +72,21 @@ router.put("/:id", (req, res) => {
     apartments,
     floors,
     committee,
-    phone
+    phone,
+    assigned_workers // ← גם כאן נדרש לעדכון
   } = req.body;
 
   const sql = `
     UPDATE buildings SET
       name = ?, full_address = ?, maintenance_type = ?,
-      apartments = ?, floors = ?, committee = ?, phone = ?
+      apartments = ?, floors = ?, committee = ?, phone = ?,
+      assigned_workers = ?
     WHERE building_id = ?
   `;
 
   db.query(
     sql,
-    [name, full_address, maintenance_type, apartments, floors, committee, phone, id],
+    [name, full_address, maintenance_type, apartments, floors, committee, phone, assigned_workers, id],
     (err, result) => {
       if (err) {
         console.error("Error updating building:", err);
@@ -84,6 +96,5 @@ router.put("/:id", (req, res) => {
     }
   );
 });
-
 
 module.exports = router;

@@ -5,7 +5,10 @@ function generateMonthlyBuildingReports() {
   //צריך לחשב לכל בניין את :
   // 1. סה"כ שכר
   // 2. חובות פתוחים
-  // 3. סה"כ תשלומים    
+  // 3. סה"כ תשלומים
+  // 4. סה"כ תחזוקה
+
+
   const simulatedPaid = 5000;
   const simulatedDebt = 700;
   const simulatedMaintenance = 1800;

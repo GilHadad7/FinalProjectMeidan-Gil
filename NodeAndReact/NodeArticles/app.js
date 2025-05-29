@@ -18,7 +18,7 @@ const cron = require("node-cron");
 const { generateMonthlyBuildingReports } = require("./routes/generateMonthlyBuildingReports"); // שנה נתיב בהתאם
 const { generateMonthlyWorkerReports } = require("./routes/generateMonthlyWorkerReports");
 const reportsRoutes = require("./routes/reports.routes");
-
+const usersRoutes = require("./routes/users.routes");
 
 
 
@@ -29,7 +29,7 @@ app.use("/api/reports/buildings", buildingReportsRoutes);
 
 app.use(cors()); // ← חייב להיות לפני הראוטים שלך
 app.use(express.json());
-
+app.use("/api/users", usersRoutes);
 app.use("/api/reports", reportsRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/tasks", tasksRouter);
@@ -40,6 +40,9 @@ app.use('/api', authRoutes); // חדש – לכל מה שקשור ל-Login
 app.use("/api/suppliers", suppliersRoutes);
 app.use("/api/worker-reports", workerReportsRoutes);
 app.use("/api/building-reports", buildingReportsRoutes);
+
+
+
 
 cron.schedule("0 2 1 * *", () => {
   console.log("📅 מריץ דוחות חודשיים לעובדים...");

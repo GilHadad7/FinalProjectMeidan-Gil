@@ -24,10 +24,11 @@ export default function SchedulePage() {
     חשמל: false,
     נזילה: false,
     "תקלה טכנית": false,
-    "תקלה אישית": false,
+    אינסטלציה: false,
     נזק: false,
     אחר: false,
   });
+
 
   useEffect(() => {
     fetch("http://localhost:3000/api/schedule")

@@ -53,4 +53,8 @@
   .button:hover {
     background: linear-gradient(90deg, #cbb7a0 0%, #e0cfc1 100%);
   }
+  .reactSelect {
+    font-size: 1.7rem;
+    direction: rtl;
+  }
   

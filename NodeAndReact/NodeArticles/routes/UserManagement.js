@@ -30,10 +30,9 @@ router.put("/:id", (req, res) => {
   });
 });
 
-
 // DELETE user
 router.delete("/:id", (req, res) => {
-  db.query("DELETE FROM users WHERE id=?", [req.params.id], (err) => {
+  db.query("DELETE FROM users WHERE user_id=?", [req.params.id], (err) => {
     if (err) return res.status(500).send("Delete failed");
     res.sendStatus(200);
   });
