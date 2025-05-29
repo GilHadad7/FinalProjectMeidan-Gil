@@ -16,15 +16,16 @@ export default function TasksTable({ tasks, search, onRefresh }) {
     if (!s) return true;
     return [
       task.full_address,
+      task.task_name, // ← הוספנו את זה
       task.type,
       task.frequency,
       task.worker,
-      task.day,
+      getHebrewDay(task.next_date, task.frequency),
       task.time
     ]
       .filter(Boolean)
       .some((v) => v.toLowerCase().includes(s));
-  });
+  });    
 
   const handleEditClick = (idx) => {
     const task = filtered[idx];
@@ -147,14 +148,23 @@ export default function TasksTable({ tasks, search, onRefresh }) {
               {isEditing ? (
   <>
     <td>{task.task_id}</td>
-    <td>
-      <input className={classes.input} name="building_id" value={editForm.building_id} onChange={handleEditChange} />
-    </td>
+    <td>{task.full_address}</td>
     <td>
       <input className={classes.input} name="task_name" value={editForm.task_name} onChange={handleEditChange} />
     </td>
     <td>
-      <input className={classes.input} name="frequency" value={editForm.frequency} onChange={handleEditChange} />
+        <select
+      className={classes.selectBtnFrequency}
+      name="frequency"
+      value={editForm.frequency}
+      onChange={handleEditChange}
+      required
+    >
+      <option value="">בחר תדירות</option>
+      <option value="יומי">יומי</option>
+      <option value="שבועי">שבועי</option>
+      <option value="חודשי">חודשי</option>
+          </select>
     </td>
     <td>
       <input className={classes.input} name="type" value={editForm.type} onChange={handleEditChange} />

@@ -8,6 +8,7 @@ export default function UserForm({ onAdd }) {
     const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({
     name: "",
+    id_number: "",
     role: "",
     phone: "",
     email: "",
@@ -34,13 +35,14 @@ export default function UserForm({ onAdd }) {
       return;
     }
   
-    if (!form.name || !form.role || !form.phone || !form.email || !form.password) {
+    if (!form.name || !form.role || !form.phone || !form.email || !form.password || !form.id_number) {
       setError("יש למלא את כל השדות");
       return;
     }
+       
   
     await onAdd(form);
-    setForm({ name: "", role: "", phone: "", email: "", password: "" });
+    setForm({ name: "", role: "", phone: "", email: "", password: "", id_number: "" });
   };
   
 
@@ -49,6 +51,19 @@ export default function UserForm({ onAdd }) {
       <h3 className={classes.addUserTitle}>הוסף משתמש:</h3>
       <form className={classes.addUserForm} onSubmit={handleSubmit}>
         <input className={classes.input} name="name" placeholder="שם" value={form.name} onChange={handleChange} />
+        <input
+          className={classes.input}
+          placeholder="תעודת זהות"
+          name="id_number"
+          value={form.id_number}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (/^[0-9]*$/.test(value) && value.length <= 9) {
+              setForm({ ...form, id_number: value });
+            }
+          }}
+          inputMode="numeric"
+        />
         <select className={classes.input} name="role" value={form.role} onChange={handleChange}>
           <option value="">בחר תפקיד</option>
           <option value="manager">manager</option>
@@ -68,7 +83,6 @@ export default function UserForm({ onAdd }) {
           }}
           inputMode="numeric"
         />
-
         {error && <div className={classes.error}>{error}</div>}
         <input className={classes.input} name="email" placeholder="מייל" value={form.email} onChange={handleChange} />
         <div className={classes.passwordWrapper}>

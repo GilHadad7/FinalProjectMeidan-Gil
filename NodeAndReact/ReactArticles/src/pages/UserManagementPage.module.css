@@ -1,5 +1,4 @@
-/* עיצוב עמוד ניהול משתמשים בהתאמה לסקיצה */
-
+/* 🧱 מבנה עמוד כללי */
 .pageWrapper {
   display: flex;
   direction: rtl;
@@ -11,13 +10,89 @@
 .leftPanel {
   width: 320px;
   background: #f8f6f3;
-  padding: 32px 16px 16px 16px;
+  padding: 32px 16px 16px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   border-left: 1px solid #e0dbd2;
 }
 
+.rightPanel {
+  flex: 1;
+  padding: 32px 40px 16px 40px;
+  display: flex;
+  flex-direction: column;
+  background: #f8f6f3;
+}
+
+/* 🏷️ כותרת ראשית */
+.headerTitle {
+  font-size: 1.5rem;
+  color: #6e5c49;
+  background: #e5dfd7;
+  padding: 8px 40px;
+  border-radius: 22px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+/* 🔍 חיפוש וסינון */
+.searchBarRow {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.searchInput {
+  border-radius: 18px;
+  border: none;
+  padding: 6px 18px;
+  font-size: 1rem;
+  background: #ede8e0;
+  min-width: 110px;
+  max-width: 180px;
+  height: 34px;
+  box-sizing: border-box;
+}
+
+.filterBarRow {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.filterLabel {
+  font-size: 1rem;
+  color: #bfae9e;
+}
+
+.filterSelect {
+  border-radius: 18px;
+  border: none;
+  background: #ede8e0;
+  color: #7a6248;
+  font-size: 1rem;
+  height: 34px;
+  padding: 0 18px;
+  min-width: 90px;
+  max-width: 120px;
+  font-weight: 600;
+  transition: background 0.18s, color 0.18s;
+  text-align: center;
+  appearance: none;
+  outline: none;
+}
+
+.filterSelect:focus {
+  background: #e2dbd1;
+  color: #5d4732;
+}
+
+/* ➕ טופס הוספת משתמש */
 .addUserTitle {
   color: #7a6c5d;
   font-size: 1.15rem;
@@ -38,7 +113,6 @@
   background: #e4dbcf;
   padding: 10px 16px;
   font-size: 1rem;
-  margin-bottom: 0;
   outline: none;
   transition: box-shadow 0.2s;
 }
@@ -64,133 +138,11 @@
   background: linear-gradient(90deg, #cbb7a0 0%, #e0cfc1 100%);
 }
 
-.rightPanel {
-  flex: 1;
-  padding: 32px 40px 16px 40px;
-  background: #f8f6f3;
-  display: flex;
-  flex-direction: column;
-}
-
-.headerRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-  gap: 24px;
-}
-
-.headerTitle {
-  font-size: 1.5rem;
-  color: #6e5c49;
-  background: #e5dfd7;
-  padding: 8px 40px;
-  border-radius: 22px;
-  font-family: inherit;
-  font-weight: bold;
-  letter-spacing: 1px;
-}
-
-.searchBarRow {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
-  justify-content: flex-end;
-}
-
-.filterBarRow {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 0;
-  justify-content: flex-end;
-}
-
-.filterLabel {
-  font-size: 1rem;
-  color: #bfae9e;
-  margin: 0 4px 0 0;
-}
-
-.searchInput {
-  border-radius: 18px;
-  border: none;
-  padding: 6px 18px;
-  font-size: 1rem;
-  background: #ede8e0;
-  margin: 0 8px;
-  min-width: 110px;
-  max-width: 180px;
-  height: 34px;
-  box-sizing: border-box;
-}
-
-.filterBtn {
-  background: #d3c2ae;
-  border: none;
-  border-radius: 18px;
-  color: #7a6248;
-  font-weight: 600;
-  padding: 6px 18px;
-  margin: 0 2px;
-  cursor: pointer;
-  transition: background 0.18s, color 0.18s;
-  height: 34px;
-  display: flex;
-  align-items: center;
-}
-
-.filterSelect {
-  border-radius: 18px;
-  border: none;
-  background: #ede8e0;
-  color: #7a6248;
-  font-size: 1rem;
-  height: 34px;
-  padding: 0 18px;
-  margin: 0 8px;
-  min-width: 90px;
-  max-width: 120px;
-  outline: none;
-  appearance: none;
-  font-weight: 600;
-  box-shadow: none;
-  transition: background 0.18s, color 0.18s;
-  text-align: center;
-}
-
-.filterSelect:focus {
-  background: #e2dbd1;
-  color: #5d4732;
-}
-
-.filterBtn.active, .filterBtn:hover {
-  background: #bfae9e;
-  color: #fff;
-}
-
-.pageTitle {
-  font-size: 1.25rem;
-  font-weight: bold;
-  color: #7a6248;
-  background: #ede8e0;
-  border-radius: 22px;
-  padding: 8px 36px;
-  margin-left: 18px;
-  letter-spacing: 0.5px;
-  box-shadow: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-}
-
+/* 📋 טבלת משתמשים */
 .usersTable {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0 7px;
-  background: transparent;
 }
 
 .usersTable th {
@@ -217,6 +169,7 @@
   box-shadow: 0 2px 6px #00000008;
 }
 
+/* 🛠️ פעולות (אייקונים) */
 .actionIcon {
   cursor: pointer;
   margin: 0 5px;
@@ -233,8 +186,6 @@
   font-size: 16px;
   background: transparent;
   border: none;
-  padding: 0;
-  margin: 0 2px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -248,11 +199,13 @@
   justify-content: center;
 }
 
+/* 📱 התאמה לניידים */
 @media (max-width: 900px) {
   .pageWrapper {
     flex-direction: column;
   }
-  .leftPanel, .rightPanel {
+  .leftPanel,
+  .rightPanel {
     width: 100%;
     padding: 16px;
   }
@@ -261,3 +214,4 @@
     font-size: 1.1rem;
   }
 }
+

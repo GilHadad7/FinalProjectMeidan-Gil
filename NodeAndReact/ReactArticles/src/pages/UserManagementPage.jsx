@@ -41,27 +41,29 @@ export default function UserManagementPage() {
       alert("מספר טלפון לא תקין. יש להזין 7 עד 10 ספרות בלבד.");
       return;
     }
-
+  
     // ולידציה למייל
     if (!editForm.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editForm.email.trim())) {
       alert("כתובת מייל לא תקינה.");
       return;
     }
-    
+  
     const res = await fetch(`http://localhost:3000/api/users/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(editForm)
     });
-
+  
     if (res.ok) {
-      const updated = await res.json();
-      setUsers(users.map(u => (u.user_id === id ? updated : u)));
-      setEditId(null);
+      // נטען מחדש את כל המשתמשים מהשרת
+      const updatedUsers = await fetch("http://localhost:3000/api/users").then(r => r.json());
+      setEditId(null);            // ⬅️ יוצא ממצב עריכה
+      setUsers(updatedUsers); 
     } else {
       alert("שגיאה בעדכון המשתמש");
     }
   };
+  
 
   const filtered = users.filter(u => {
     const searchLower = search.toLowerCase();

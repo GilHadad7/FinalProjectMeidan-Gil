@@ -19,6 +19,7 @@ export default function UsersTable({
       <thead>
         <tr>
           <th>שם</th>
+          <th>תעודת זהות</th>
           <th>תפקיד</th>
           <th>טלפון</th>
           <th>מייל</th>
@@ -37,6 +38,22 @@ export default function UsersTable({
                   onChange={handleEditChange}
                 />
               </td>
+              <td>
+              <input
+                className={classes.input}
+                name="id_number"
+                value={editForm.id_number || ""}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (/^[0-9]*$/.test(value) && value.length <= 9) {
+                    setEditForm({ ...editForm, id_number: value });
+                  }
+                }}
+                inputMode="numeric"
+              />
+
+              </td>
+
               <td>
                 <select
                   className={classes.input}
@@ -82,6 +99,7 @@ export default function UsersTable({
           ) : (
             <tr key={user.user_id}>
               <td>{user.name}</td>
+              <td>{user.id_number}</td>
               <td>{user.role}</td>
               <td>{user.phone}</td>
               <td>{user.email}</td>

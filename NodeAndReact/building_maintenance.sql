@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 19, 2025 at 08:09 AM
+-- Generation Time: May 29, 2025 at 11:08 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -35,18 +35,20 @@ CREATE TABLE `buildings` (
   `apartments` int(11) DEFAULT NULL,
   `floors` int(11) DEFAULT NULL,
   `committee` varchar(255) DEFAULT NULL,
-  `phone` varchar(20) DEFAULT NULL
+  `phone` varchar(20) DEFAULT NULL,
+  `assigned_workers` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `buildings`
 --
 
-INSERT INTO `buildings` (`building_id`, `full_address`, `maintenance_type`, `name`, `apartments`, `floors`, `committee`, `phone`) VALUES
-(1, '123 Main Street', 'Full', 'חמו', 44, 11, 'יוסי חמו', '0542101515'),
-(2, '123 Herzl St, Haifa', 'Full', 'נוף ים', 20, 6, 'שמעון אבדוליאני', '0545565785'),
-(5, 'ברל כצלנסון 47 , חיפה', 'Full', 'ברל כצלנסון', 44, 10, 'גדי חדד', '0542510949'),
-(6, 'קיבוץ גליות 20 נשר', 'Full', 'אלמוגים', 4, 2, 'גיל חדד', '0542510949');
+INSERT INTO `buildings` (`building_id`, `full_address`, `maintenance_type`, `name`, `apartments`, `floors`, `committee`, `phone`, `assigned_workers`) VALUES
+(1, '123 Main Street', 'Full', 'חמו', 44, 11, 'יוסי חמו', '0542101515', '2,4,5'),
+(2, '123 Herzl St, Haifa', 'Full', 'נוף ים', 20, 6, 'שמעון אבדוליאני', '0545565785', '4'),
+(5, 'ברל כצלנסון 47 , חיפה', 'Full', 'ברל כצלנסון', 44, 10, 'גדי חדד', '0542510949', '5'),
+(6, 'קיבוץ גליות 20 נשר', 'Full', 'אלמוגים', 4, 2, 'גיל חדד', '0542510949', NULL),
+(7, 'העמוס 18 נשר', 'Full', 'עמוס 18', 48, 18, 'אליעד ממן', '0541349549', '2');
 
 -- --------------------------------------------------------
 
@@ -62,6 +64,16 @@ CREATE TABLE `building_finance` (
   `balance_due` decimal(10,2) DEFAULT NULL,
   `maintenance` decimal(10,2) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `building_finance`
+--
+
+INSERT INTO `building_finance` (`building_id`, `name`, `address`, `total_paid`, `balance_due`, `maintenance`) VALUES
+(1, NULL, NULL, 5000.00, 700.00, 1800.00),
+(2, NULL, NULL, 5000.00, 700.00, 1800.00),
+(5, NULL, NULL, 5000.00, 700.00, 1800.00),
+(6, NULL, NULL, 5000.00, 700.00, 1800.00);
 
 -- --------------------------------------------------------
 
@@ -79,6 +91,15 @@ CREATE TABLE `employee_reports` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `updated_by` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `employee_reports`
+--
+
+INSERT INTO `employee_reports` (`report_id`, `employee_id`, `month`, `salary`, `paid`, `payslip_url`, `updated_at`, `updated_by`) VALUES
+(1, 1, '2025-04', 3200.00, 0, 'payslips/april_2025.pdf', '2025-05-26 10:51:18', 'admin'),
+(2, 2, '2025-05', 2000.00, 0, NULL, '2025-05-26 12:25:35', NULL),
+(3, 4, '2025-05', 2000.00, 0, NULL, '2025-05-26 13:22:20', NULL);
 
 -- --------------------------------------------------------
 
@@ -102,20 +123,6 @@ CREATE TABLE `external_suppliers` (
 INSERT INTO `external_suppliers` (`id`, `name`, `field`, `phone`, `email`, `buildings`) VALUES
 (1, 'גיל חדד', 'משאבות מים', '0542510949', 'gil7hadad@gmail.com', NULL),
 (2, 'חמו משאבות', 'משאבות', '0540646612', 'midan@gmail.com', NULL);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `monthly_reports`
---
-
-CREATE TABLE `monthly_reports` (
-  `month` varchar(20) NOT NULL,
-  `income` decimal(10,2) DEFAULT NULL,
-  `debt` decimal(10,2) DEFAULT NULL,
-  `expense` decimal(10,2) DEFAULT NULL,
-  `profit` decimal(10,2) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -169,10 +176,10 @@ CREATE TABLE `routinetasks` (
 --
 
 INSERT INTO `routinetasks` (`task_id`, `building_id`, `task_name`, `frequency`, `next_date`, `created_at`, `type`, `task_time`) VALUES
-(2, 1, 'ניקיון לובי קומת קרקע', 'שבועי', '2025-05-16', '2025-05-12 06:00:01', 'ניקיון', '10:30:00'),
-(3, 2, 'שטיפת חדר מדרגות', 'שבועי', '2025-05-17', '2025-05-12 07:42:39', 'ניקיון', '11:15:00'),
-(11, 5, 'ניקיון תקרה', 'חודשי', '2025-04-29', '2025-05-14 16:21:59', 'חשמל', '10:30:00'),
-(18, 6, 'ניקיון חנייה', 'יומי', '2025-05-16', '2025-05-18 13:22:19', 'ניקיון', '09:00:00');
+(2, 1, 'ניקיון לובי קומת קרקע', 'שבועי', '2025-05-05', '2025-05-12 06:00:01', 'ניקיון', '10:30:00'),
+(3, 2, 'שטיפת חדר מדרגות', 'שבועי', '2025-05-16', '2025-05-12 07:42:39', 'ניקיון', '11:15:00'),
+(11, 5, 'ניקיון תקרה', 'חודשי', '2025-04-27', '2025-05-14 16:21:59', 'חשמל', '10:30:00'),
+(18, 6, 'ניקיון חנייה', 'שבועי', '2025-05-12', '2025-05-18 13:22:19', 'ניקיון', '09:00:00');
 
 -- --------------------------------------------------------
 
@@ -202,7 +209,8 @@ INSERT INTO `servicecalls` (`call_id`, `building_id`, `read_index`, `service_typ
 (22, 1, '0', 'נזילה', 'Closed', 'בעיה', '2025-05-08 08:18:31', 'Meidan Chemo', 'http://localhost:8801/uploads/1746692335780.png', 'בן זונה'),
 (23, 1, '0', 'אינסטלציה', 'Closed', 'חור בצנרת הקידמית', '2025-05-08 08:18:49', 'Meidan Chemo', 'http://localhost:8801/uploads/1746964852743.png', 'קומה 3 ליד דירה 15'),
 (24, 1, '0', 'חשמל', 'Closed', 'כי ככה', '2025-05-11 12:24:52', 'Meidan Chemo', 'http://localhost:8801/uploads/1747228107049.png', 'שדגשדג'),
-(25, 1, '0', 'תקלה אישית', 'Closed', 'הדלת לא נסגרת ', '2025-05-12 08:32:21', 'Meidan Chemo', 'http://localhost:8801/uploads/1747038741912.png', 'קומה 5 דירה 20');
+(25, 1, '0', 'תקלה אישית', 'Closed', 'הדלת לא נסגרת ', '2025-05-12 08:32:21', 'Meidan Chemo', 'http://localhost:8801/uploads/1747038741912.png', 'קומה 5 דירה 20'),
+(26, 6, '0', 'אינסטלציה', 'Open', 'טיפטוף מים', '2025-05-28 11:48:42', 'מידן חמו', 'http://localhost:8801/uploads/1748432954002.png', 'קומה 4 ליד דלת 15');
 
 -- --------------------------------------------------------
 
@@ -243,9 +251,11 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`user_id`, `id_number`, `name`, `email`, `role`, `position`, `apartment_number`, `tax_file`, `password`, `phone`) VALUES
-(1, '123456789', 'מידן חמו', 'meidan@admin.com', 'manager', 'מנהל ראשי', NULL, NULL, 'admin123', '0454564867'),
-(2, '987654321', 'איתי כהן', 'itai@worker.com', 'worker', 'חשמלאי', NULL, 'tax123.pdf', 'worker123', '050-0000002'),
-(3, '456789123', 'נועה לוי', 'noa@tenant.com', 'tenant', NULL, '12', NULL, 'tenant123', '050-0000003');
+(1, '123456789', 'מידן חמו', 'meidan@gmail.com', 'manager', 'מנהל ראשי', NULL, NULL, 'admin123', '0454564867'),
+(2, '987654321', 'איתי כהן', 'itai@worker.com', 'worker', 'super', NULL, 'tax123.pdf', 'worker123', '050-0000002'),
+(3, '456789123', 'נועה לוי', 'noa@tenant.com', 'tenant', NULL, '12', NULL, 'tenant123', '050-0000003'),
+(4, '2502005851', 'לידור סויסה', 'lidi@worker.com', 'worker', 'cleaner', NULL, NULL, '1234', '05412151251'),
+(7, '207433368', 'גיל חדד', 'gil7hadad@gmail.com', 'manager', NULL, NULL, NULL, '1234', '0542510949');
 
 --
 -- Indexes for dumped tables
@@ -274,12 +284,6 @@ ALTER TABLE `employee_reports`
 --
 ALTER TABLE `external_suppliers`
   ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `monthly_reports`
---
-ALTER TABLE `monthly_reports`
-  ADD PRIMARY KEY (`month`);
 
 --
 -- Indexes for table `payments`
@@ -333,13 +337,13 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `buildings`
 --
 ALTER TABLE `buildings`
-  MODIFY `building_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `building_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `employee_reports`
 --
 ALTER TABLE `employee_reports`
-  MODIFY `report_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `report_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `external_suppliers`
@@ -369,7 +373,7 @@ ALTER TABLE `routinetasks`
 -- AUTO_INCREMENT for table `servicecalls`
 --
 ALTER TABLE `servicecalls`
-  MODIFY `call_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+  MODIFY `call_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT for table `servicecallupdates`
@@ -381,7 +385,7 @@ ALTER TABLE `servicecallupdates`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- Constraints for dumped tables
