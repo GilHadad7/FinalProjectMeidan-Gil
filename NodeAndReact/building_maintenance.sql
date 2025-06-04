@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 29, 2025 at 11:08 AM
+-- Generation Time: Jun 04, 2025 at 05:20 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -44,9 +44,9 @@ CREATE TABLE `buildings` (
 --
 
 INSERT INTO `buildings` (`building_id`, `full_address`, `maintenance_type`, `name`, `apartments`, `floors`, `committee`, `phone`, `assigned_workers`) VALUES
-(1, '123 Main Street', 'Full', 'חמו', 44, 11, 'יוסי חמו', '0542101515', '2,4,5'),
+(1, '123 Main Street', 'Full', 'חמו', 44, 11, 'יוסי חמו', '0542101515', '2,4'),
 (2, '123 Herzl St, Haifa', 'Full', 'נוף ים', 20, 6, 'שמעון אבדוליאני', '0545565785', '4'),
-(5, 'ברל כצלנסון 47 , חיפה', 'Full', 'ברל כצלנסון', 44, 10, 'גדי חדד', '0542510949', '5'),
+(5, 'ברל כצלנסון 47 , חיפה', 'Full', 'ברל כצלנסון', 44, 10, 'גדי חדד', '0542510949', ''),
 (6, 'קיבוץ גליות 20 נשר', 'Full', 'אלמוגים', 4, 2, 'גיל חדד', '0542510949', NULL),
 (7, 'העמוס 18 נשר', 'Full', 'עמוס 18', 48, 18, 'אליעד ממן', '0541349549', '2');
 
@@ -132,13 +132,46 @@ INSERT INTO `external_suppliers` (`id`, `name`, `field`, `phone`, `email`, `buil
 
 CREATE TABLE `payments` (
   `payment_id` int(11) NOT NULL,
-  `tenant_id` int(11) DEFAULT NULL,
-  `amount` decimal(10,2) DEFAULT NULL,
-  `payment_date` timestamp NOT NULL DEFAULT current_timestamp(),
+  `tenant_id` int(11) NOT NULL,
+  `building_id` int(11) NOT NULL,
+  `payment_date` date NOT NULL,
+  `category` varchar(100) DEFAULT NULL,
   `description` text DEFAULT NULL,
-  `paypal_transaction_id` varchar(100) DEFAULT NULL,
-  `status` varchar(50) DEFAULT NULL
+  `amount` decimal(10,2) NOT NULL,
+  `status` enum('שולם','חוב','ממתין') DEFAULT 'ממתין',
+  `created_at` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `payments`
+--
+
+INSERT INTO `payments` (`payment_id`, `tenant_id`, `building_id`, `payment_date`, `category`, `description`, `amount`, `status`, `created_at`) VALUES
+(1, 1, 1, '2025-05-27', 'שכר חודשי', 'תשלומים ', 500.00, 'שולם', '2025-06-04 13:11:40'),
+(5, 1, 7, '2025-05-30', 'שכר חודשי', 'תחזוקה', 600.00, 'שולם', '2025-06-04 15:59:04'),
+(6, 3, 5, '2025-06-07', 'שכר חודשי', 'תשלומים ', 5000.00, 'שולם', '2025-06-04 16:12:00'),
+(7, 4, 7, '2025-05-30', 'שכר חודשי', 'תשלום חד פעמי', 401.00, 'ממתין', '2025-06-04 16:20:08');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `reminder_logs`
+--
+
+CREATE TABLE `reminder_logs` (
+  `id` int(11) NOT NULL,
+  `payment_id` int(11) NOT NULL,
+  `tenant_id` int(11) NOT NULL,
+  `reminder_date` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `reminder_logs`
+--
+
+INSERT INTO `reminder_logs` (`id`, `payment_id`, `tenant_id`, `reminder_date`) VALUES
+(3, 5, 1, '2025-06-04 16:18:16'),
+(4, 7, 4, '2025-06-04 16:20:14');
 
 -- --------------------------------------------------------
 
@@ -210,7 +243,8 @@ INSERT INTO `servicecalls` (`call_id`, `building_id`, `read_index`, `service_typ
 (23, 1, '0', 'אינסטלציה', 'Closed', 'חור בצנרת הקידמית', '2025-05-08 08:18:49', 'Meidan Chemo', 'http://localhost:8801/uploads/1746964852743.png', 'קומה 3 ליד דירה 15'),
 (24, 1, '0', 'חשמל', 'Closed', 'כי ככה', '2025-05-11 12:24:52', 'Meidan Chemo', 'http://localhost:8801/uploads/1747228107049.png', 'שדגשדג'),
 (25, 1, '0', 'תקלה אישית', 'Closed', 'הדלת לא נסגרת ', '2025-05-12 08:32:21', 'Meidan Chemo', 'http://localhost:8801/uploads/1747038741912.png', 'קומה 5 דירה 20'),
-(26, 6, '0', 'אינסטלציה', 'Open', 'טיפטוף מים', '2025-05-28 11:48:42', 'מידן חמו', 'http://localhost:8801/uploads/1748432954002.png', 'קומה 4 ליד דלת 15');
+(26, 6, '0', 'אינסטלציה', 'Open', 'טיפטוף מים', '2025-05-28 11:48:42', 'מידן חמו', 'http://localhost:8801/uploads/1748432954002.png', 'קומה 4 ליד דלת 15'),
+(27, 7, '0', 'אחר', 'Open', 'לידור הומו', '2025-06-03 10:07:36', 'מידן חמו', 'http://localhost:8801/uploads/1748945688374.png', 'לידור בחדר אשפה');
 
 -- --------------------------------------------------------
 
@@ -255,7 +289,8 @@ INSERT INTO `users` (`user_id`, `id_number`, `name`, `email`, `role`, `position`
 (2, '987654321', 'איתי כהן', 'itai@worker.com', 'worker', 'super', NULL, 'tax123.pdf', 'worker123', '050-0000002'),
 (3, '456789123', 'נועה לוי', 'noa@tenant.com', 'tenant', NULL, '12', NULL, 'tenant123', '050-0000003'),
 (4, '2502005851', 'לידור סויסה', 'lidi@worker.com', 'worker', 'cleaner', NULL, NULL, '1234', '05412151251'),
-(7, '207433368', 'גיל חדד', 'gil7hadad@gmail.com', 'manager', NULL, NULL, NULL, '1234', '0542510949');
+(7, '207433368', 'גיל חדד', 'gil7hadad@gmail.com', 'manager', NULL, NULL, NULL, '1234', '0542510949'),
+(9, '204181511', 'בר סטיאוי', 'stiavi@gmail.com', 'worker', NULL, NULL, NULL, '1234', '0525051505');
 
 --
 -- Indexes for dumped tables
@@ -290,6 +325,15 @@ ALTER TABLE `external_suppliers`
 --
 ALTER TABLE `payments`
   ADD PRIMARY KEY (`payment_id`),
+  ADD KEY `tenant_id` (`tenant_id`),
+  ADD KEY `building_id` (`building_id`);
+
+--
+-- Indexes for table `reminder_logs`
+--
+ALTER TABLE `reminder_logs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `payment_id` (`payment_id`),
   ADD KEY `tenant_id` (`tenant_id`);
 
 --
@@ -355,7 +399,13 @@ ALTER TABLE `external_suppliers`
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
+-- AUTO_INCREMENT for table `reminder_logs`
+--
+ALTER TABLE `reminder_logs`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `routinetaskexecutions`
@@ -373,7 +423,7 @@ ALTER TABLE `routinetasks`
 -- AUTO_INCREMENT for table `servicecalls`
 --
 ALTER TABLE `servicecalls`
-  MODIFY `call_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `call_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- AUTO_INCREMENT for table `servicecallupdates`
@@ -385,7 +435,7 @@ ALTER TABLE `servicecallupdates`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- Constraints for dumped tables
@@ -395,7 +445,14 @@ ALTER TABLE `users`
 -- Constraints for table `payments`
 --
 ALTER TABLE `payments`
-  ADD CONSTRAINT `payments_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `users` (`user_id`);
+  ADD CONSTRAINT `payments_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `reminder_logs`
+--
+ALTER TABLE `reminder_logs`
+  ADD CONSTRAINT `reminder_logs_ibfk_1` FOREIGN KEY (`payment_id`) REFERENCES `payments` (`payment_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `reminder_logs_ibfk_2` FOREIGN KEY (`tenant_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `routinetaskexecutions`

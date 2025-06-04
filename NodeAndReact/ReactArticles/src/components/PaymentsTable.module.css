@@ -1,0 +1,130 @@
+.tableWrapper {
+  width: 100%;
+  direction: rtl;
+  overflow-x: hidden;
+}
+
+.table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0 7px;
+}
+
+/* 🧠 כל העמודות 11% – פעולות מקבלת הכי הרבה */
+.table th:nth-child(1),
+.table td:nth-child(1),
+.table th:nth-child(2),
+.table td:nth-child(2),
+.table th:nth-child(3),
+.table td:nth-child(3),
+.table th:nth-child(4),
+.table td:nth-child(4),
+.table th:nth-child(5),
+.table td:nth-child(5),
+.table th:nth-child(6),
+.table td:nth-child(6),
+.table th:nth-child(7),
+.table td:nth-child(7) {
+  width: 10%; /* היה 11% */
+}
+
+.table th:nth-child(8),
+.table td:nth-child(8) {
+  width: 18%; /* ✅ פעולות – מרווח לכפתורים, היה 28% */
+}
+
+.table th,
+.table td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  font-size: 1rem;
+  padding: 10px 6px;
+}
+
+/* ✨ תוכן טבלה */
+.table td {
+  background: #fff;
+  color: #4a3a2a;
+  border-bottom: 1px solid #e4dbcf;
+  border-radius: 0 0 10px 10px;
+  vertical-align: middle;
+}
+
+.table th {
+  background: #e4dbcf;
+  color: #7a6c5d;
+  font-weight: bold;
+  border-radius: 10px 10px 0 0;
+}
+
+/* 🎨 סטטוסים */
+.statusPaid,
+.statusDebt,
+.statusPending {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: bold;
+  display: inline-block;
+  min-width: 70px;
+}
+
+.statusPaid {
+  color: #2e7d32;
+  background: #dcedc8;
+}
+
+.statusDebt {
+  color: #c62828;
+  background: #ffcdd2;
+}
+
+.statusPending {
+  color: #f57f17;
+  background: #ffe082;
+}
+
+/* 🎯 כפתורי פעולה */
+.actionBtns {
+  display: flex;
+  gap: 8px;
+  justify-content: space-between; /* הכפתורים יתפרסו על כל הרוחב */
+  align-items: center;
+  flex-wrap: nowrap; /* חזר למצב הקודם – אין ירידת כפתורים לשורה נוספת */
+  width: 100%; /* חדש! מאפשר לכפתורים להימתח על כל הרוחב */
+}
+
+.actionsCell {
+  min-width: 128px;
+  width: 100%;
+  padding: 0;
+}
+
+.roundBtn {
+  background: #eee;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  transition: 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.roundBtn:hover {
+  background-color: #ddd;
+}
+
+.roundBtn svg {
+  color: #7a5245;
+  font-size: 1.1rem;
+}
+
+.roundBtn:has(svg.fa-bell) {
+  background-color: #f0c674;
+}

@@ -19,7 +19,8 @@ const { generateMonthlyBuildingReports } = require("./routes/generateMonthlyBuil
 const { generateMonthlyWorkerReports } = require("./routes/generateMonthlyWorkerReports");
 const reportsRoutes = require("./routes/reports.routes");
 const usersRoutes = require("./routes/users.routes");
-
+const paymentsRoutes = require("./routes/payments.routes"); // ✅ נוספה השורה הזו!
+const remindersRoutes = require("./routes/reminders.js");
 
 
 app.use("/api/reports/workers", workerReportsRoutes);
@@ -40,8 +41,8 @@ app.use('/api', authRoutes); // חדש – לכל מה שקשור ל-Login
 app.use("/api/suppliers", suppliersRoutes);
 app.use("/api/worker-reports", workerReportsRoutes);
 app.use("/api/building-reports", buildingReportsRoutes);
-
-
+app.use("/api/payments", paymentsRoutes);
+app.use("/api/reminders", remindersRoutes);
 
 
 cron.schedule("0 2 1 * *", () => {
