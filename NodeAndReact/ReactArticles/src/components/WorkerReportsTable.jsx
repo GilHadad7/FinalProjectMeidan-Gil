@@ -7,7 +7,7 @@ export default function WorkerReportsTable({ reports, onTogglePaid, onUploadPDF 
       <thead>
         <tr>
           <th>עובד</th>
-          <th>תפקיד</th> {/* ✅ עמודה חדשה */}
+          <th>תפקיד</th>
           <th>חודש</th>
           <th>שכר חודשי (ברוטו)</th>
           <th>שולם?</th>
@@ -18,7 +18,7 @@ export default function WorkerReportsTable({ reports, onTogglePaid, onUploadPDF 
         {reports.map((report) => (
           <tr key={report.report_id}>
             <td>{report.employee_name}</td>
-            <td>{report.position}</td> {/* ✅ ערך חדש */}
+            <td>{report.position}</td>
             <td>{report.month}</td>
             <td>₪{Number(report.salary).toLocaleString("he-IL")}</td>
             <td>
@@ -31,9 +31,21 @@ export default function WorkerReportsTable({ reports, onTogglePaid, onUploadPDF 
             </td>
             <td>
               {report.payslip_url ? (
-                <a href={report.payslip_url} target="_blank" rel="noreferrer">PDF 📄</a>
+                <a
+                  href={report.payslip_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={classes.paidBtn} // ✅ עיצוב אחיד כמו כפתור
+                >
+                  PDF 
+                </a>
               ) : (
-                <button onClick={() => onUploadPDF(report.report_id)}>העלה</button>
+                <button
+                  className={classes.paidBtn}
+                  onClick={() => onUploadPDF(report.report_id)}
+                >
+                  העלה
+                </button>
               )}
             </td>
           </tr>

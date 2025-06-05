@@ -1,16 +1,15 @@
+
 import React, { useState, useEffect } from "react";
 import classes from "./SchedulePage.module.css";
 
 export default function SchedulePage() {
   const [tasks, setTasks] = useState([]);
 
-  // פילטר לפי מקור
   const [sourceFilter, setSourceFilter] = useState({
     routine: false,
     service: false,
   });
 
-  // פילטר לפי סוגי משימות קבועות
   const [routineFilters, setRoutineFilters] = useState({
     ניקיון: false,
     תחזוקה: false,
@@ -19,7 +18,6 @@ export default function SchedulePage() {
     "טיפול במעבדי מים": false,
   });
 
-  // פילטר לפי סוגי קריאות שירות
   const [serviceFilters, setServiceFilters] = useState({
     חשמל: false,
     נזילה: false,
@@ -29,6 +27,11 @@ export default function SchedulePage() {
     אחר: false,
   });
 
+  const [hidePast, setHidePast] = useState(true); // מופעל כברירת מחדל
+  const [dateFilters, setDateFilters] = useState({
+    fromDate: "",
+    toDate: "",
+  });
 
   useEffect(() => {
     fetch("http://localhost:3000/api/schedule")
@@ -40,16 +43,14 @@ export default function SchedulePage() {
           }
           return [task];
         });
-      
-        // ✅ מיון לפי scheduled_datetime מהשרת
+
         const sorted = expanded.sort(
           (a, b) =>
             new Date(a.scheduled_datetime) - new Date(b.scheduled_datetime)
         );
-      
+
         setTasks(sorted);
       })
-      
       .catch((err) => console.error("❌ שגיאה בטעינה:", err));
   }, []);
 
@@ -74,67 +75,63 @@ export default function SchedulePage() {
     }));
   };
 
-  // ✅ סינון לפי פילטרים פעילים — רק אם נבחר משהו
   const filteredTasks = tasks.filter((task) => {
     const origin = task.origin_type;
-
     const isAnySourceActive = Object.values(sourceFilter).some((v) => v);
     const isAnyRoutineActive = Object.values(routineFilters).some((v) => v);
     const isAnyServiceActive = Object.values(serviceFilters).some((v) => v);
+    const now = new Date();
+    const taskDate = new Date(task.scheduled_datetime);
 
-    // אם לא הופעל שום פילטר בכלל → להציג הכל
-    if (!isAnySourceActive && !isAnyRoutineActive && !isAnyServiceActive) {
-      return true;
+    if (hidePast && taskDate < now) return false;
+    if (dateFilters.fromDate && taskDate < new Date(dateFilters.fromDate)) return false;
+    if (dateFilters.toDate) {
+      const toDate = new Date(dateFilters.toDate);
+      toDate.setDate(toDate.getDate() + 1); // כולל התאריך עצמו
+      if (taskDate >= toDate) return false;
     }
+    
 
-    // סינון לפי מקור (אם מסומן)
-    if (isAnySourceActive && !sourceFilter[origin]) {
-      return false;
-    }
-
-    // סינון לפי סוג (אם מקורו routine)
-    if (origin === "routine" && isAnyRoutineActive) {
+    if (!isAnySourceActive && !isAnyRoutineActive && !isAnyServiceActive) return true;
+    if (isAnySourceActive && !sourceFilter[origin]) return false;
+    if (origin === "routine" && isAnyRoutineActive)
       return routineFilters[task.type] === true;
-    }
-
-    // סינון לפי סוג (אם מקורו service)
-    if (origin === "service" && isAnyServiceActive) {
+    if (origin === "service" && isAnyServiceActive)
       return serviceFilters[task.type] === true;
-    }
 
     return true;
   });
+
   function formatDate(rawDate) {
     if (!rawDate) return "-";
     const date = new Date(rawDate);
-    return date.toLocaleDateString("he-IL"); // תאריך עברי
+    return date.toLocaleDateString("he-IL");
   }
-  
+
   function formatTime(rawTime) {
     if (!rawTime) return "-";
     const [hours, minutes] = rawTime.split(":");
     return `${hours}:${minutes}`;
   }
-  
-  
+
   function generateRecurringTasks(task) {
     const occurrences = [];
     const maxDate = new Date();
-    maxDate.setFullYear(maxDate.getFullYear() + 1); // שנה קדימה
-  
+    maxDate.setFullYear(maxDate.getFullYear() + 1);
     let current = new Date(task.date);
-  
+
     while (current <= maxDate) {
-      const dateString = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}-${String(current.getDate()).padStart(2, "0")}`;
-    const scheduled_datetime = `${dateString}T${task.time || "00:00:00"}`;
-    
+      const dateString = `${current.getFullYear()}-${String(
+        current.getMonth() + 1
+      ).padStart(2, "0")}-${String(current.getDate()).padStart(2, "0")}`;
+      const scheduled_datetime = `${dateString}T${task.time || "00:00:00"}`;
+
       occurrences.push({
         ...task,
         date: new Date(current),
-        scheduled_datetime, // ✅ הכנס את הזמן החדש
+        scheduled_datetime,
       });
-  
-      // זזים קדימה לפי תדירות
+
       if (task.frequency === "שבועי") {
         current.setDate(current.getDate() + 7);
       } else if (task.frequency === "חודשי") {
@@ -145,24 +142,20 @@ export default function SchedulePage() {
         break;
       }
     }
-  
+
     return occurrences;
   }
-  
 
   function getWeekdayName(dateInput) {
     if (!dateInput) return "-";
     const date = new Date(dateInput);
-    return date.toLocaleDateString("he-IL", { weekday: "long" }); // לדוגמה: "שלישי"
+    return date.toLocaleDateString("he-IL", { weekday: "long" });
   }
-  
-  
-  
+
   return (
     <div className={classes.SchedulePage}>
       <h1 className={classes.Title}>לוח זמנים של מנהל</h1>
 
-      {/* סינון לפי מקור */}
       <div className={classes.Filters}>
         <strong>בחר מקור להצגה:</strong>
         <label>
@@ -181,9 +174,39 @@ export default function SchedulePage() {
           />
           קריאות שירות
         </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={hidePast}
+            onChange={() => setHidePast(!hidePast)}
+          />
+          הסתר משימות/קריאות שעבר זמנן
+        </label>
       </div>
 
-      {/* סינון לפי סוגי משימות */}
+      <div className={classes.Filters}>
+        <div className={classes.dateFilterWrapper}>
+          <label>מתאריך</label>
+          <input
+            type="date"
+            value={dateFilters.fromDate}
+            onChange={(e) =>
+              setDateFilters({ ...dateFilters, fromDate: e.target.value })
+            }
+          />
+        </div>
+        <div className={classes.dateFilterWrapper}>
+          <label>עד תאריך</label>
+          <input
+            type="date"
+            value={dateFilters.toDate}
+            onChange={(e) =>
+              setDateFilters({ ...dateFilters, toDate: e.target.value })
+            }
+          />
+        </div>
+      </div>
+
       {sourceFilter.routine && (
         <div className={classes.Filters}>
           <strong>סוגי משימות קבועות:</strong>
@@ -200,7 +223,6 @@ export default function SchedulePage() {
         </div>
       )}
 
-      {/* סינון לפי סוגי קריאות שירות */}
       {sourceFilter.service && (
         <div className={classes.Filters}>
           <strong>סוגי קריאות שירות:</strong>
@@ -217,7 +239,6 @@ export default function SchedulePage() {
         </div>
       )}
 
-      {/* טבלה */}
       <table className={classes.Table}>
         <thead>
           <tr>
@@ -233,34 +254,39 @@ export default function SchedulePage() {
           </tr>
         </thead>
         <tbody>
-  {filteredTasks.map((task, idx) => (
-    <tr
-      key={idx}
-      className={
-        task.origin_type === "service" && task.status?.trim() === "Closed"
-          ? classes.ClosedRow
-          : ""
-      }
-    >
-      <td>#{task.id}</td> 
-      <td>{getWeekdayName(task.scheduled_datetime)}</td>
-<td>
-  {formatDate(task.scheduled_datetime)}
-  {task.origin_type === "routine" && task.frequency
-    ? ` (${task.frequency})`
-    : ""}
-</td>
-<td>{formatTime(new Date(task.scheduled_datetime).toTimeString())}</td>
-
-      <td>{task.building_address || task.building || "-"}</td>
-      <td>{task.type || "-"}</td>
-      <td>{task.description || "-"}</td>
-      <td>{task.worker || "-"}</td>
-      <td>{task.origin_type === "routine" ? "משימה קבועה" : "קריאת שירות"}</td>
-    </tr>
-  ))}
-</tbody>
-
+          {filteredTasks.map((task, idx) => (
+            <tr
+              key={idx}
+              className={
+                task.origin_type === "service" &&
+                task.status?.trim() === "Closed"
+                  ? classes.ClosedRow
+                  : ""
+              }
+            >
+              <td>#{task.id}</td>
+              <td>{getWeekdayName(task.scheduled_datetime)}</td>
+              <td>
+                {formatDate(task.scheduled_datetime)}
+                {task.origin_type === "routine" && task.frequency
+                  ? ` (${task.frequency})`
+                  : ""}
+              </td>
+              <td>
+                {formatTime(new Date(task.scheduled_datetime).toTimeString())}
+              </td>
+              <td>{task.building_address || task.building || "-"}</td>
+              <td>{task.type || "-"}</td>
+              <td>{task.description || "-"}</td>
+              <td>{task.worker || "-"}</td>
+              <td>
+                {task.origin_type === "routine"
+                  ? "משימה קבועה"
+                  : "קריאת שירות"}
+              </td>
+            </tr>
+          ))}
+        </tbody>
       </table>
     </div>
   );

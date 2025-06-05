@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 04, 2025 at 05:20 PM
+-- Generation Time: Jun 05, 2025 at 11:32 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -62,18 +62,25 @@ CREATE TABLE `building_finance` (
   `address` varchar(200) DEFAULT NULL,
   `total_paid` decimal(10,2) DEFAULT NULL,
   `balance_due` decimal(10,2) DEFAULT NULL,
-  `maintenance` decimal(10,2) DEFAULT NULL
+  `maintenance` decimal(10,2) DEFAULT NULL,
+  `month` varchar(7) NOT NULL DEFAULT '2025-06'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `building_finance`
 --
 
-INSERT INTO `building_finance` (`building_id`, `name`, `address`, `total_paid`, `balance_due`, `maintenance`) VALUES
-(1, NULL, NULL, 5000.00, 700.00, 1800.00),
-(2, NULL, NULL, 5000.00, 700.00, 1800.00),
-(5, NULL, NULL, 5000.00, 700.00, 1800.00),
-(6, NULL, NULL, 5000.00, 700.00, 1800.00);
+INSERT INTO `building_finance` (`building_id`, `name`, `address`, `total_paid`, `balance_due`, `maintenance`, `month`) VALUES
+(1, NULL, NULL, 500.00, 0.00, 500.00, '2025-05'),
+(1, NULL, NULL, 0.00, 0.00, 500.00, '2025-06'),
+(2, NULL, NULL, 0.00, 0.00, 500.00, '2025-05'),
+(2, NULL, NULL, 0.00, 0.00, 500.00, '2025-06'),
+(5, NULL, NULL, 0.00, 0.00, 500.00, '2025-05'),
+(5, NULL, NULL, 5000.00, 0.00, 500.00, '2025-06'),
+(6, NULL, NULL, 0.00, 0.00, 500.00, '2025-05'),
+(6, NULL, NULL, 0.00, 0.00, 500.00, '2025-06'),
+(7, NULL, NULL, 0.00, 1001.00, 500.00, '2025-05'),
+(7, NULL, NULL, 0.00, 0.00, 500.00, '2025-06');
 
 -- --------------------------------------------------------
 
@@ -98,7 +105,7 @@ CREATE TABLE `employee_reports` (
 
 INSERT INTO `employee_reports` (`report_id`, `employee_id`, `month`, `salary`, `paid`, `payslip_url`, `updated_at`, `updated_by`) VALUES
 (1, 1, '2025-04', 3200.00, 0, 'payslips/april_2025.pdf', '2025-05-26 10:51:18', 'admin'),
-(2, 2, '2025-05', 2000.00, 0, NULL, '2025-05-26 12:25:35', NULL),
+(2, 2, '2025-05', 2000.00, 1, NULL, '2025-06-05 08:14:06', NULL),
 (3, 4, '2025-05', 2000.00, 0, NULL, '2025-05-26 13:22:20', NULL);
 
 -- --------------------------------------------------------
@@ -148,8 +155,8 @@ CREATE TABLE `payments` (
 
 INSERT INTO `payments` (`payment_id`, `tenant_id`, `building_id`, `payment_date`, `category`, `description`, `amount`, `status`, `created_at`) VALUES
 (1, 1, 1, '2025-05-27', 'שכר חודשי', 'תשלומים ', 500.00, 'שולם', '2025-06-04 13:11:40'),
-(5, 1, 7, '2025-05-30', 'שכר חודשי', 'תחזוקה', 600.00, 'שולם', '2025-06-04 15:59:04'),
-(6, 3, 5, '2025-06-07', 'שכר חודשי', 'תשלומים ', 5000.00, 'שולם', '2025-06-04 16:12:00'),
+(5, 1, 7, '2025-05-28', 'שכר חודשי', 'תחזוקה', 600.00, 'חוב', '2025-06-04 15:59:04'),
+(6, 3, 5, '2025-06-05', 'שכר חודשי', 'תשלומים ', 5000.00, 'שולם', '2025-06-04 16:12:00'),
 (7, 4, 7, '2025-05-30', 'שכר חודשי', 'תשלום חד פעמי', 401.00, 'ממתין', '2025-06-04 16:20:08');
 
 -- --------------------------------------------------------
@@ -306,7 +313,7 @@ ALTER TABLE `buildings`
 -- Indexes for table `building_finance`
 --
 ALTER TABLE `building_finance`
-  ADD PRIMARY KEY (`building_id`);
+  ADD PRIMARY KEY (`building_id`,`month`);
 
 --
 -- Indexes for table `employee_reports`
