@@ -62,7 +62,6 @@ export default function PaymentsTable({ payments, onEdit, onDelete }) {
       <table className={classes.table}>
         <thead>
           <tr>
-            <th>מספר תשלום</th>
             <th>שם דייר</th>
             <th>שם בניין</th>
             <th>סכום</th>
@@ -75,14 +74,13 @@ export default function PaymentsTable({ payments, onEdit, onDelete }) {
         <tbody>
           {payments.length === 0 ? (
             <tr>
-              <td colSpan="8" style={{ textAlign: "center" }}>
+              <td colSpan="7" style={{ textAlign: "center" }}>
                 לא נמצאו תשלומים
               </td>
             </tr>
           ) : (
             payments.map((p) => (
               <tr key={p.payment_id}>
-                <td>{p.payment_id}</td>
                 {editingId === p.payment_id ? (
                   <>
                     <td>{p.tenant_name}</td>
@@ -173,13 +171,18 @@ export default function PaymentsTable({ payments, onEdit, onDelete }) {
                         >
                           <FaTrash />
                         </button>
-                        {(p.status === "חוב" || p.status === "ממתין") && (
+                        {["חוב", "ממתין"].includes(p.status) ? (
                           <button
                             onClick={() => handleReminder(p.payment_id, p.tenant_id, p.tenant_name)}
                             className={classes.roundBtn}
                           >
                             <FaBell />
                           </button>
+                        ) : (
+                          <div
+                            className={classes.roundBtn}
+                            style={{ visibility: "hidden" }}
+                          ></div>
                         )}
                       </div>
                     </td>

@@ -11,27 +11,40 @@
   border-spacing: 0 7px;
 }
 
-/* 🧠 כל העמודות 11% – פעולות מקבלת הכי הרבה */
+/* ✅ רוחב עמודות מעודכן לגרסה ללא מספר תשלום */
 .table th:nth-child(1),
-.table td:nth-child(1),
-.table th:nth-child(2),
-.table td:nth-child(2),
-.table th:nth-child(3),
-.table td:nth-child(3),
-.table th:nth-child(4),
-.table td:nth-child(4),
-.table th:nth-child(5),
-.table td:nth-child(5),
-.table th:nth-child(6),
-.table td:nth-child(6),
-.table th:nth-child(7),
-.table td:nth-child(7) {
-  width: 10%; /* היה 11% */
+.table td:nth-child(1) {
+  width: 12%; /* שם דייר */
 }
 
-.table th:nth-child(8),
-.table td:nth-child(8) {
-  width: 18%; /* ✅ פעולות – מרווח לכפתורים, היה 28% */
+.table th:nth-child(2),
+.table td:nth-child(2) {
+  width: 12%; /* שם בניין */
+}
+
+.table th:nth-child(3),
+.table td:nth-child(3) {
+  width: 10%; /* סכום */
+}
+
+.table th:nth-child(4),
+.table td:nth-child(4) {
+  width: 12%; /* תאריך */
+}
+
+.table th:nth-child(5),
+.table td:nth-child(5) {
+  width: 20%; /* תיאור – רחב יותר */
+}
+
+.table th:nth-child(6),
+.table td:nth-child(6) {
+  width: 10%; /* סטטוס */
+}
+
+.table th:nth-child(7),
+.table td:nth-child(7) {
+  width: 16%; /* פעולות */
 }
 
 .table th,
@@ -89,17 +102,20 @@
 /* 🎯 כפתורי פעולה */
 .actionBtns {
   display: flex;
-  gap: 8px;
-  justify-content: space-between; /* הכפתורים יתפרסו על כל הרוחב */
+  flex-direction: row;
+  justify-content: flex-start;     /* ✅ יישור לימין בטבלת RTL */
   align-items: center;
-  flex-wrap: nowrap; /* חזר למצב הקודם – אין ירידת כפתורים לשורה נוספת */
-  width: 100%; /* חדש! מאפשר לכפתורים להימתח על כל הרוחב */
+  gap: 8px;
+  flex-wrap: nowrap;
+  width: 100%;
 }
 
 .actionsCell {
   min-width: 128px;
   width: 100%;
   padding: 0;
+  text-align: right;              /* ✅ יישור תוכן התא לימין */
+  padding-right: 10px;           /* ✅ ריווח קל מהקצה */
 }
 
 .roundBtn {
