@@ -17,14 +17,13 @@ function ServiceCallsPage() {
     <div style={{ display: "flex", padding: "2rem", gap: "2rem", direction: "rtl" }}>
       
       {/* צד ימין – טופס */}
-      <div style={{ flex: 0.7 }}>
+      <div style={{ flex: 0.5 , }}>
         <h1>Service Calls</h1>
-        <p style={{ fontStyle: "italic" }}>Role: {role}</p>
         <ServiceCallForm role={role} onSuccess={triggerRefresh} />
       </div>
 
       {/* צד שמאל – טבלה */}
-      <div style={{ flex: 1.3 }} >
+      <div style={{ flex: 1.7}} >
         <ServiceCallsTable role={role} refreshFlag={refreshFlag} setRefreshFlag={setRefreshFlag} />
       </div>
 

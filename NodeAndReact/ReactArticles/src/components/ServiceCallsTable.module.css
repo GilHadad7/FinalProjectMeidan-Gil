@@ -1,230 +1,145 @@
-/* 🎨 שורת עריכה */
-.editRow {
-    background-color: #fffbe6;
-    transition: all 0.3s ease;
-}
-  
-.editRow td {
-    padding: 12px 8px !important;
-    vertical-align: top;
+/* טבלת תוכן כללית */
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 7px;
+  background: transparent;
+  direction: rtl;
+  font-family: "Heebo", "Segoe UI", sans-serif;
+  font-size: 1.2rem;
+  color: #4a3a2a;
 }
 
-/* 🎨 שורת עריכה חדשה ומודרנית */
-.editRowModern {
-    background: #f8fafc;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.10);
-    border-radius: 18px;
-    transition: box-shadow 0.3s;
-    border: none;
-}
-.editContainer {
-    padding: 32px 24px 18px 24px;
-    background: #fff;
-    border-radius: 18px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.13);
-    margin: 8px 0;
-}
-.editHeader {
-    font-size: 1.3rem;
-    font-weight: bold;
-    color: #1976d2;
-    margin-bottom: 18px;
-    letter-spacing: 0.5px;
-    text-align: right;
-    border-bottom: 2px solid #e3e8ee;
-    padding-bottom: 8px;
-}
-.editGrid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 18px 32px;
-    margin-bottom: 18px;
-}
-.editField {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    font-size: 1.11rem;
-    text-align: right;
-}
-.editField > div:not(:has(label)), .editField > div.value {
-    font-size: 1.13em;
-    color: #1a1a1a;
-    font-weight: 500;
-    letter-spacing: 0.2px;
-    margin-bottom: 0.5em;
-}
-.editField label {
-    font-weight: bold;
-    color: #222;
-    margin-bottom: 2px;
-    font-size: 1.13em;
-    letter-spacing: 0.5px;
-}
-.editInputUnderline, .editGrid select, .editGrid input[type="text"], .editGrid textarea {
-    border: none;
-    border-bottom: 2px solid #bdbdbd;
-    border-radius: 0;
-    background: #f4f8fb;
-    padding: 8px 6px;
-    font-size: 15px;
-    transition: border-color 0.2s;
-    outline: none;
-    box-shadow: none;
-}
-.editGrid textarea, .editInputUnderline[type="textarea"] {
-    resize: none !important;
-}
-.editInputUnderline:focus, .editGrid select:focus, .editGrid input[type="text"]:focus, .editGrid textarea:focus {
-    border-bottom: 2.5px solid #1976d2;
-    background: #eaf3fa;
-}
-.editActionsRow {
-    display: flex;
-    gap: 14px;
-    justify-content: flex-end;
-    margin-top: 12px;
-}
-/* עמודת פעילויות (אחרונה) */
-th:last-child, td:last-child {
-  min-width: 80px;
-  width: 80px;
-  max-width: 90px;
-}
-/* עמודת תאריך פתיחה */
-th:nth-child(2), td:nth-child(2) {
-  min-width: 140px;
-  width: 140px;
-  max-width: 160px;
-}
-/* עמודת סוג תקלה */
-th:nth-child(6), td:nth-child(6) {
-  min-width: 120px;
-  width: 120px;
-}
-/* עמודת סטטוס */
-th:nth-child(7), td:nth-child(7) {
-  min-width: 120px;
-  width: 120px;
-}
-.editInput,
-.editFileInput,
-textarea,
-.editRow select,
-.editRow input[type="text"],
-.editRow textarea {
-  width: 100%;
+.table th,
+.table td {
   text-align: center;
-  border-collapse: collapse;
-  font-size: 14px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  resize: vertical;
-  box-sizing: border-box;
+  vertical-align: middle;
 }
-/* ✍️ שדה תיאור */
-textarea,
-.editRow textarea {
-    min-height: 70px;
-    max-height: 200px;
+
+/* כותרת טבלה */
+.table th {
+  background: #e4dbcf;
+  color: #7a6c5d;
+  font-weight: bold;
+  padding: 16px 10px;
+  border-radius: 10px 10px 0 0;
+  font-size: 1.2rem;
 }
-/* 🖼️ תמונה */
-.previewImg {
-    width: 110px;
-    height: 110px;
-    object-fit: cover;
-    border-radius: 10px;
-    cursor: pointer;
-    border: 1.5px solid #c7d0db;
-    background-color: #f9f9f9;
-    margin-bottom: 6px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.09);
+
+/* תוכן טבלה */
+.table td {
+  background: #fff;
+  padding: 14px 10px;
+  border-bottom: 1px solid #e4dbcf;
+  font-size: 1.4rem;
+  border-radius: 0 0 10px 10px;
+  font-weight: 500;
 }
-.editFileInput {
-    margin-top: 6px;
-    font-size: 13px;
-    background: none;
-    border: none;
-    direction: rtl;
+
+/* אפקט שורה בטבלה */
+.table tr {
+  box-shadow: 0 2px 6px #00000008;
+  transition: background 0.2s ease;
 }
-/* 🔘 כפתורים */
-.exportBtn {
-  background: #ede6dd;
-  color: #6c665c;
+.table tr:hover {
+  background: #f3f0ed;
+}
+
+/* שורה בסטטוס סגור */
+.closedRow td,
+.closedText {
+  color: red;
+  font-weight: bold;
+}
+
+/* פעולות */
+.actionGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.actionBtn {
+  background: #d2bba0;
   border: none;
-  border-radius: 14px;
-  padding: 6px 18px;
-  font-size: 1rem;
-  margin-right: 12px;
+  padding: 6px 12px;
+  border-radius: 8px;
   cursor: pointer;
+  font-size: 18px;
   transition: background 0.2s;
 }
-.exportBtn:hover {
-  background: #bdb09c;
-  color: #fff;
+.actionBtn:hover {
+  background: #bfae9e;
 }
 
-.iconBtn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1.2rem;
-  margin: 0 3px;
-  color: #6c665c;
-  transition: color 0.2s;
-}
-.iconBtn:hover {
-  color: #c94f4f;
-}
-
-.advancedFilterBar {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 10px;
-  align-items: center;
-  justify-content: flex-end;
-}
-.advancedFilterBar label {
-  font-size: 1rem;
-  color: #6c665c;
-  margin-left: 4px;
-}
-.advancedFilterInput, .advancedFilterSelect {
-  border: 1px solid #bdb09c;
+/* שורת עריכה – עיצוב פשוט */
+.editRow td input,
+.editRow td select{
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 1.1rem;
+  border: 1px solid #ccc;
   border-radius: 10px;
-  padding: 5px 10px;
-  font-size: 1rem;
+  background: #fdf7f2;
+  font-family: inherit;
+  box-sizing: border-box;
 }
 
-@media (max-width: 700px) {
-  .advancedFilterBar {
-    flex-direction: column;
-    gap: 4px;
-    align-items: stretch;
-  }
+/* תיאור – גובה קבוע */
+.editRow td textarea {
+  resize: none;
+  min-height: 42px;
+  line-height: 1.4;
+  min-height: 90px;
+  resize: none;
 }
 
-.editBtn {
-    padding: 8px 22px;
-    margin: 0 0 0 8px;
-    font-size: 15px;
-    font-weight: bold;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.2s, box-shadow 0.2s;
-    box-shadow: 0 2px 6px rgba(33, 150, 243, 0.07);
-    letter-spacing: 0.5px;
+/* תמונה */
+.previewImg {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 10px;
+  cursor: pointer;
+  border: 1.5px solid #c7d0db;
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+  margin-bottom: 6px;
 }
-.editBtn:hover {
-    opacity: 0.93;
-    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.13);
+
+/* עיצוב קובץ קלט */
+.editRow input[type="file"] {
+  margin-top: 6px;
+  font-size: 0.9rem;
 }
-.save {
-    background-color: #4caf50;
-    color: white;
+
+/* שדה עריכה כללי */
+.editInput {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 1.1rem;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background: #fdf7f2;
+  font-family: inherit;
+  box-sizing: border-box;
 }
-.cancel {
-    background-color: #f44336;
-    color: white;
+
+/* קונטיינר טבלה */
+.tableContainer {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  overflow-x: auto;
 }
+
+/* עמודת יום בשבוע */
+.table th:first-child,
+.table td:first-child {
+  min-width: 50px;
+  max-width: 50px;
+  width: 2px;
+  text-align: center;
+}
+

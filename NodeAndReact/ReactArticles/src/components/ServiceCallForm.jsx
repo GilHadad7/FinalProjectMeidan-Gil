@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import classes from "./ServiceCallForm.module.css";
 
 export default function ServiceCallForm({ onSuccess }) {
   const [buildings, setBuildings] = useState([]);
@@ -33,25 +34,12 @@ export default function ServiceCallForm({ onSuccess }) {
     const formData = new FormData();
     formData.append("building_id", buildingId);
     formData.append("description", description);
-    formData.append("location_in_building", location || ""); // נשלח גם אם ריק
+    formData.append("location_in_building", location || "");
     formData.append("service_type", title);
     formData.append("status", "Open");
-    formData.append("read_index", "0"); // ודא שזה string
+    formData.append("read_index", "0");
     formData.append("created_by", createdBy);
-    
     if (imageFile) formData.append("image", imageFile);
-
-    // בדיקה לפני שליחה
-    console.log("sending:", {
-      building_id: buildingId,
-      description,
-      location_in_building: location,
-      service_type: title,
-      status: "Open",
-      read_index: 0,
-      created_by: createdBy,
-      imageFile
-    });
 
     try {
       const res = await fetch("http://localhost:3000/api/service-calls", {
@@ -79,17 +67,17 @@ export default function ServiceCallForm({ onSuccess }) {
       alert("שגיאה בשרת");
     }
   };
-  
-  return (
-    <form
-      onSubmit={handleSubmit}
-      style={{ direction: "rtl", maxWidth: "500px", margin: "0 auto" }}
-    >
-      <h2>פתיחת קריאת שירות</h2>
 
-      <label>
-        בניין:
-        <select value={buildingId} onChange={(e) => setBuildingId(e.target.value)} required>
+  return (
+    <div className={classes.formContainer}>
+      <h3 className={classes.title}>פתיחת קריאת שירות</h3>
+      <form className={classes.form} onSubmit={handleSubmit}>
+        <select
+          value={buildingId}
+          onChange={(e) => setBuildingId(e.target.value)}
+          required
+          className={classes.input}
+        >
           <option value="">בחר בניין...</option>
           {buildings.map((b) => (
             <option key={b.building_id} value={b.building_id}>
@@ -97,14 +85,14 @@ export default function ServiceCallForm({ onSuccess }) {
             </option>
           ))}
         </select>
-      </label>
 
-      <br />
-
-      <label>
-        סוג הבעיה:
-        <select value={title} onChange={(e) => setTitle(e.target.value)} required>
-          <option value="">בחר...</option>
+        <select
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+          className={classes.input}
+        >
+          <option value="">בחר סוג תקלה...</option>
           <option value="חשמל">חשמל</option>
           <option value="נזילה">נזילה</option>
           <option value="תקלה טכנית">תקלה טכנית</option>
@@ -112,49 +100,36 @@ export default function ServiceCallForm({ onSuccess }) {
           <option value="נזק">נזק</option>
           <option value="אחר">אחר</option>
         </select>
-      </label>
-      
 
-      <br />
-
-      <label>
-        תיאור הבעיה:
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="פרט את הבעיה"
+          placeholder="תיאור"
           required
+          className={classes.input}
         />
-      </label>
 
-      <br />
-
-      <label>
-        מיקום התקלה בבניין:
         <input
           type="text"
           value={location}
           onChange={(e) => setLocation(e.target.value)}
-          placeholder="לדוגמה: קומה 2, ליד המעלית"
+          placeholder="מיקום"
+          className={classes.input}
         />
-      </label>
 
-      <br />
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleImageChange}
+          className={classes.input}
+        />
 
-      <label>
-        העלאת תמונה:
-        <input type="file" accept="image/*" onChange={handleImageChange} />
-      </label>
+        {imagePreview && (
+          <img src={imagePreview} alt="preview" className={classes.previewImage} />
+        )}
 
-      {imagePreview && (
-        <div>
-          <img src={imagePreview} alt="preview" style={{ maxWidth: "100%", marginTop: "10px" }} />
-        </div>
-      )}
-
-      <br />
-
-      <button type="submit">שלח קריאה</button>
-    </form>
+        <button className={classes.button} type="submit">שלח קריאה</button>
+      </form>
+    </div>
   );
 }

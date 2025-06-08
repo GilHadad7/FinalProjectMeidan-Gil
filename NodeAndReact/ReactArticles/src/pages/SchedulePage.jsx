@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import classes from "./SchedulePage.module.css";
 
@@ -80,17 +79,27 @@ export default function SchedulePage() {
     const isAnySourceActive = Object.values(sourceFilter).some((v) => v);
     const isAnyRoutineActive = Object.values(routineFilters).some((v) => v);
     const isAnyServiceActive = Object.values(serviceFilters).some((v) => v);
-    const now = new Date();
     const taskDate = new Date(task.scheduled_datetime);
 
-    if (hidePast && taskDate < now) return false;
-    if (dateFilters.fromDate && taskDate < new Date(dateFilters.fromDate)) return false;
+    if (hidePast) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const taskDateOnly = new Date(taskDate);
+      taskDateOnly.setHours(0, 0, 0, 0);
+      if (taskDateOnly < today) return false;
+    }
+
+    if (dateFilters.fromDate) {
+      const from = new Date(dateFilters.fromDate);
+      from.setHours(0, 0, 0, 0);
+      if (taskDate < from) return false;
+    }
+
     if (dateFilters.toDate) {
       const toDate = new Date(dateFilters.toDate);
       toDate.setDate(toDate.getDate() + 1); // כולל התאריך עצמו
       if (taskDate >= toDate) return false;
     }
-    
 
     if (!isAnySourceActive && !isAnyRoutineActive && !isAnyServiceActive) return true;
     if (isAnySourceActive && !sourceFilter[origin]) return false;
