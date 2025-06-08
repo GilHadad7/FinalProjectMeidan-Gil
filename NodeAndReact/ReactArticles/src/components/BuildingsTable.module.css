@@ -5,14 +5,14 @@
   background: transparent;
   direction: rtl;
   font-family: "Heebo", "Segoe UI", sans-serif;
-  font-size: 1.2rem; /* הגדלנו את הפונט הכללי */
+  font-size: 1.2rem;
   color: #4a3a2a;
 }
 
 .table th,
 .table td {
-  text-align: center;           /* מרכז אופקית */
-  vertical-align: middle;      /* מרכז אנכית */
+  text-align: center;
+  vertical-align: middle;
 }
 
 .table th {
@@ -32,7 +32,6 @@
   border-radius: 0 0 10px 10px;
   font-weight: 500;
 }
-
 
 .table tr {
   box-shadow: 0 2px 6px #00000008;
@@ -55,20 +54,22 @@
   padding: 6px 12px;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 18px; /* כפתור טיפה גדול */
+  font-size: 18px;
   transition: background 0.2s;
 }
 
 .actionBtn:hover {
   background: #bfae9e;
 }
+
 .table th:nth-child(1),
 .table td:nth-child(1) {
   width: 180px;
   white-space: nowrap;
 }
 .table th:nth-child(6),
-.table td:nth-child(6),.table th:nth-child(5),
+.table td:nth-child(6),
+.table th:nth-child(5),
 .table td:nth-child(5) {
   width: 140px;
   white-space: nowrap;
@@ -79,8 +80,40 @@
   white-space: nowrap;
 }
 .table th:nth-child(3),
-.table td:nth-child(3),.table th:nth-child(4),
+.table td:nth-child(3),
+.table th:nth-child(4),
 .table td:nth-child(4) {
   width: 80px;
   white-space: nowrap;
+}
+
+/* חיפוש */
+.searchWrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0 20px 15px 20px;
+}
+
+.searchInput {
+  padding: 10px 16px;
+  font-size: 1.2rem;
+  font-family: "Heebo", "Segoe UI", sans-serif;
+  border: 2px solid #d2bba0;
+  border-radius: 20px;
+  background-color: #f9f5f1;
+  color: #4a3a2a;
+  width: 240px;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.searchInput::placeholder {
+  color: #7a6c5d;
+  font-weight: 400;
+}
+
+.searchInput:focus {
+  background-color: #fff;
+  border-color: #bfae9e;
+  box-shadow: 0 0 4px #d2bba0;
 }

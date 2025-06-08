@@ -97,6 +97,37 @@
   color: #d32f2f;
 }
 
+/* ✅ סינון */
+.filtersRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 30px;
+  margin-bottom: 20px;
+}
+
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.selectMonth {
+  width: 140px;
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  vertical-align: middle;
+}
+
+.selectInput {
+  width: 200px;
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  vertical-align: middle;
+}
+
 @media (max-width: 768px) {
   .reportsPage {
     padding: 16px;
@@ -114,5 +145,19 @@
   .reportsTable th, .reportsTable td {
     font-size: 13px;
     padding: 8px;
+  }
+
+  .filtersRow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .filterGroup {
+    width: 100%;
+  }
+
+  .selectMonth,
+  .selectInput {
+    width: 100%;
   }
 }
