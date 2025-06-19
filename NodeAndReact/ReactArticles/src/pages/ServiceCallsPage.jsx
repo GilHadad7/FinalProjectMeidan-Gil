@@ -1,34 +1,75 @@
 import React, { useState } from "react";
-
 import ServiceCallForm from "../components/ServiceCallForm";
 import ServiceCallsTable from "../components/ServiceCallsTable";
+import FormWithTableLayout from "../components/ui/FormWithTableLayout";
+import classes from "./ServiceCallsPage.module.css";
 
-function ServiceCallsPage() {
+export default function ServiceCallsPage() {
   const user = JSON.parse(sessionStorage.getItem("user"));
   const role = user?.role;
 
   const [refreshFlag, setRefreshFlag] = useState(false);
+  const triggerRefresh = () => setRefreshFlag(prev => !prev);
 
-  const triggerRefresh = () => {
-    setRefreshFlag((prev) => !prev); // הפוך כל פעם
-  };
+  // סינון
+  const [filters, setFilters] = useState({
+    building: "",
+    status: "",
+    service_type: "",
+  });
 
-  return (
-    <div style={{ display: "flex", padding: "2rem", gap: "2rem", direction: "rtl" }}>
-      
-      {/* צד ימין – טופס */}
-      <div style={{ flex: 0.5 , }}>
-        <h1>Service Calls</h1>
-        <ServiceCallForm role={role} onSuccess={triggerRefresh} />
-      </div>
-
-      {/* צד שמאל – טבלה */}
-      <div style={{ flex: 1.7}} >
-        <ServiceCallsTable role={role} refreshFlag={refreshFlag} setRefreshFlag={setRefreshFlag} />
-      </div>
-
+  const filterInputs = (
+    <div className={classes.filtersRow}>
+      <input
+        type="text"
+        placeholder="חפש לפי בניין"
+        value={filters.building}
+        onChange={(e) =>
+          setFilters({ ...filters, building: e.target.value })
+        }
+      />
+      <select
+        value={filters.service_type}
+        onChange={(e) =>
+          setFilters({ ...filters, service_type: e.target.value })
+        }
+      >
+        <option value="">סוג תקלה</option>
+        <option value="חשמל">חשמל</option>
+        <option value="נזילה">נזילה</option>
+        <option value="תקלה טכנית">תקלה טכנית</option>
+        <option value="אינסטלציה">אינסטלציה</option>
+        <option value="נזק">נזק</option>
+        <option value="אחר">אחר</option>
+      </select>
+      <select
+        value={filters.status}
+        onChange={(e) =>
+          setFilters({ ...filters, status: e.target.value })
+        }
+      >
+        <option value="">סטטוס</option>
+        <option value="Open">Open</option>
+        <option value="Closed">Closed</option>
+      </select>
     </div>
   );
-}
 
-export default ServiceCallsPage;
+  return (
+    <FormWithTableLayout
+      title="קריאות שירות"
+      formComponent={<ServiceCallForm role={role} onSuccess={triggerRefresh} />}
+      tableComponent={
+        <>
+          {filterInputs}
+          <ServiceCallsTable
+            role={role}
+            refreshFlag={refreshFlag}
+            setRefreshFlag={setRefreshFlag}
+            filters={filters}
+          />
+        </>
+      }
+    />
+  );
+}

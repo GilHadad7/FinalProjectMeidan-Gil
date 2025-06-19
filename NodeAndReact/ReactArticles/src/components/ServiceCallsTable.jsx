@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import classes from "./ServiceCallsTable.module.css";
 
-export default function ServiceCallsTable({ refreshFlag, setRefreshFlag }) {
-  const [calls, setCalls] = useState([]);
+export default function ServiceCallsTable({ refreshFlag, setRefreshFlag, filters }) {
+  const [calls, setCalls] = useState([]); // ✅ היה חסר
   const [editingCallId, setEditingCallId] = useState(null);
   const [editedStatus, setEditedStatus] = useState("");
   const [editedDescription, setEditedDescription] = useState("");
-  const [editedType, setEditedType] = useState("");
+  const [editedType, setEditedType] = useState(""); // ✅ תיקון טעות
   const [editedLocation, setEditedLocation] = useState("");
   const [editedImage, setEditedImage] = useState(null);
   const [previewUrls, setPreviewUrls] = useState({});
@@ -17,6 +17,13 @@ export default function ServiceCallsTable({ refreshFlag, setRefreshFlag }) {
       .then((data) => setCalls(data))
       .catch((err) => console.error("Error fetching service calls:", err));
   }, [refreshFlag]);
+
+  const filteredCalls = calls.filter((call) => {
+    if (filters.building && !call.building_name?.includes(filters.building)) return false;
+    if (filters.status && call.status !== filters.status) return false;
+    if (filters.service_type && call.service_type !== filters.service_type) return false;
+    return true;
+  });
 
   const handleDelete = async (callId) => {
     if (!window.confirm("האם אתה בטוח שברצונך למחוק את הקריאה?")) return;
@@ -87,7 +94,7 @@ export default function ServiceCallsTable({ refreshFlag, setRefreshFlag }) {
           <tr>
             <th>יום</th>
             <th>תאריך פתיחה</th>
-            <th>משתמש שפתח קריאה</th>
+            <th>משתמש שפתח</th>
             <th>כתובת בניין</th>
             <th>סוג תקלה</th>
             <th>סטטוס</th>
@@ -99,116 +106,103 @@ export default function ServiceCallsTable({ refreshFlag, setRefreshFlag }) {
           </tr>
         </thead>
         <tbody>
-          {calls.map((call) =>
+          {filteredCalls.map((call) =>
             editingCallId === call.call_id ? (
               <tr key={call.call_id} className={classes.editRow}>
-              <td style={{ textAlign: "center" }}>
-                {new Date(call.created_at).toLocaleDateString('he-IL', { weekday: 'long' })}
-              </td>
-              <td>
-                {new Date(call.created_at).toLocaleDateString('he-IL')}
-                <br />
-                {new Date(call.created_at).toLocaleTimeString('he-IL')}
-              </td>
-              <td>{call.created_by_name || "—"}</td>
-              <td>{call.building_address}</td>
-
-              {/* ✅ סוג תקלה */}
-              <td>
-                <select
-                  value={editedType}
-                  onChange={(e) => setEditedType(e.target.value)}
-                  className={classes.editInput}
-                >
-                  <option value="">בחר</option>
-                  <option value="חשמל">חשמל</option>
-                  <option value="נזילה">נזילה</option>
-                  <option value="תקלה טכנית">תקלה טכנית</option>
-                  <option value="אינסטלציה">אינסטלציה</option>
-                  <option value="נזק">נזק</option>
-                  <option value="אחר">אחר</option>
-                </select>
-              </td>
-
-              {/* ✅ סטטוס */}
-              <td>
-                <select
-                  value={editedStatus}
-                  onChange={(e) => setEditedStatus(e.target.value)}
-                  className={classes.editInput}
-                >
-                  <option value="Open">Open</option>
-                  <option value="In Progress">In Progress</option>
-                  <option value="Closed">Closed</option>
-                </select>
-              </td>
-
-              <td>{call.updated_by_name || "—"}</td>
-
-              {/* ✅ תיאור */}
-              <td>
-                <textarea
-                  value={editedDescription}
-                  onChange={(e) => setEditedDescription(e.target.value)}
-                  className={classes.editInput}
-                  rows={4}
-                />
-              </td>
-
-              <td>
-                <input
-                  type="text"
-                  value={editedLocation}
-                  onChange={(e) => setEditedLocation(e.target.value)}
-                  className={classes.editInput}
-                />
-              </td>
-
-              <td style={{ verticalAlign: "top" }}>
-                {previewUrls[call.call_id] && (
-                  <img
-                    src={previewUrls[call.call_id]}
-                    alt="תמונה"
-                    className={classes.previewImg}
-                    onClick={() => window.open(previewUrls[call.call_id], "_blank")}
+                <td>{new Date(call.created_at).toLocaleDateString("he-IL", { weekday: "long" })}</td>
+                <td>
+                  {new Date(call.created_at).toLocaleDateString("he-IL")}
+                  <br />
+                  {new Date(call.created_at).toLocaleTimeString("he-IL")}
+                </td>
+                <td>{call.created_by_name || "—"}</td>
+                <td>{call.building_address}</td>
+                <td>
+                  <select
+                    value={editedType}
+                    onChange={(e) => setEditedType(e.target.value)}
+                    className={classes.editInput}
+                  >
+                    <option value="">בחר</option>
+                    <option value="חשמל">חשמל</option>
+                    <option value="נזילה">נזילה</option>
+                    <option value="תקלה טכנית">תקלה טכנית</option>
+                    <option value="אינסטלציה">אינסטלציה</option>
+                    <option value="נזק">נזק</option>
+                    <option value="אחר">אחר</option>
+                  </select>
+                </td>
+                <td>
+                  <select
+                    value={editedStatus}
+                    onChange={(e) => setEditedStatus(e.target.value)}
+                    className={classes.editInput}
+                  >
+                    <option value="Open">Open</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Closed">Closed</option>
+                  </select>
+                </td>
+                <td>{call.updated_by_name || "—"}</td>
+                <td>
+                  <textarea
+                    value={editedDescription}
+                    onChange={(e) => setEditedDescription(e.target.value)}
+                    className={classes.editInput}
+                    rows={4}
                   />
-                )}
-                <input
-                  type="file"
-                  accept="image/*"
-                  className={classes.editInput}
-                  onChange={(e) => {
-                    const file = e.target.files[0];
-                    setEditedImage(file);
-                    if (file) {
-                      const reader = new FileReader();
-                      reader.onloadend = () => {
-                        setPreviewUrls((prev) => ({
-                          ...prev,
-                          [call.call_id]: reader.result,
-                        }));
-                      };
-                      reader.readAsDataURL(file);
-                    }
-                  }}
-                />
-              </td>
-
-              <td>
-                <div className={classes.actionGroup}>
-                  <button className={classes.actionBtn} onClick={() => handleSave(call.call_id)}>💾</button>
-                  <button className={classes.actionBtn} onClick={() => setEditingCallId(null)}>❌</button>
-                </div>
-              </td>
-            </tr>
-
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    value={editedLocation}
+                    onChange={(e) => setEditedLocation(e.target.value)}
+                    className={classes.editInput}
+                  />
+                </td>
+                <td>
+                  {previewUrls[call.call_id] && (
+                    <img
+                      src={previewUrls[call.call_id]}
+                      alt="תמונה"
+                      className={classes.previewImg}
+                      onClick={() => window.open(previewUrls[call.call_id], "_blank")}
+                    />
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className={classes.editInput}
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      setEditedImage(file);
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setPreviewUrls((prev) => ({
+                            ...prev,
+                            [call.call_id]: reader.result,
+                          }));
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                  />
+                </td>
+                <td>
+                  <div className={classes.actionGroup}>
+                    <button className={classes.actionBtn} onClick={() => handleSave(call.call_id)}>💾</button>
+                    <button className={classes.actionBtn} onClick={() => setEditingCallId(null)}>❌</button>
+                  </div>
+                </td>
+              </tr>
             ) : (
               <tr key={call.call_id}>
-                <td>{new Date(call.created_at).toLocaleDateString('he-IL', { weekday: 'long' })}</td>
+                <td>{new Date(call.created_at).toLocaleDateString("he-IL", { weekday: "long" })}</td>
                 <td>
-                  {new Date(call.created_at).toLocaleDateString('he-IL')}
+                  {new Date(call.created_at).toLocaleDateString("he-IL")}
                   <br />
-                  {new Date(call.created_at).toLocaleTimeString('he-IL')}
+                  {new Date(call.created_at).toLocaleTimeString("he-IL")}
                 </td>
                 <td>{call.created_by_name || "—"}</td>
                 <td>{call.building_address}</td>
@@ -223,7 +217,12 @@ export default function ServiceCallsTable({ refreshFlag, setRefreshFlag }) {
                 <td>{call.location_in_building || "—"}</td>
                 <td>
                   {call.image_url && (
-                    <img src={call.image_url} alt="תמונה" className={classes.previewImg} onClick={() => window.open(call.image_url, "_blank")} />
+                    <img
+                      src={call.image_url}
+                      alt="תמונה"
+                      className={classes.previewImg}
+                      onClick={() => window.open(call.image_url, "_blank")}
+                    />
                   )}
                 </td>
                 <td>

@@ -1,146 +1,77 @@
-.tableWrapper {
-  width: 100%;
-  direction: rtl;
-  overflow-x: hidden;
+/* קבוצת כפתורים */
+.actionBtns {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
 }
 
-.table {
-  width: 100%;
-  table-layout: fixed;
-  border-collapse: separate;
-  border-spacing: 0 7px;
+/* כפתור עגול כללי */
+.roundBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background-color: #e7e0d8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 0.2s;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
 }
 
-/* ✅ רוחב עמודות מעודכן לגרסה ללא מספר תשלום */
-.table th:nth-child(1),
-.table td:nth-child(1) {
-  width: 12%; /* שם דייר */
+.roundBtn:hover {
+  background-color: #d4c5b4;
 }
 
-.table th:nth-child(2),
-.table td:nth-child(2) {
-  width: 12%; /* שם בניין */
+/* צבעים שונים לפי פעולה (מבוסס על class ב־JSX או לפי אייקון) */
+.editBtn svg {
+  color: #3f51b5; /* כחול */
+}
+.deleteBtn svg {
+  color: #b71c1c; /* אדום */
+}
+.bellBtn svg {
+  color: #ff9800; /* כתום */
 }
 
-.table th:nth-child(3),
-.table td:nth-child(3) {
-  width: 10%; /* סכום */
-}
-
-.table th:nth-child(4),
-.table td:nth-child(4) {
-  width: 12%; /* תאריך */
-}
-
-.table th:nth-child(5),
-.table td:nth-child(5) {
-  width: 20%; /* תיאור – רחב יותר */
-}
-
-.table th:nth-child(6),
-.table td:nth-child(6) {
-  width: 10%; /* סטטוס */
-}
-
-.table th:nth-child(7),
-.table td:nth-child(7) {
-  width: 16%; /* פעולות */
-}
-
-.table th,
-.table td {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  text-align: center;
+/* תוספת נעימה: אנימציה קלה */
+.roundBtn svg {
   font-size: 1rem;
-  padding: 10px 6px;
+  transition: transform 0.15s ease;
 }
 
-/* ✨ תוכן טבלה */
-.table td {
-  background: #fff;
-  color: #4a3a2a;
-  border-bottom: 1px solid #e4dbcf;
-  border-radius: 0 0 10px 10px;
-  vertical-align: middle;
+.roundBtn:hover svg {
+  transform: scale(1.2);
 }
-
-.table th {
-  background: #e4dbcf;
-  color: #7a6c5d;
-  font-weight: bold;
-  border-radius: 10px 10px 0 0;
-}
-
-/* 🎨 סטטוסים */
-.statusPaid,
-.statusDebt,
-.statusPending {
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-weight: bold;
-  display: inline-block;
-  min-width: 70px;
-}
-
 .statusPaid {
   color: #2e7d32;
   background: #dcedc8;
+  border: 1px solid #a5d6a7;
 }
 
 .statusDebt {
   color: #c62828;
   background: #ffcdd2;
+  border: 1px solid #ef9a9a;
 }
 
 .statusPending {
   color: #f57f17;
   background: #ffe082;
+  border: 1px solid #ffcc80;
 }
 
-/* 🎯 כפתורי פעולה */
-.actionBtns {
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;     /* ✅ יישור לימין בטבלת RTL */
-  align-items: center;
-  gap: 8px;
-  flex-wrap: nowrap;
-  width: 100%;
-}
-
-.actionsCell {
-  min-width: 128px;
-  width: 100%;
-  padding: 0;
-  text-align: right;              /* ✅ יישור תוכן התא לימין */
-  padding-right: 10px;           /* ✅ ריווח קל מהקצה */
-}
-
-.roundBtn {
-  background: #eee;
-  border: none;
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  cursor: pointer;
-  transition: 0.2s ease-in-out;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-}
-
-.roundBtn:hover {
-  background-color: #ddd;
-}
-
-.roundBtn svg {
-  color: #7a5245;
-  font-size: 1.1rem;
-}
-
-.roundBtn:has(svg.fa-bell) {
-  background-color: #f0c674;
+.statusPaid,
+.statusDebt,
+.statusPending {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: bold;
+  display: inline-block;
+  min-width: 70px;
+  text-align: center;
+  font-size: 0.9rem;
 }

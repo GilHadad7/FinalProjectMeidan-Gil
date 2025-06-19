@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FaEdit, FaTrash, FaSave, FaTimes, FaBell } from "react-icons/fa";
 import classes from "./PaymentsTable.module.css";
+import BaseTable from "../components/ui/BaseTable";
 
 export default function PaymentsTable({ payments, onEdit, onDelete }) {
   const [editingId, setEditingId] = useState(null);
@@ -59,140 +60,127 @@ export default function PaymentsTable({ payments, onEdit, onDelete }) {
 
   return (
     <div className={classes.tableWrapper}>
-      <table className={classes.table}>
-        <thead>
+      <BaseTable headers={["שם דייר", "שם בניין", "סכום", "תאריך", "תיאור", "סטטוס", "פעולות"]}>
+        {payments.length === 0 ? (
           <tr>
-            <th>שם דייר</th>
-            <th>שם בניין</th>
-            <th>סכום</th>
-            <th>תאריך</th>
-            <th>תיאור</th>
-            <th>סטטוס</th>
-            <th>פעולות</th>
+            <td colSpan="7" style={{ textAlign: "center" }}>
+              לא נמצאו תשלומים
+            </td>
           </tr>
-        </thead>
-        <tbody>
-          {payments.length === 0 ? (
-            <tr>
-              <td colSpan="7" style={{ textAlign: "center" }}>
-                לא נמצאו תשלומים
-              </td>
-            </tr>
-          ) : (
-            payments.map((p) => (
-              <tr key={p.payment_id}>
-                {editingId === p.payment_id ? (
-                  <>
-                    <td>{p.tenant_name}</td>
-                    <td>{p.building_name}</td>
-                    <td>
-                      <input
-                        name="amount"
-                        type="number"
-                        value={editForm.amount}
-                        onChange={handleChange}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        name="payment_date"
-                        type="date"
-                        value={editForm.payment_date?.split("T")[0]}
-                        onChange={handleChange}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        name="description"
-                        value={editForm.description}
-                        onChange={handleChange}
-                      />
-                    </td>
-                    <td>
-                      <select name="status" value={editForm.status} onChange={handleChange}>
-                        <option value="שולם">שולם</option>
-                        <option value="ממתין">ממתין</option>
-                        <option value="חוב">חוב</option>
-                      </select>
-                    </td>
-                    <td className={classes.actionsCell}>
-                      <div className={classes.actionBtns}>
-                        <button onClick={() => handleSave(p.payment_id)} className={classes.roundBtn}>
-                          <FaSave />
-                        </button>
-                        <button onClick={handleCancel} className={classes.roundBtn}>
-                          <FaTimes />
-                        </button>
-                      </div>
-                    </td>
-                  </>
-                ) : (
-                  <>
-                    <td>{p.tenant_name}</td>
-                    <td>{p.building_name}</td>
-                    <td>{p.amount} ₪</td>
-                    <td>{new Date(p.payment_date).toLocaleDateString("he-IL")}</td>
-                    <td>{p.description}</td>
-                    <td>
-                      <span
-                        className={
-                          p.status === "שולם"
-                            ? classes.statusPaid
-                            : p.status === "חוב"
-                            ? classes.statusDebt
-                            : classes.statusPending
-                        }
+        ) : (
+          payments.map((p) => (
+            <tr key={p.payment_id}>
+              {editingId === p.payment_id ? (
+                <>
+                  <td>{p.tenant_name}</td>
+                  <td>{p.building_name}</td>
+                  <td>
+                    <input
+                      name="amount"
+                      type="number"
+                      value={editForm.amount}
+                      onChange={handleChange}
+                    />
+                  </td>
+                  <td>
+                    <input
+                      name="payment_date"
+                      type="date"
+                      value={editForm.payment_date?.split("T")[0]}
+                      onChange={handleChange}
+                    />
+                  </td>
+                  <td>
+                    <input
+                      name="description"
+                      value={editForm.description}
+                      onChange={handleChange}
+                    />
+                  </td>
+                  <td>
+                    <select name="status" value={editForm.status} onChange={handleChange}>
+                      <option value="שולם">שולם</option>
+                      <option value="ממתין">ממתין</option>
+                      <option value="חוב">חוב</option>
+                    </select>
+                  </td>
+                  <td className={classes.actionsCell}>
+                    <div className={classes.actionBtns}>
+                      <button onClick={() => handleSave(p.payment_id)} className={classes.roundBtn}>
+                        <FaSave />
+                      </button>
+                      <button onClick={handleCancel} className={classes.roundBtn}>
+                        <FaTimes />
+                      </button>
+                    </div>
+                  </td>
+                </>
+              ) : (
+                <>
+                  <td>{p.tenant_name}</td>
+                  <td>{p.building_name}</td>
+                  <td>{p.amount} ₪</td>
+                  <td>{new Date(p.payment_date).toLocaleDateString("he-IL")}</td>
+                  <td>{p.description}</td>
+                  <td>
+                    <span
+                      className={
+                        p.status === "שולם"
+                          ? classes.statusPaid
+                          : p.status === "חוב"
+                          ? classes.statusDebt
+                          : classes.statusPending
+                      }
+                    >
+                      {p.status}
+                    </span>
+                  </td>
+                  <td className={classes.actionsCell}>
+                    <div className={classes.actionBtns}>
+                      <button
+                        onClick={() => {
+                          setEditingId(p.payment_id);
+                          setEditForm({
+                            tenant_id: p.tenant_id,
+                            building_id: p.building_id,
+                            payment_date: p.payment_date,
+                            category: p.category,
+                            description: p.description,
+                            amount: p.amount,
+                            status: p.status,
+                          });
+                        }}
+                        className={`${classes.roundBtn} ${classes.editBtn}`}
                       >
-                        {p.status}
-                      </span>
-                    </td>
-                    <td className={classes.actionsCell}>
-                      <div className={classes.actionBtns}>
+                        <FaEdit />
+                      </button>
+                      <button
+                        onClick={() => onDelete(p.payment_id)}
+                        className={`${classes.roundBtn} ${classes.deleteBtn}`}
+                      >
+                        <FaTrash />
+                      </button>
+                      {["חוב", "ממתין"].includes(p.status) ? (
                         <button
-                          onClick={() => {
-                            setEditingId(p.payment_id);
-                            setEditForm({
-                              tenant_id: p.tenant_id,
-                              building_id: p.building_id,
-                              payment_date: p.payment_date,
-                              category: p.category,
-                              description: p.description,
-                              amount: p.amount,
-                              status: p.status,
-                            });
-                          }}
-                          className={classes.roundBtn}
+                          onClick={() => handleReminder(p.payment_id, p.tenant_id, p.tenant_name)}
+                          className={`${classes.roundBtn} ${classes.bellBtn}`}
                         >
-                          <FaEdit />
+                          <FaBell />
                         </button>
-                        <button
-                          onClick={() => onDelete(p.payment_id)}
-                          className={classes.roundBtn}
-                        >
-                          <FaTrash />
-                        </button>
-                        {["חוב", "ממתין"].includes(p.status) ? (
-                          <button
-                            onClick={() => handleReminder(p.payment_id, p.tenant_id, p.tenant_name)}
-                            className={classes.roundBtn}
-                          >
-                            <FaBell />
-                          </button>
-                        ) : (
-                          <div
-                            className={classes.roundBtn}
-                            style={{ visibility: "hidden" }}
-                          ></div>
-                        )}
-                      </div>
-                    </td>
-                  </>
-                )}
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+                      ) : (
+                        <div
+                          className={`${classes.roundBtn} ${classes.bellBtn}`}
+                          style={{ visibility: "hidden" }}
+                        ></div>
+                      )}
+                    </div>
+                  </td>
+                </>
+              )}
+            </tr>
+          ))
+        )}
+      </BaseTable>
     </div>
   );
 }

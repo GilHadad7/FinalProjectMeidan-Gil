@@ -4,6 +4,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { registerLocale } from "react-datepicker";
 import he from "date-fns/locale/he";
+import BaseTable from "./ui/BaseTable"; // ✅ שימוש בטבלה אחידה
 
 registerLocale("he", he);
 
@@ -16,7 +17,7 @@ export default function TasksTable({ tasks, search, onRefresh }) {
     if (!s) return true;
     return [
       task.full_address,
-      task.task_name, // ← הוספנו את זה
+      task.task_name,
       task.type,
       task.frequency,
       task.worker,
@@ -25,11 +26,11 @@ export default function TasksTable({ tasks, search, onRefresh }) {
     ]
       .filter(Boolean)
       .some((v) => v.toLowerCase().includes(s));
-  });    
+  });
 
   const handleEditClick = (idx) => {
     const task = filtered[idx];
-    const [hour = '', minute = ''] = (task.task_time || '').split(":");
+    const [hour = "", minute = ""] = (task.task_time || "").split(":");
     setEditIdx(idx);
     setEditForm({
       ...task,
@@ -63,7 +64,7 @@ export default function TasksTable({ tasks, search, onRefresh }) {
           frequency: editForm.frequency,
           type: editForm.type,
           next_date: formattedDate,
-          task_time: task_time
+          task_time
         })
       });
 
@@ -97,22 +98,20 @@ export default function TasksTable({ tasks, search, onRefresh }) {
     try {
       const today = new Date();
       let date = new Date(startDateStr);
-  
       if (isNaN(date.getTime())) return null;
-  
+
       while (date < today) {
         if (frequency === "יומי") date.setDate(date.getDate() + 1);
         else if (frequency === "שבועי") date.setDate(date.getDate() + 7);
         else if (frequency === "חודשי") date.setMonth(date.getMonth() + 1);
-        else break; // אם זה חד פעמי
+        else break;
       }
-  
+
       return date;
     } catch (err) {
       return null;
     }
   }
-  
 
   function getNextOccurrence(startDateStr, frequency) {
     const date = calcNextDate(startDateStr, frequency);
@@ -126,122 +125,112 @@ export default function TasksTable({ tasks, search, onRefresh }) {
   }
 
   return (
-    <table className={classes.table}>
-      <thead>
-        <tr>
-          <th>מס משימה</th>
-          <th>כתובת בניין</th>
-          <th>שם משימה</th>
-          <th>תדירות</th>
-          <th>סוג</th>
-          <th>תאריך הבא</th>
-          <th>יום</th>
-          <th>שעה</th>
-          <th>פעולות</th>
-        </tr>
-      </thead>
-      <tbody>
-        {filtered.map((task, i) => {
-          const isEditing = editIdx === i;
-          return (
-            <tr key={task.id}>
-              {isEditing ? (
-  <>
-    <td>{task.task_id}</td>
-    <td>{task.full_address}</td>
-    <td>
-      <input className={classes.input} name="task_name" value={editForm.task_name} onChange={handleEditChange} />
-    </td>
-    <td>
-        <select
-      className={classes.selectBtnFrequency}
-      name="frequency"
-      value={editForm.frequency}
-      onChange={handleEditChange}
-      required
+    <BaseTable
+      headers={[
+        "מס משימה",
+        "כתובת בניין",
+        "שם משימה",
+        "תדירות",
+        "סוג",
+        "תאריך הבא",
+        "יום",
+        "שעה",
+        "פעולות"
+      ]}
     >
-      <option value="">בחר תדירות</option>
-      <option value="יומי">יומי</option>
-      <option value="שבועי">שבועי</option>
-      <option value="חודשי">חודשי</option>
-          </select>
-    </td>
-    <td>
-      <input className={classes.input} name="type" value={editForm.type} onChange={handleEditChange} />
-    </td>
-    <td>
-      <DatePicker
-        selected={editForm.next_date}
-        onChange={(date) => setEditForm({ ...editForm, next_date: date })}
-        dateFormat="dd/MM/yyyy"
-        locale="he"
-        className={classes.input}
-        popperClassName="datePopper"
-        calendarStartDay={0}
-        placeholderText="בחר תאריך"
-      />
-    </td>
-    <td>
-      {/* יום מחושב בלבד */}
-      {getHebrewDay(editForm.next_date, editForm.frequency)}
-    </td>
-    <td>
-      <div className={classes.timeRow}>
-        <select
-          className={classes.selectTime}
-          value={editForm.task_hour || ''}
-          onChange={(e) => setEditForm({ ...editForm, task_hour: e.target.value })}
-          required
-        >
-          <option value="">שעה</option>
-          {[...Array(24).keys()].map(h => (
-            <option key={h} value={h.toString().padStart(2, '0')}>
-              {h.toString().padStart(2, '0')}
-            </option>
-          ))}
-        </select>
-        <span>:</span>
-        <select
-          className={classes.selectTime}
-          value={editForm.task_minute || ''}
-          onChange={(e) => setEditForm({ ...editForm, task_minute: e.target.value })}
-          required
-        >
-          <option value="">דקות</option>
-          {[0, 15, 30, 45].map(m => (
-            <option key={m} value={m.toString().padStart(2, '0')}>
-              {m.toString().padStart(2, '0')}
-            </option>
-          ))}
-        </select>
-      </div>
-    </td>
-    <td className={classes.actions}>
-      <button className={classes.btn} onClick={() => handleEditSave(task.task_id)}>💾</button>
-      <button className={classes.btn} onClick={handleEditCancel}>❌</button>
-    </td>
-  </>
-
-              ) : (
-                <>
-                  <td>{task.task_id}</td>
-                  <td>{task.full_address}</td>
-                  <td>{task.task_name}</td>
-                  <td>{task.frequency}</td>
-                  <td>{task.type}</td>
-                  <td>{getNextOccurrence(task.next_date, task.frequency)}</td>
-                  <td>{getHebrewDay(task.next_date, task.frequency)}</td>
-                  <td>{task.task_time}</td>
-                  <td className={classes.actionsCol}>
-                    <button className={classes.btn} onClick={() => handleEditClick(i)}>✏️</button>
-                    <button className={classes.btn} onClick={() => handleDelete(task.task_id)}>🗑️</button>
-                  </td>
-                </>
-              )}
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
+      {filtered.map((task, i) => {
+        const isEditing = editIdx === i;
+        return (
+          <tr key={task.task_id}>
+            {isEditing ? (
+              <>
+                <td>{task.task_id}</td>
+                <td>{task.full_address}</td>
+                <td>
+                  <input className={classes.input} name="task_name" value={editForm.task_name} onChange={handleEditChange} />
+                </td>
+                <td>
+                  <select
+                    className={classes.selectBtnFrequency}
+                    name="frequency"
+                    value={editForm.frequency}
+                    onChange={handleEditChange}
+                  >
+                    <option value="">בחר תדירות</option>
+                    <option value="יומי">יומי</option>
+                    <option value="שבועי">שבועי</option>
+                    <option value="חודשי">חודשי</option>
+                  </select>
+                </td>
+                <td>
+                  <input className={classes.input} name="type" value={editForm.type} onChange={handleEditChange} />
+                </td>
+                <td>
+                  <DatePicker
+                    selected={editForm.next_date}
+                    onChange={(date) => setEditForm({ ...editForm, next_date: date })}
+                    dateFormat="dd/MM/yyyy"
+                    locale="he"
+                    className={classes.input}
+                    popperClassName="datePopper"
+                    calendarStartDay={0}
+                    placeholderText="בחר תאריך"
+                  />
+                </td>
+                <td>{getHebrewDay(editForm.next_date, editForm.frequency)}</td>
+                <td>
+                  <div className={classes.timeRow}>
+                    <select
+                      className={classes.selectTime}
+                      value={editForm.task_hour || ""}
+                      onChange={(e) => setEditForm({ ...editForm, task_hour: e.target.value })}
+                    >
+                      <option value="">שעה</option>
+                      {[...Array(24).keys()].map((h) => (
+                        <option key={h} value={h.toString().padStart(2, "0")}>
+                          {h.toString().padStart(2, "0")}
+                        </option>
+                      ))}
+                    </select>
+                    <span>:</span>
+                    <select
+                      className={classes.selectTime}
+                      value={editForm.task_minute || ""}
+                      onChange={(e) => setEditForm({ ...editForm, task_minute: e.target.value })}
+                    >
+                      <option value="">דקות</option>
+                      {[0, 15, 30, 45].map((m) => (
+                        <option key={m} value={m.toString().padStart(2, "0")}>
+                          {m.toString().padStart(2, "0")}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </td>
+                <td className={classes.actions}>
+                  <button className={classes.btn} onClick={() => handleEditSave(task.task_id)}>💾</button>
+                  <button className={classes.btn} onClick={handleEditCancel}>❌</button>
+                </td>
+              </>
+            ) : (
+              <>
+                <td>{task.task_id}</td>
+                <td>{task.full_address}</td>
+                <td>{task.task_name}</td>
+                <td>{task.frequency}</td>
+                <td>{task.type}</td>
+                <td>{getNextOccurrence(task.next_date, task.frequency)}</td>
+                <td>{getHebrewDay(task.next_date, task.frequency)}</td>
+                <td>{task.task_time}</td>
+                <td className={classes.actions}>
+                  <button className={classes.btn} onClick={() => handleEditClick(i)}>✏️</button>
+                  <button className={classes.btn} onClick={() => handleDelete(task.task_id)}>🗑️</button>
+                </td>
+              </>
+            )}
+          </tr>
+        );
+      })}
+    </BaseTable>
   );
 }

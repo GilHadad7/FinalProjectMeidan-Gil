@@ -58,32 +58,34 @@
 .filtersRow {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 16px;              /* טיפה יותר ריווח */
   align-items: flex-end;
-  margin-bottom: 20px;
+  margin-bottom: 28px;    /* יותר רווח מהטבלה */
+  padding-top: 12px;      /* רווח מעל */
 }
 
+/* עיצוב מוגדל לכל תיבת קלט/סינון */
 .filtersRow input,
 .filtersRow select {
-  padding: 6px 10px;
-  border-radius: 10px;
+  padding: 10px 14px;         /* יותר גובה */
+  border-radius: 12px;
   border: 1px solid #ccc;
   font-family: inherit;
-  font-size: 0.9rem;
-  width: 160px;
+  font-size: 1.05rem;         /* טיפה יותר טקסט */
+  width: 180px;               /* טיפה יותר רחב */
   background-color: #f8f6f3;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
-
 .dateFilterWrapper {
   display: flex;
   flex-direction: column;
-  font-size: 0.75rem;
+  font-size: 0.85rem;        /* טיפה יותר קריא */
   color: #555;
 }
 
 .dateFilterWrapper label {
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   padding-right: 4px;
   text-align: right;
-  font-weight: 500;
+  font-weight: 600;
 }

@@ -100,6 +100,8 @@ export default function UserManagementPage() {
             <option value="tenant">tenant</option>
           </select>
         </div>
+     <p>*חייבלשים פה רווח
+     </p>
         <UsersTable
           users={filtered}
           editId={editId}

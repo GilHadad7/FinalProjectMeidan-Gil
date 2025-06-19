@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import AddPayment from '../components/AddPayment';
 import PaymentsTable from '../components/PaymentsTable';
+import FormWithTableLayout from '../components/ui/FormWithTableLayout'; // ← ייבוא התבנית
 import classes from './PaymentsPage.module.css';
 
 export default function PaymentsPage() {
@@ -73,7 +74,7 @@ export default function PaymentsPage() {
 
   const handleEdit = (updatedPayment) => {
     fetch(`http://localhost:8801/api/payments/${updatedPayment.payment_id}`, {
-      method: "PATCH", // ✅ תואם לראוטר שלך
+      method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updatedPayment),
     })
@@ -102,66 +103,67 @@ export default function PaymentsPage() {
   const debtTenants = filteredPayments.filter(p => p.status !== "שולם").map(p => p.tenant_name);
 
   return (
-    <div className={classes.pageWrapper}>
-      <div className={classes.leftPanel}>
+    <FormWithTableLayout
+      title="טבלת תשלומים"
+      formComponent={
         <AddPayment buildingsList={buildingsList} onAdd={fetchPayments} />
-      </div>
-
-      <div className={classes.rightPanel}>
-        <div className={classes.pageTitle}>טבלת תשלומים</div>
-
-        <div className={classes.filtersRow}>
-          <input
-            type="text"
-            placeholder="חפש לפי דייר"
-            value={filters.tenant}
-            onChange={e => setFilters({ ...filters, tenant: e.target.value })}
-          />
-          <input
-            type="text"
-            placeholder="חפש לפי בניין"
-            value={filters.building}
-            onChange={e => setFilters({ ...filters, building: e.target.value })}
-          />
-          <select
-            value={filters.status}
-            onChange={e => setFilters({ ...filters, status: e.target.value })}
-          >
-            <option value="">סטטוס</option>
-            <option value="שולם">שולם</option>
-            <option value="ממתין">ממתין</option>
-            <option value="חוב">חוב</option>
-          </select>
-          <div className={classes.dateFilterWrapper}>
-            <label>מתאריך</label>
-            <input
-              type="date"
-              value={filters.fromDate}
-              onChange={e => setFilters({ ...filters, fromDate: e.target.value })}
-            />
-          </div>
-          <div className={classes.dateFilterWrapper}>
-            <label>עד תאריך</label>
-            <input
-              type="date"
-              value={filters.toDate}
-              onChange={e => setFilters({ ...filters, toDate: e.target.value })}
-            />
-          </div>
-        </div>
-
+      }
+      summaryComponent={
         <div className={classes.summaryCards}>
           <div className={classes.card}>💰 סה״כ גבייה: <b>{totalPaid.toLocaleString()} ₪</b></div>
           <div className={classes.card}>❌ חובות פתוחים: <b>{openDebts.toLocaleString()} ₪</b></div>
           <div className={classes.card}>🧍‍♂️ דיירים חייבים: <b>{debtTenants.length}</b></div>
         </div>
+      }
+      tableComponent={
+        <>
+          <div className={classes.filtersRow}>
+            <input
+              type="text"
+              placeholder="חפש לפי דייר"
+              value={filters.tenant}
+              onChange={e => setFilters({ ...filters, tenant: e.target.value })}
+            />
+            <input
+              type="text"
+              placeholder="חפש לפי בניין"
+              value={filters.building}
+              onChange={e => setFilters({ ...filters, building: e.target.value })}
+            />
+            <select
+              value={filters.status}
+              onChange={e => setFilters({ ...filters, status: e.target.value })}
+            >
+              <option value="">סטטוס</option>
+              <option value="שולם">שולם</option>
+              <option value="ממתין">ממתין</option>
+              <option value="חוב">חוב</option>
+            </select>
+            <div className={classes.dateFilterWrapper}>
+              <label>מתאריך</label>
+              <input
+                type="date"
+                value={filters.fromDate}
+                onChange={e => setFilters({ ...filters, fromDate: e.target.value })}
+              />
+            </div>
+            <div className={classes.dateFilterWrapper}>
+              <label>עד תאריך</label>
+              <input
+                type="date"
+                value={filters.toDate}
+                onChange={e => setFilters({ ...filters, toDate: e.target.value })}
+              />
+            </div>
+          </div>
 
-        <PaymentsTable
-          payments={filteredPayments}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
-      </div>
-    </div>
+          <PaymentsTable
+            payments={filteredPayments}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
+        </>
+      }
+    />
   );
 }
