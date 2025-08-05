@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 05, 2025 at 11:32 AM
+-- Generation Time: Aug 05, 2025 at 01:09 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -73,14 +73,19 @@ CREATE TABLE `building_finance` (
 INSERT INTO `building_finance` (`building_id`, `name`, `address`, `total_paid`, `balance_due`, `maintenance`, `month`) VALUES
 (1, NULL, NULL, 500.00, 0.00, 500.00, '2025-05'),
 (1, NULL, NULL, 0.00, 0.00, 500.00, '2025-06'),
+(1, NULL, NULL, 0.00, 0.00, 500.00, '2025-08'),
 (2, NULL, NULL, 0.00, 0.00, 500.00, '2025-05'),
 (2, NULL, NULL, 0.00, 0.00, 500.00, '2025-06'),
+(2, NULL, NULL, 0.00, 0.00, 500.00, '2025-08'),
 (5, NULL, NULL, 0.00, 0.00, 500.00, '2025-05'),
-(5, NULL, NULL, 5000.00, 0.00, 500.00, '2025-06'),
+(5, NULL, NULL, 0.00, 0.00, 500.00, '2025-06'),
+(5, NULL, NULL, 0.00, 0.00, 500.00, '2025-08'),
 (6, NULL, NULL, 0.00, 0.00, 500.00, '2025-05'),
 (6, NULL, NULL, 0.00, 0.00, 500.00, '2025-06'),
+(6, NULL, NULL, 0.00, 0.00, 500.00, '2025-08'),
 (7, NULL, NULL, 0.00, 1001.00, 500.00, '2025-05'),
-(7, NULL, NULL, 0.00, 0.00, 500.00, '2025-06');
+(7, NULL, NULL, 0.00, 0.00, 500.00, '2025-06'),
+(7, NULL, NULL, 0.00, 0.00, 500.00, '2025-08');
 
 -- --------------------------------------------------------
 
@@ -156,8 +161,9 @@ CREATE TABLE `payments` (
 INSERT INTO `payments` (`payment_id`, `tenant_id`, `building_id`, `payment_date`, `category`, `description`, `amount`, `status`, `created_at`) VALUES
 (1, 1, 1, '2025-05-27', 'שכר חודשי', 'תשלומים ', 500.00, 'שולם', '2025-06-04 13:11:40'),
 (5, 1, 7, '2025-05-28', 'שכר חודשי', 'תחזוקה', 600.00, 'חוב', '2025-06-04 15:59:04'),
-(6, 3, 5, '2025-06-05', 'שכר חודשי', 'תשלומים ', 5000.00, 'שולם', '2025-06-04 16:12:00'),
-(7, 4, 7, '2025-05-30', 'שכר חודשי', 'תשלום חד פעמי', 401.00, 'ממתין', '2025-06-04 16:20:08');
+(6, 3, 5, '2025-05-30', 'שכר חודשי', 'תשלומים ', 5000.00, 'שולם', '2025-06-04 16:12:00'),
+(7, 4, 7, '2025-05-30', 'שכר חודשי', 'תשלום חד פעמי', 401.00, 'ממתין', '2025-06-04 16:20:08'),
+(8, 3, 1, '2025-05-08', 'תשלומים', 'חמו', 555.00, 'ממתין', '2025-08-05 13:56:21');
 
 -- --------------------------------------------------------
 
@@ -178,7 +184,10 @@ CREATE TABLE `reminder_logs` (
 
 INSERT INTO `reminder_logs` (`id`, `payment_id`, `tenant_id`, `reminder_date`) VALUES
 (3, 5, 1, '2025-06-04 16:18:16'),
-(4, 7, 4, '2025-06-04 16:20:14');
+(4, 7, 4, '2025-06-04 16:20:14'),
+(5, 7, 4, '2025-06-08 11:14:45'),
+(6, 5, 1, '2025-06-19 15:09:55'),
+(7, 8, 3, '2025-08-05 13:56:29');
 
 -- --------------------------------------------------------
 
@@ -216,7 +225,7 @@ CREATE TABLE `routinetasks` (
 --
 
 INSERT INTO `routinetasks` (`task_id`, `building_id`, `task_name`, `frequency`, `next_date`, `created_at`, `type`, `task_time`) VALUES
-(2, 1, 'ניקיון לובי קומת קרקע', 'שבועי', '2025-05-05', '2025-05-12 06:00:01', 'ניקיון', '10:30:00'),
+(2, 1, 'ניקיון לובי קומת קרקע', 'שבועי', '2025-05-02', '2025-05-12 06:00:01', 'ניקיון', '10:30:00'),
 (3, 2, 'שטיפת חדר מדרגות', 'שבועי', '2025-05-16', '2025-05-12 07:42:39', 'ניקיון', '11:15:00'),
 (11, 5, 'ניקיון תקרה', 'חודשי', '2025-04-27', '2025-05-14 16:21:59', 'חשמל', '10:30:00'),
 (18, 6, 'ניקיון חנייה', 'שבועי', '2025-05-12', '2025-05-18 13:22:19', 'ניקיון', '09:00:00');
@@ -237,21 +246,20 @@ CREATE TABLE `servicecalls` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `created_by` varchar(200) DEFAULT NULL,
   `image_url` varchar(255) DEFAULT NULL,
-  `location_in_building` varchar(255) DEFAULT NULL
+  `location_in_building` varchar(255) DEFAULT NULL,
+  `closed_by` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `servicecalls`
 --
 
-INSERT INTO `servicecalls` (`call_id`, `building_id`, `read_index`, `service_type`, `status`, `description`, `created_at`, `created_by`, `image_url`, `location_in_building`) VALUES
-(21, 2, '0', 'חשמל', 'Closed', 'שקע המתג יוצא לבחוץ \r\n', '2025-05-08 07:39:25', 'Meidan Chemo', 'http://localhost:8801/uploads/1746689965346.png', 'קומה 2 דירה 77'),
-(22, 1, '0', 'נזילה', 'Closed', 'בעיה', '2025-05-08 08:18:31', 'Meidan Chemo', 'http://localhost:8801/uploads/1746692335780.png', 'בן זונה'),
-(23, 1, '0', 'אינסטלציה', 'Closed', 'חור בצנרת הקידמית', '2025-05-08 08:18:49', 'Meidan Chemo', 'http://localhost:8801/uploads/1746964852743.png', 'קומה 3 ליד דירה 15'),
-(24, 1, '0', 'חשמל', 'Closed', 'כי ככה', '2025-05-11 12:24:52', 'Meidan Chemo', 'http://localhost:8801/uploads/1747228107049.png', 'שדגשדג'),
-(25, 1, '0', 'תקלה אישית', 'Closed', 'הדלת לא נסגרת ', '2025-05-12 08:32:21', 'Meidan Chemo', 'http://localhost:8801/uploads/1747038741912.png', 'קומה 5 דירה 20'),
-(26, 6, '0', 'אינסטלציה', 'Open', 'טיפטוף מים', '2025-05-28 11:48:42', 'מידן חמו', 'http://localhost:8801/uploads/1748432954002.png', 'קומה 4 ליד דלת 15'),
-(27, 7, '0', 'אחר', 'Open', 'לידור הומו', '2025-06-03 10:07:36', 'מידן חמו', 'http://localhost:8801/uploads/1748945688374.png', 'לידור בחדר אשפה');
+INSERT INTO `servicecalls` (`call_id`, `building_id`, `read_index`, `service_type`, `status`, `description`, `created_at`, `created_by`, `image_url`, `location_in_building`, `closed_by`) VALUES
+(24, 1, '0', 'חשמל', 'Closed', 'כי ככה', '2025-05-11 12:24:52', 'Meidan Chemo', 'http://localhost:8801/uploads/1747228107049.png', 'שדגשדג', 'מידן חמו'),
+(25, 1, '0', 'תקלה אישית', 'Closed', 'הדלת לא נסגרת ', '2025-05-12 08:32:21', 'Meidan Chemo', 'http://localhost:8801/uploads/1747038741912.png', 'קומה 5 דירה 20', NULL),
+(26, 6, '0', 'אינסטלציה', 'Open', 'קקי בתחתון של מידן חמו ', '2025-05-28 11:48:42', 'מידן חמו', 'http://localhost:8801/uploads/1748432954002.png', 'קומה 4 ליד דלת 15', NULL),
+(27, 7, '0', 'אחר', 'Closed', 'לידי', '2025-06-03 10:07:36', 'מידן חמו', 'http://localhost:8801/uploads/1749382502120.png', 'לידור בחדר אשפה', 'מידן חמו'),
+(28, 7, '0', 'נזילה', 'Closed', 'נזילה בביוב', '2025-06-08 12:00:09', 'מידן חמו', 'http://localhost:8801/uploads/1749384009073.png', 'קומה 22 ליד דלת 69', 'מידן חמו');
 
 -- --------------------------------------------------------
 
@@ -406,13 +414,13 @@ ALTER TABLE `external_suppliers`
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `reminder_logs`
 --
 ALTER TABLE `reminder_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `routinetaskexecutions`
@@ -430,7 +438,7 @@ ALTER TABLE `routinetasks`
 -- AUTO_INCREMENT for table `servicecalls`
 --
 ALTER TABLE `servicecalls`
-  MODIFY `call_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+  MODIFY `call_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- AUTO_INCREMENT for table `servicecallupdates`
