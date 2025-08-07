@@ -6,96 +6,81 @@ export default function AddPayment({ onAdd }) {
   const [buildings, setBuildings] = useState([]);
 
   const [form, setForm] = useState({
-    tenant_id: "",
     building_id: "",
+    tenant_id: "",
     date: "",
     category: "",
+    customCategory: "",
     desc: "",
     amount: "",
-    status: "שולם", // ברירת מחדל
+    status: "שולם",
   });
 
   useEffect(() => {
-    // tenants
-    fetch("http://localhost:8801/api/users?role=tenant")
-      .then((r) => r.json())
-      .then(setTenants)
+    fetch("http://localhost:8801/api/buildings")
+      .then((res) => res.json())
+      .then(setBuildings)
       .catch(console.error);
 
-    // buildings
-    fetch("http://localhost:8801/api/buildings")
-      .then((r) => r.json())
-      .then(setBuildings)
+    fetch("http://localhost:8801/api/users?role=tenant")
+      .then((res) => res.json())
+      .then(setTenants)
       .catch(console.error);
   }, []);
 
-  function handleChange(e) {
+  const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
-  }
+  };
 
-  function cleanStatus(str) {
-    return (str || "")
+  const cleanStatus = (str) =>
+    (str || "")
       .normalize("NFKD")
-      .replace(/[\u200E\u200F\u202A-\u202E״"“”]/g, "") // תווים נסתרים וגרשיים
+      .replace(/[\u200E\u200F\u202A-\u202E"“””]/g, "")
       .trim();
-  }
 
-  function handleSubmit(e) {
+  const handleSubmit = (e) => {
     e.preventDefault();
+    const categoryValue =
+      form.category === "אחר" ? form.customCategory.trim() : form.category;
 
     const payload = {
-      tenant_id: Number(form.tenant_id),
       building_id: Number(form.building_id),
+      tenant_id: Number(form.tenant_id),
       payment_date: form.date,
-      category: form.category,
+      category: categoryValue,
       description: form.desc,
       amount: Number(form.amount),
-      status: cleanStatus(form.status), // מנקה לפני שליחה
+      status: cleanStatus(form.status),
     };
-
-    console.log("🟢 נשלח לשרת (סטטוס):", payload.status);
 
     fetch("http://localhost:8801/api/payments", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     })
-      .then((r) => r.json())
+      .then((res) => res.json())
       .then(() => {
         onAdd();
         setForm({
-          tenant_id: "",
           building_id: "",
+          tenant_id: "",
           date: "",
           category: "",
+          customCategory: "",
           desc: "",
           amount: "",
           status: "שולם",
         });
       })
       .catch(console.error);
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit} className={styles.container}>
-      <div className={styles.title}>הוספת תשלום חדש</div>
+      <h2 className={styles.title}>הוספת תשלום חדש</h2>
 
-      <select
-        name="tenant_id"
-        value={form.tenant_id}
-        onChange={handleChange}
-        className={`${styles.input} ${styles.dropdown}`}
-        required
-      >
-        <option value="">בחר דייר</option>
-        {tenants.map((t) => (
-          <option key={t.user_id} value={t.user_id}>
-            {t.name}
-          </option>
-        ))}
-      </select>
-
+      {/* בחר בניין ראשון */}
       <select
         name="building_id"
         value={form.building_id}
@@ -111,6 +96,23 @@ export default function AddPayment({ onAdd }) {
         ))}
       </select>
 
+      {/* אחר כך בחר דייר */}
+      <select
+        name="tenant_id"
+        value={form.tenant_id}
+        onChange={handleChange}
+        className={`${styles.input} ${styles.dropdown}`}
+        required
+      >
+        <option value="">בחר דייר</option>
+        {tenants.map((t) => (
+          <option key={t.user_id} value={t.user_id}>
+            {t.name}
+          </option>
+        ))}
+      </select>
+
+      {/* תאריך */}
       <input
         type="date"
         name="date"
@@ -120,32 +122,56 @@ export default function AddPayment({ onAdd }) {
         required
       />
 
-      <input
+      {/* קטגוריה */}
+      <select
         name="category"
-        placeholder="קטגוריה"
         value={form.category}
         onChange={handleChange}
-        className={styles.input}
-      />
+        className={`${styles.input} ${styles.dropdown}`}
+        required
+      >
+        <option value="">בחר קטגוריה</option>
+        <option value="תחזוקת בניין">תחזוקת בניין</option>
+        <option value="ניקיון">ניקיון</option>
+        <option value="שירות מעלית">שירות מעלית</option>
+        <option value="קנס איחור">קנס איחור</option>
+        <option value="אבטחה">אבטחה</option>
+        <option value="אחר">אחר</option>
+      </select>
 
+      {/* קטגוריה חופשית אם נבחר "אחר" */}
+      {form.category === "אחר" && (
+        <input
+          name="customCategory"
+          value={form.customCategory}
+          onChange={handleChange}
+          placeholder="הכנס קטגוריה אחרת"
+          className={styles.input}
+          required
+        />
+      )}
+
+      {/* תיאור */}
       <input
         name="desc"
-        placeholder="תיאור"
         value={form.desc}
         onChange={handleChange}
+        placeholder="תיאור"
         className={styles.input}
       />
 
+      {/* סכום */}
       <input
         type="number"
         name="amount"
-        placeholder="סכום"
         value={form.amount}
         onChange={handleChange}
+        placeholder="סכום"
         className={styles.input}
         required
       />
 
+      {/* סטטוס */}
       <select
         name="status"
         value={form.status}
@@ -153,14 +179,13 @@ export default function AddPayment({ onAdd }) {
         className={styles.input}
         required
       >
-        <option value="">בחר סטטוס</option>
         <option value="שולם">שולם</option>
         <option value="ממתין">ממתין</option>
         <option value="חוב">חוב</option>
       </select>
 
       <button type="submit" className={styles.submitBtn}>
-        הוסף תשלום
+        הוספת תשלום
       </button>
     </form>
   );

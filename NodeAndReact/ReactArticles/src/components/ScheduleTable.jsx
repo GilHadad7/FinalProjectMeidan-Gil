@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import classes from "./ScheduleTable.module.css"; // ניצור קובץ CSS בנפרד
+import classes from "./ScheduleTable.module.css";
 
 export default function ScheduleTable() {
   const [schedule, setSchedule] = useState([]);
@@ -13,25 +13,31 @@ export default function ScheduleTable() {
 
   return (
     <div className={classes.ScheduleWrapper}>
-      <h2 className={classes.Title}>לוח זמנים כולל (קריאות שירות + משימות)</h2>
+      <h2 className={classes.Title}>
+        לוח זמנים כולל (קריאות שירות + משימות)
+      </h2>
       <table className={classes.Table}>
         <thead>
           <tr>
-            <th>תאריך</th>
-            <th>בניין</th>
-            <th>סוג</th>
-            <th>תיאור</th>
-            <th>סוג מקור</th>
+            <th className={classes.Col1}>תאריך</th>
+            <th className={classes.Col2}>בניין</th>
+            <th className={classes.Col3}>סוג</th>
+            <th className={classes.Col4}>תיאור</th>
+            <th className={classes.Col5}>סוג מקור</th>
           </tr>
         </thead>
         <tbody>
           {schedule.map((item) => (
             <tr key={`${item.origin_type}-${item.id}`}>
-              <td>{item.date}</td>
-              <td>{item.building_address}</td>
-              <td>{item.type}</td>
-              <td>{item.description}</td>
-              <td>{item.origin_type === "routine" ? "משימה קבועה" : "קריאת שירות"}</td>
+              <td className={classes.Col1}>{item.date}</td>
+              <td className={classes.Col2}>{item.building_address}</td>
+              <td className={classes.Col3}>{item.type}</td>
+              <td className={classes.Col4}>{item.description}</td>
+              <td className={classes.Col5}>
+                {item.origin_type === "routine"
+                  ? "משימה קבועה"
+                  : "קריאת שירות"}
+              </td>
             </tr>
           ))}
         </tbody>

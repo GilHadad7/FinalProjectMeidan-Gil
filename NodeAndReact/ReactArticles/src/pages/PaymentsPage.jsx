@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import AddPayment from '../components/AddPayment';
 import PaymentsTable from '../components/PaymentsTable';
-import FormWithTableLayout from '../components/ui/FormWithTableLayout'; // ← ייבוא התבנית
+import FormWithTableLayout from '../components/ui/FormWithTableLayout';
 import classes from './PaymentsPage.module.css';
 
 export default function PaymentsPage() {
@@ -40,19 +40,42 @@ export default function PaymentsPage() {
       .toLowerCase();
   };
 
+  // applyFilters עם סינון ותיקון טווח תאריכים ו- sort לפי קרבה ל"היום"
   const applyFilters = useCallback(() => {
     let result = payments;
 
-    if (filters.tenant)
+    if (filters.tenant) {
       result = result.filter(p => p.tenant_name.includes(filters.tenant));
-    if (filters.building)
+    }
+    if (filters.building) {
       result = result.filter(p => p.building_name?.includes(filters.building));
-    if (filters.status)
+    }
+    if (filters.status) {
       result = result.filter(p => cleanString(p.status) === cleanString(filters.status));
-    if (filters.fromDate)
-      result = result.filter(p => new Date(p.payment_date) >= new Date(filters.fromDate));
-    if (filters.toDate)
-      result = result.filter(p => new Date(p.payment_date) <= new Date(filters.toDate));
+    }
+    if (filters.fromDate) {
+      const from = new Date(filters.fromDate).setHours(0, 0, 0, 0);
+      result = result.filter(p => {
+        const paymentDate = new Date(p.payment_date).setHours(0, 0, 0, 0);
+        return paymentDate >= from;
+      });
+    }
+    if (filters.toDate) {
+      const to = new Date(filters.toDate).setHours(0, 0, 0, 0);
+      result = result.filter(p => {
+        const paymentDate = new Date(p.payment_date).setHours(0, 0, 0, 0);
+        return paymentDate <= to;
+      });
+    }
+
+    // מיון תוצאות לפי קרבה לתאריך היום
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    result = [...result].sort((a, b) => {
+      const da = Math.abs(new Date(a.payment_date).setHours(0, 0, 0, 0) - today);
+      const db = Math.abs(new Date(b.payment_date).setHours(0, 0, 0, 0) - today);
+      return da - db;
+    });
 
     setFilteredPayments(result);
   }, [payments, filters]);
@@ -85,9 +108,7 @@ export default function PaymentsPage() {
           alert("שגיאה בשמירת התשלום");
           return;
         }
-
-        const updated = await res.json();
-        console.log("✅ תשלום עודכן:", updated);
+        await res.json();
         fetchPayments();
       })
       .catch(err => {
@@ -97,22 +118,30 @@ export default function PaymentsPage() {
   };
 
   const totalPaid = filteredPayments.reduce(
-    (sum, p) => sum + (p.status === "שולם" ? Number(p.amount) : 0), 0);
+    (sum, p) => sum + (p.status === "שולם" ? Number(p.amount) : 0),
+    0
+  );
   const openDebts = filteredPayments.reduce(
-    (sum, p) => sum + (p.status !== "שולם" ? Number(p.amount) : 0), 0);
+    (sum, p) => sum + (p.status !== "שולם" ? Number(p.amount) : 0),
+    0
+  );
   const debtTenants = filteredPayments.filter(p => p.status !== "שולם").map(p => p.tenant_name);
 
   return (
     <FormWithTableLayout
       title="טבלת תשלומים"
-      formComponent={
-        <AddPayment buildingsList={buildingsList} onAdd={fetchPayments} />
-      }
+      formComponent={<AddPayment buildingsList={buildingsList} onAdd={fetchPayments} />}
       summaryComponent={
         <div className={classes.summaryCards}>
-          <div className={classes.card}>💰 סה״כ גבייה: <b>{totalPaid.toLocaleString()} ₪</b></div>
-          <div className={classes.card}>❌ חובות פתוחים: <b>{openDebts.toLocaleString()} ₪</b></div>
-          <div className={classes.card}>🧍‍♂️ דיירים חייבים: <b>{debtTenants.length}</b></div>
+          <div className={classes.card}>
+            💰 סה״כ גבייה: <b>{totalPaid.toLocaleString()} ₪</b>
+          </div>
+          <div className={classes.card}>
+            ❌ חובות פתוחים: <b>{openDebts.toLocaleString()} ₪</b>
+          </div>
+          <div className={classes.card}>
+            🧍‍♂️ דיירים חייבים: <b>{debtTenants.length}</b>
+          </div>
         </div>
       }
       tableComponent={

@@ -1,66 +1,153 @@
 .SchedulePage {
-    padding: 2rem;
-    direction: rtl;
-  }
-  
-  .Title {
-    font-size: 24px;
-    text-align: center;
-    margin-bottom: 2rem;
-  }
-  
-  .Filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-  
-  .Table {
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed;
-    
-  }
-  
-  .Table th, .Table td {
-    border: 1px solid #ddd;
-    padding: 0.75rem;
-    text-align: center;
-    text-align: center;
-    vertical-align: middle;
-  }
-  .ClosedRow {
-    color: red;
-    font-weight: bold;
-  }
- .Table th:nth-child(3),
-.Table td:nth-child(3), .Table th:nth-child(5),
-.Table td:nth-child(5), .Table th:nth-child(8),
-.Table td:nth-child(8) {
-  width: 80px;
-  white-space: nowrap;
+  padding: 2rem;
+  direction: rtl;
 }
-.Table th:first-child,
-.Table td:first-child, .Table th:nth-child(4),
-.Table td:nth-child(4) {
-  width: 50px;
+
+.Title {
+  font-size: 24px;
   text-align: center;
+  margin-bottom: 2rem;
 }
-.Table th:nth-child(6),
-.Table td:nth-child(6) ,
-.Table th:nth-child(2),
-.Table td:nth-child(2){
-  width: 70px;
-  text-align: center;
+
+/* שורת סינונים ראשית */
+.FiltersRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: #fff;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  margin-bottom: 1.5rem;
 }
-.Table th:nth-child(7),
-.Table td:nth-child(7) {
-  width: 140px;
-  white-space: nowrap;
+
+/* קבוצת סינונים כללית */
+.Filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.5rem;
 }
+
+/* תיוג של Checkbox + טקסט */
+.Filters label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.6rem;    /* הגדלת גודל הפונט */
+  color: #3c3c3c;
+}
+
+.Filters input[type="checkbox"] {
+  width: 1.5rem;       /* הגדלת גודל הריבוע */
+  height: 1.5rem;      /* הגדלת גודל הריבוע */
+}
+
+/* בלוק תאריכים */
 .dateFilterWrapper {
   display: flex;
   flex-direction: column;
-  margin-left: 1rem;
+}
+
+.dateFilterWrapper label {
+  font-size: 1.4rem;
+  margin-bottom: 0.25rem;
+}
+
+.dateFilterWrapper input[type="date"] {
+  width: 160px;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid #DDD;
+  background: #F9F4EE;
+}
+
+/* עטיפת הטבלה לגלילה אופקית */
+.TableWrapper {
+  overflow-x: auto;
+}
+
+/* טבלת התצוגה */
+.Table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed; /* חשוב כדי שה-width שתגדיר יעבוד */
+}
+
+.Table th,
+.Table td {
+  border: 1px solid #ddd;
+  padding: 0.75rem;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.Table th {
+  background-color: #f5f5f5;
+}
+
+.ClosedRow {
+  color: red;
+  font-weight: bold;
+}
+
+/* רוחב עמודות מותאם */
+/* 1: יום בשבוע */  
+.Table th:nth-child(1),
+.Table td:nth-child(1) {
+  width: 12%;
+  min-width: 80px;
+}
+
+/* 2: תאריך */
+.Table th:nth-child(2),
+.Table td:nth-child(2) {
+  width: 15%;
+  min-width: 100px;
+}
+
+/* 3: שעה */
+.Table th:nth-child(3),
+.Table td:nth-child(3) {
+  width: 10%;
+  min-width: 80px;
+}
+
+/* 4: בניין + כתובת */
+.Table th:nth-child(4),
+.Table td:nth-child(4) {
+  width: 28%;
+  min-width: 200px;
+  white-space: normal; /* שבירת שורות לטקסט ארוך */
+}
+
+/* 5: סוג משימה */
+.Table th:nth-child(5),
+.Table td:nth-child(5) {
+  width: 10%;
+  min-width: 80px;
+}
+
+/* 6: תיאור */
+.Table th:nth-child(6),
+.Table td:nth-child(6) {
+  width: 15%;
+  min-width: 120px;
+  white-space: normal;
+}
+
+/* 7: אחראי */
+.Table th:nth-child(7),
+.Table td:nth-child(7) {
+  width: 7%;
+  min-width: 60px;
+}
+
+/* 8: מקור */
+.Table th:nth-child(8),
+.Table td:nth-child(8) {
+  width: 3%;
+  min-width: 50px;
 }

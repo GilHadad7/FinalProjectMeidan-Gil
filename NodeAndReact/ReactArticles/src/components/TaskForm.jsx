@@ -12,13 +12,14 @@ export default function TaskForm({ onSuccess }) {
     task_name: "",
     frequency: "",
     next_date: null,
-    task_time: "",
-    type: ""
+    task_hour: "",
+    task_minute: "",
+    type: "",
+    custom_type: ""
   });
 
   const [buildings, setBuildings] = useState([]);
 
-  // Load buildings list
   useEffect(() => {
     fetch("http://localhost:3000/api/buildings")
       .then(res => res.json())
@@ -27,22 +28,34 @@ export default function TaskForm({ onSuccess }) {
   }, []);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
   };
+
   const timeCombined = `${form.task_hour}:${form.task_minute}`;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const finalType = form.type === "אחר"
+      ? form.custom_type.trim()
+      : form.type;
+
     if (!form.next_date) {
-      alert("בחר תאריך");
+      alert("אנא בחר/י תאריך");
+      return;
+    }
+    if (!finalType) {
+      alert("אנא בחר/י או הזן/י סוג משימה");
       return;
     }
 
     const payload = {
-      ...form,
+      building_id: form.building_id,
+      task_name: form.task_name,
+      frequency: form.frequency,
+      next_date: formatDateToYMD(form.next_date),
       task_time: timeCombined,
-      next_date: formatDateToYMD(form.next_date)
-    
+      type: finalType
     };
 
     const res = await fetch("http://localhost:3000/api/tasks", {
@@ -53,7 +66,16 @@ export default function TaskForm({ onSuccess }) {
 
     if (res.ok) {
       alert("משימה נוספה בהצלחה ✅");
-      setForm({ building_id: "", task_name: "", frequency: "", next_date: null, task_time: "", type: "" });
+      setForm({
+        building_id: "",
+        task_name: "",
+        frequency: "",
+        next_date: null,
+        task_hour: "",
+        task_minute: "",
+        type: "",
+        custom_type: ""
+      });
       onSuccess();
     } else {
       alert("שגיאה בהוספה");
@@ -64,12 +86,12 @@ export default function TaskForm({ onSuccess }) {
     const offsetDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
     return offsetDate.toISOString().split("T")[0];
   }
-  
 
   return (
     <>
       <h3 className={classes.title}>הוספת משימה</h3>
       <form className={classes.form} onSubmit={handleSubmit}>
+        {/* בניין */}
         <select
           className={classes.selectBtn}
           name="building_id"
@@ -85,26 +107,55 @@ export default function TaskForm({ onSuccess }) {
           ))}
         </select>
 
+        {/* סוג משימה */}
+        <select
+          className={classes.selectBtn}
+          name="type"
+          value={form.type}
+          onChange={(e) => {
+            handleChange(e);
+            if (e.target.value !== "אחר") {
+              setForm(prev => ({ ...prev, custom_type: "" }));
+            }
+          }}
+          required
+        >
+          <option value="">בחר סוג משימה</option>
+          <option value="ניקיון">ניקיון</option>
+          <option value="תחזוקה">תחזוקה</option>
+          <option value="הדברה">הדברה</option>
+          <option value="ביקורות">ביקורות</option>
+          <option value="טיפול במעבדי מים">טיפול במעבדי מים</option>
+          <option value="חשמלאי">חשמלאי</option>
+          <option value="אחר">אחר…</option>
+        </select>
+
+        {/* שדה חופשי אם נבחר "אחר" */}
+        {form.type === "אחר" && (
+          <input
+            className={classes.input}
+            name="custom_type"
+            placeholder="הזן סוג משימה"
+            value={form.custom_type}
+            onChange={handleChange}
+            required
+          />
+        )}
+
+        {/* תיאור משימה */}
         <input
           className={classes.input}
           name="task_name"
-          placeholder="שם משימה"
+          placeholder="תיאור משימה"
           value={form.task_name}
           onChange={handleChange}
           required
         />
 
-            <input
-          className={classes.input}
-          name="type"
-          placeholder="סוג משימה"
-          value={form.type}
-          onChange={handleChange}
-        />
-
+        {/* תדירות */}
         <select
           className={classes.selectBtnFrequency}
-           name="frequency"
+          name="frequency"
           value={form.frequency}
           onChange={handleChange}
           required
@@ -115,55 +166,54 @@ export default function TaskForm({ onSuccess }) {
           <option value="חודשי">חודשי</option>
         </select>
 
+        {/* תאריך */}
         <DatePicker
-        selected={form.next_date}
-        onChange={(date) => setForm({ ...form, next_date: date })}
-        dateFormat="dd/MM/yyyy"
-        locale="he"
-        className={classes.selectBtn}           // זה משפיע רק על התיבה
-        popperClassName={classes.datePopper}    // זה ישפיע על הפופאפ שנפתח!
-        placeholderText="בחר תאריך"
-        calendarStartDay={0}
+          selected={form.next_date}
+          onChange={(date) => setForm(prev => ({ ...prev, next_date: date }))}
+          dateFormat="dd/MM/yyyy"
+          locale="he"
+          className={classes.selectBtn}
+          popperClassName={classes.datePopper}
+          placeholderText="בחר תאריך"
+          calendarStartDay={0}
         />
 
+        {/* שעון: הדקות ימינה, השעה משמאל */}
+        <div className={classes.timeRow}>
+          {/* קודם הדקות (ימין) */}
+          <select
+            className={classes.selectTime}
+            name="task_minute"
+            value={form.task_minute}
+            onChange={handleChange}
+            required
+          >
+            <option value="">דקות</option>
+            {[0, 15, 30, 45].map((m) => (
+              <option key={m} value={m.toString().padStart(2, "0")}>
+                {m.toString().padStart(2, "0")}
+              </option>
+            ))}
+          </select>
+          <span>:</span>
+          {/* אחר כך השעה (משמאל) */}
+          <select
+            className={classes.selectTime}
+            name="task_hour"
+            value={form.task_hour}
+            onChange={handleChange}
+            required
+          >
+            <option value="">שעה</option>
+            {[...Array(24).keys()].map((h) => (
+              <option key={h} value={h.toString().padStart(2, "0")}>
+                {h.toString().padStart(2, "0")}
+              </option>
+            ))}
+          </select>
+        </div>
 
-
-{/* שעון */}
-<div className={classes.timeRow}>
-  <select
-    className={classes.selectTime}
-    value={form.task_hour}
-    onChange={(e) => setForm({ ...form, task_hour: e.target.value })}
-    required
-  >
-    <option value="">שעה</option>
-    {[...Array(24).keys()].map(h => (
-      <option key={h} value={h.toString().padStart(2, '0')}>
-        {h.toString().padStart(2, '0')}
-      </option>
-    ))}
-  </select>
-
-  <span>:</span>
-
-  <select
-    className={classes.selectTime}
-    value={form.task_minute}
-    onChange={(e) => setForm({ ...form, task_minute: e.target.value })}
-    required
-  >
-    <option value="">דקות</option>
-    {[0, 15, 30, 45].map(m => (
-      <option key={m} value={m.toString().padStart(2, '0')}>
-        {m.toString().padStart(2, '0')}
-      </option>
-    ))}
-  </select>
-</div>
-
-
-
-
+        {/* כפתור שליחה */}
         <button type="submit" className={classes.button}>
           הוסף משימה
         </button>
