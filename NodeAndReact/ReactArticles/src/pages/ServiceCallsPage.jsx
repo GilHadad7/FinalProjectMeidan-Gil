@@ -1,3 +1,5 @@
+// src/pages/ServiceCallsPage.jsx
+
 import React, { useState } from "react";
 import ServiceCallForm from "../components/ServiceCallForm";
 import ServiceCallsTable from "../components/ServiceCallsTable";
@@ -9,9 +11,9 @@ export default function ServiceCallsPage() {
   const role = user?.role;
 
   const [refreshFlag, setRefreshFlag] = useState(false);
-  const triggerRefresh = () => setRefreshFlag(prev => !prev);
+  const triggerRefresh = () => setRefreshFlag((prev) => !prev);
 
-  // סינון
+  // סינון לפי כתובת בניין, סטטוס וסוג תקלה
   const [filters, setFilters] = useState({
     building: "",
     status: "",
@@ -22,7 +24,7 @@ export default function ServiceCallsPage() {
     <div className={classes.filtersRow}>
       <input
         type="text"
-        placeholder="חפש לפי בניין"
+        placeholder="כתובת בניין"
         value={filters.building}
         onChange={(e) =>
           setFilters({ ...filters, building: e.target.value })
@@ -49,8 +51,8 @@ export default function ServiceCallsPage() {
         }
       >
         <option value="">סטטוס</option>
-        <option value="Open">Open</option>
-        <option value="Closed">Closed</option>
+        <option value="Open">פתוח</option>
+        <option value="Closed">סגור</option>
       </select>
     </div>
   );

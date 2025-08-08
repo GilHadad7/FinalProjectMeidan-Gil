@@ -1,5 +1,6 @@
 .table {
   width: 100%;
+  table-layout: fixed;       /* ← מחלק רוחב לפי מה שהגדרת */
   border-collapse: separate;
   border-spacing: 0 7px;
   background: transparent;
@@ -9,12 +10,17 @@
   color: #4a3a2a;
 }
 
+/* -------------- עיצוב כללי ל-th ו-td -------------- */
 .table th,
 .table td {
   text-align: center;
   vertical-align: middle;
+  overflow: hidden;          /* חותך תוכן עודף */
+  text-overflow: ellipsis;   /* מציג … במקום תוכן חתוך */
+  white-space: nowrap;
 }
 
+/* -------------- עיצוב כותרות -------------- */
 .table th {
   background: #e4dbcf;
   color: #7a6c5d;
@@ -24,6 +30,7 @@
   font-size: 1.2rem;
 }
 
+/* -------------- עיצוב תאים -------------- */
 .table td {
   background: #fff;
   padding: 14px 10px;
@@ -42,12 +49,12 @@
   background: #f3f0ed;
 }
 
+/* -------------- פעולות (עפרון, פח אשפה) -------------- */
 .actionGroup {
   display: flex;
   justify-content: center;
   gap: 10px;
 }
-
 .actionBtn {
   background: #d2bba0;
   border: none;
@@ -57,37 +64,101 @@
   font-size: 18px;
   transition: background 0.2s;
 }
-
 .actionBtn:hover {
   background: #bfae9e;
 }
 
+/* ===================== רוחבי עמודות (ניתן לשנות כאן) ===================== */
+
+/* עמודה 1 – שם בניין */
 .table th:nth-child(1),
 .table td:nth-child(1) {
-  width: 180px;
-  white-space: nowrap;
-}
-.table th:nth-child(6),
-.table td:nth-child(6),
-.table th:nth-child(5),
-.table td:nth-child(5) {
-  width: 140px;
-  white-space: nowrap;
-}
-.table th:nth-child(2),
-.table td:nth-child(2) {
-  width: 190px;
-  white-space: nowrap;
-}
-.table th:nth-child(3),
-.table td:nth-child(3),
-.table th:nth-child(4),
-.table td:nth-child(4) {
-  width: 80px;
-  white-space: nowrap;
+  width: 100px;
 }
 
-/* חיפוש */
+/* עמודה 2 – כתובת */
+.table th:nth-child(2),
+.table td:nth-child(2) {
+  width: 100px;
+}
+
+/* עמודה 3 – דירות */
+.table th:nth-child(3),
+.table td:nth-child(3) {
+  width: 30px;
+}
+
+/* עמודה 4 – קומות */
+.table th:nth-child(4),
+.table td:nth-child(4) {
+  width: 30px;
+}
+
+/* עמודה 5 – ועד בית */
+.table th:nth-child(5),
+.table td:nth-child(5) {
+  width: 70px;
+}
+
+/* עמודה 6 – טלפון */
+.table th:nth-child(6),
+.table td:nth-child(6) {
+  width: 60px;
+}
+
+/* עמודה 7 – עובדים */
+.table th:nth-child(7),
+.table td:nth-child(7) {
+  width: 100px;
+}
+
+/* עמודה 8 – פעולות */
+.table th:nth-child(8),
+.table td:nth-child(8) {
+  width: 100px;
+}
+
+/* ===================== תא select בעמודת עובדים ===================== */
+.selectCell {
+  /* מאפשר שורות מרובות ו overflow נראה */
+  white-space: normal !important;
+  overflow: visible !important;
+  width: 100px;      /* שנה לפי הצורך */
+  padding: 0 10px;
+}
+
+/* force select to fill its cell */
+.selectFull {
+  width: 100% !important;
+}
+
+/* מאפשר לעטוף ערכים במולטיווליו */
+.selectCell .react-select__value-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  overflow: visible;
+}
+
+/* ריווח קל בין התגיות */
+.selectCell .react-select__multi-value {
+  margin: 2px 4px 2px 0;
+}
+
+/* מוודא שהתפריט לא יוחבא מאחורי הטבלה */
+.react-select__menu {
+  z-index: 1000;
+}
+
+/* ===================== הסרת חיצי ספינר מ-input[type=number] ===================== */
+/* WebKit (Chrome, Safari, Edge) */
+.table td input[type="number"]::-webkit-outer-spin-button,
+.table td input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* ===================== סגנון תיבת חיפוש ===================== */
 .searchWrapper {
   display: flex;
   justify-content: flex-end;

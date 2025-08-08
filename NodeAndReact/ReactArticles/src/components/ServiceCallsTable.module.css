@@ -1,42 +1,53 @@
-/* טבלת תוכן כללית */
+/* ServiceCallsTable.module.css */
+
+/* Container */
+.tableContainer {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  overflow-x: auto;
+  direction: rtl;
+  min-width: 0;
+}
+
+/* טבלת בסיס */
 .table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0 7px;
   background: transparent;
-  direction: rtl;
   font-family: "Heebo", "Segoe UI", sans-serif;
   font-size: 1.2rem;
   color: #4a3a2a;
+  table-layout: fixed;
 }
 
+/* כותרות ותאים – ניתן שבירת שורה בכל התא */
 .table th,
 .table td {
+  padding: 14px 10px;
   text-align: center;
   vertical-align: middle;
+  background: #fff;
+  white-space: normal;
+  word-break: break-word;
+  overflow: visible;
+  text-overflow: unset;
+  border-radius: 0 0 10px 10px;
+  font-weight: 500;
 }
 
-/* כותרת טבלה */
+/* שורת כותרת */
 .table th {
   background: #e4dbcf;
   color: #7a6c5d;
   font-weight: bold;
   padding: 16px 10px;
   border-radius: 10px 10px 0 0;
-  font-size: 1.2rem;
 }
 
-/* תוכן טבלה */
-.table td {
-  background: #fff;
-  padding: 14px 10px;
-  border-bottom: 1px solid #e4dbcf;
-  font-size: 1.4rem;
-  border-radius: 0 0 10px 10px;
-  font-weight: 500;
-}
-
-/* אפקט שורה בטבלה */
+/* אפקט הובר */
 .table tr {
   box-shadow: 0 2px 6px #00000008;
   transition: background 0.2s ease;
@@ -45,19 +56,141 @@
   background: #f3f0ed;
 }
 
-/* שורה בסטטוס סגור */
+/* רוחב עמודות (לפי סדר): */
+/* 1. תאריך */
+.table th:nth-child(1),
+.table td:nth-child(1) {
+  width: 260px;
+  white-space: nowrap;
+}
+
+/* 2. משתמש שפתח */
+.table th:nth-child(2),
+.table td:nth-child(2) {
+  width: 100px;
+}
+
+/* 3. כתובת בניין */
+.table th:nth-child(3),
+.table td:nth-child(3) {
+  width: 120px;
+}
+
+/* 4. סוג תקלה */
+.table th:nth-child(4),
+.table td:nth-child(4) {
+  width: 100px;
+}
+
+/* 5. סטטוס */
+.table th:nth-child(5),
+.table td:nth-child(5) {
+  width: 100px;
+  min-width: 6ch;
+}
+
+/* 6. בוצע על ידי */
+.table th:nth-child(6),
+.table td:nth-child(6) {
+  width: 80px;
+}
+
+/* 7. תיאור */
+.table th:nth-child(7),
+.table td:nth-child(7) {
+  width: 140px;
+}
+
+/* 8. מיקום */
+.table th:nth-child(8),
+.table td:nth-child(8) {
+  width: 120px;
+}
+
+/* 9. עלות (₪) */
+.table th:nth-child(9),
+.table td:nth-child(9),
+.editRow td:nth-child(9) {
+  width: 90px;
+  text-align: center;
+}
+
+/* 10. תמונה */
+.table th:nth-child(10),
+.table td:nth-child(10) {
+  width: 120px;
+}
+
+/* 11. פעולות */
+.table th:nth-child(11),
+.table td:nth-child(11) {
+  width: 100px;
+}
+
+/* סטייל לשורה סגורה */
 .closedRow td,
 .closedText {
   color: red;
   font-weight: bold;
 }
 
-/* פעולות */
+/* תמונת תצוגה מקדימה */
+.previewImg {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 10px;
+  cursor: pointer;
+  border: 1.5px solid #c7d0db;
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+  margin-bottom: 6px;
+}
+
+/* שורת עריכה */
+.editRow td {
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* קלטים בעריכה */
+.editRow td input,
+.editRow td select,
+.editRow td textarea,
+.editInput {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  font-size: 1.1rem;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background: #fdf7f2;
+  font-family: inherit;
+  white-space: normal;
+  margin: 0;
+}
+
+/* גובה מינימלי ל־textarea */
+.editRow td textarea {
+  min-height: 90px;
+  line-height: 1.4;
+  resize: none;
+}
+
+/* קלט קובץ */
+.editRow input[type="file"] {
+  margin-top: 6px;
+  font-size: 0.9rem;
+}
+
+/* כפתורי פעולה */
 .actionGroup {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: 8px;
+  height: 100%;
 }
 .actionBtn {
   background: #d2bba0;
@@ -71,75 +204,3 @@
 .actionBtn:hover {
   background: #bfae9e;
 }
-
-/* שורת עריכה – עיצוב פשוט */
-.editRow td input,
-.editRow td select{
-  width: 100%;
-  padding: 10px 14px;
-  font-size: 1.1rem;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  background: #fdf7f2;
-  font-family: inherit;
-  box-sizing: border-box;
-}
-
-/* תיאור – גובה קבוע */
-.editRow td textarea {
-  resize: none;
-  min-height: 42px;
-  line-height: 1.4;
-  min-height: 90px;
-  resize: none;
-}
-
-/* תמונה */
-.previewImg {
-  width: 100px;
-  height: 100px;
-  object-fit: cover;
-  border-radius: 10px;
-  cursor: pointer;
-  border: 1.5px solid #c7d0db;
-  background-color: #f9f9f9;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
-  margin-bottom: 6px;
-}
-
-/* עיצוב קובץ קלט */
-.editRow input[type="file"] {
-  margin-top: 6px;
-  font-size: 0.9rem;
-}
-
-/* שדה עריכה כללי */
-.editInput {
-  width: 100%;
-  padding: 10px 14px;
-  font-size: 1.1rem;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  background: #fdf7f2;
-  font-family: inherit;
-  box-sizing: border-box;
-}
-
-/* קונטיינר טבלה */
-.tableContainer {
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
-  padding: 16px;
-  overflow-x: auto;
-}
-
-/* עמודת יום בשבוע */
-.table th:first-child,
-.table td:first-child {
-  min-width: 50px;
-  max-width: 50px;
-  width: 2px;
-  text-align: center;
-}
-

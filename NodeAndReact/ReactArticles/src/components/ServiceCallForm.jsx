@@ -113,7 +113,7 @@ export default function ServiceCallForm({ onSuccess }) {
           type="text"
           value={location}
           onChange={(e) => setLocation(e.target.value)}
-          placeholder="מיקום"
+          placeholder="מיקום תקלה"
           className={classes.input}
         />
 

@@ -1,10 +1,11 @@
 import React from "react";
 import classes from "./BaseTable.module.css";
 
-export default function BaseTable({ headers = [], children }) {
+export default function BaseTable({ headers = [], children, className = "" }) {
   return (
     <div className={classes.tableContainer}>
-      <table className={classes.table}>
+      {/* Default styles from BaseTable.module.css combined with optional custom class */}
+      <table className={`${classes.table} ${className}`.trim()}>
         <thead>
           <tr>
             {headers.map((h, idx) => (

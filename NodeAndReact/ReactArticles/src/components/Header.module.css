@@ -1,29 +1,34 @@
+/* קומפוננטת ה-Header הכוללת לוגו, שם החברה ואייקון הגדרות */
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #b8925c;
+  background-color: #b8925c; /* צבע אחיד עם ה-navbar */
   padding: 10px 30px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
+/* אזור הלוגו ושם החברה (נגיש ללחיצה חזרה) */
 .logoSection {
   display: flex;
   align-items: center;
   cursor: pointer;
 }
 
+/* תמונת הלוגו */
 .logo {
   height: 50px;
   margin-right: 10px;
 }
 
+/* הטקסט של שם החברה */
 .slogan {
   font-size: 22px;
   font-weight: bold;
   color: #4b3b2a;
 }
 
+/* אייקון ההגדרות (גלגל שיניים) */
 .settings {
   font-size: 28px;
   cursor: pointer;

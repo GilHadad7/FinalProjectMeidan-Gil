@@ -1,0 +1,63 @@
+/* עוטף את כל האפליקציה */
+.container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  
+  /* עוטף את ה־Header+Navbar */
+  .headerWrapper {
+    background-color: #b8925c; /* צבע רקע אחיד */
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* הסרגל התחתון (התפריט) */
+  .navbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    justify-content: space-between;
+    background-color: #b8925c; /* אותו צבע כמו headerWrapper */
+  }
+  
+  /* כל לינק בסרגל יתפוס מקום שווה */
+  .navbar .link,
+  .navbar .active {
+    flex: 1;
+    margin: 0 0.25rem;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    text-align: center;
+    font-weight: bold;
+    transition: background 0.2s, color 0.2s;
+  }
+  
+  /* מצב רגיל — שקיפות קלה */
+  .navbar .link {
+    background: rgba(255, 255, 255, 0.3);
+    color: #4a3a2a;
+  }
+  
+  /* מצב פעיל — רקע בוהק יותר */
+  .navbar .active {
+    background: rgb(255, 255, 255);
+    color: #2f1f0f;
+  }
+  
+  /* אפקט הובר לכל הכפתורים */
+  .navbar .link:hover,
+  .navbar .active:hover {
+    background: rgba(255, 255, 255, 0.8);
+    color: #2f1f0f;
+  }
+  
+  /* תכולת הדף מתחת ל־headerWrapper */
+  .content {
+    flex: 1;
+    padding: 1rem;
+    background: #f9f7f3;
+  }
+  
