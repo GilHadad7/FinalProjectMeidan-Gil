@@ -1,0 +1,214 @@
+/* כרטיס טופס בסיסי */
+.formCard {
+    background: #fbf9f5;
+    border-radius: 20px;
+    box-shadow: 0 6px 22px rgba(0,0,0,0.06);
+    padding: 22px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  /* כותרת */
+  .title {
+    margin: 0 0 14px 0;
+    font-family: "Heebo","Segoe UI",sans-serif;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #3b2f22;
+    letter-spacing: .3px;
+    direction: rtl;
+    text-align: right;
+  }
+  
+  /* גריד של שדות */
+  .grid {
+    display: grid;
+    gap: 12px;
+  }
+  
+  /* שדה (input/select/textarea) – אחיד */
+  .input,
+  .select,
+  .textarea {
+    width: 100%;
+    height: 48px;
+    border-radius: 20px;
+    border: 1px solid #d8cfc3;
+    background: #e9dfd3;
+    color: #4a3a2a;
+    font: 500 1rem "Heebo","Segoe UI",sans-serif;
+    padding: 0 16px;
+    outline: none;
+    box-shadow:
+      0 1px 2px rgba(0,0,0,0.03),
+      inset 0 2px 5px rgba(0,0,0,0.05);
+    direction: rtl;
+    text-align: right;
+  }
+  
+  /* select – יישור טקסט לימין בדפדפנים מסוימים */
+  .select {
+    text-align-last: right;
+  }
+  
+  /* placeholder כמו כותרות הטבלה */
+  .input::placeholder,
+  .textarea::placeholder {
+    font-family: "Heebo","Segoe UI",sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #7a6c5d;
+    opacity: 1;
+  }
+  
+  /* textarea */
+  .textarea {
+    height: auto;
+    min-height: 96px;
+    padding: 12px 16px;
+    border-radius: 18px;
+    resize: vertical;
+  }
+  
+  /* פוקוס */
+  .input:focus,
+  .select:focus,
+  .textarea:focus {
+    border-color: #c7b9a7;
+    box-shadow: 0 0 0 3px rgba(199,185,167,0.25);
+  }
+  
+  /* כפתור ראשי */
+  .button {
+    width: 100%;
+    height: 50px;
+    border: none;
+    border-radius: 26px;
+    background: linear-gradient(180deg, #d7c6ae 0%, #bca98c 100%);
+    color: #2c241b;
+    font: 800 1rem "Heebo","Segoe UI",sans-serif;
+    letter-spacing: .2px;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.10);
+    transition: transform .06s ease, filter .2s ease;
+  }
+  .button:hover { filter: brightness(1.03); }
+  .button:active { transform: translateY(1px); }
+  
+  /* תווית מעל שדה (אם צריך) */
+  .label {
+    font: 700 .95rem "Heebo","Segoe UI",sans-serif;
+    color: #6b5d4f;
+    margin: 6px 8px 2px;
+  }
+  
+  /* תמיכה בבורר תאריך/סלקט חיצוני (DatePicker וכו') */
+  .control {
+    width: 100%;
+    direction: rtl;
+    text-align: right;
+  }
+  
+  /* --- שדה סיסמה עם כפתור עין --- */
+  .passwordField {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .passwordToggle {
+    position: absolute;
+    left: 10px;               /* בצד שמאל */
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    line-height: 1;
+    flex: 0 0 auto;
+  }
+  .passwordToggle:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(199,185,167,0.25);
+    border-radius: 50%;
+  }
+  .passwordField .input {
+    padding-left: 44px;       /* ריווח שלא ייכנס בטקסט */
+  }
+  
+  /* ===========================
+     אזור העלאת תמונה (Upload)
+     =========================== */
+  .uploadBox {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px;
+    min-height: 110px;                    /* גדול ונעים */
+    border: 1.5px dashed #c7b9a7;
+    border-radius: 18px;
+    background: #f7f3ea;
+    cursor: pointer;
+    transition: background .2s, border-color .2s, box-shadow .2s;
+    direction: rtl;
+    text-align: right;
+  }
+  .uploadBox:hover {
+    background: #f3ece1;
+    border-color: #bca98c;
+    box-shadow: 0 0 0 4px rgba(199,185,167,0.18);
+  }
+  .uploadIcon { font-size: 1.4rem; line-height: 1; }
+  .uploadText { flex: 1; min-width: 0; }
+  
+  .uploadTitle {
+    font: 800 1.05rem "Heebo","Segoe UI",sans-serif;
+    color: #4a3a2a;
+  }
+  .uploadHint,
+  .uploadMeta {
+    font: 500 .95rem "Heebo","Segoe UI",sans-serif;
+    color: #7a6c5d;
+  }
+  
+  .uploadFilename {
+    font: 700 1rem "Heebo","Segoe UI",sans-serif;
+    color: #3b2f22;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  /* כפתור קטן בתוך אזור ההעלאה */
+  .fakeButton {
+    background: linear-gradient(180deg, #d7c6ae 0%, #bca98c 100%);
+    color: #2c241b;
+    font: 800 1rem "Heebo","Segoe UI",sans-serif;
+    padding: 10px 18px;
+    border-radius: 999px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.08);
+  }
+  
+  /* תמונת תצוגה מקדימה */
+  .uploadThumb {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 14px;
+    border: 1px solid #d8cfc3;
+  }
+  
+  /* עזר להחבאת קלט קובץ */
+  .srOnlyInput {
+    position: absolute !important;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    width: 1px;
+    height: 1px;
+  }
+  

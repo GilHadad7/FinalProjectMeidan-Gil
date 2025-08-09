@@ -1,112 +1,192 @@
+// src/components/UserForm.jsx
 import React, { useState } from "react";
-import classes from "./UserForm.module.css";
+import FormCard from "./ui/FormCard";
+import form from "./ui/FormKit.module.css";
 
-
-// להוסיף תז על טופס חייב
 export default function UserForm({ onAdd }) {
-    const [error, setError] = useState("");
-    const [showPassword, setShowPassword] = useState(false);
-  const [form, setForm] = useState({
+  const [showPassword, setShowPassword] = useState(false);
+
+  const [userFormData, setUserFormData] = useState({
     name: "",
     id_number: "",
     role: "",
     phone: "",
     email: "",
-    password: ""
+    password: "",
   });
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const [validationError, setValidationError] = useState("");
 
-  const handleSubmit = async (e) => {
+  function handleInputChange(e) {
+    const { name, value } = e.target;
+    setUserFormData((prev) => ({ ...prev, [name]: value }));
+  }
+
+  // ID: digits only, up to 9
+  function handleIdChange(e) {
+    const value = e.target.value;
+    if (/^[0-9]*$/.test(value) && value.length <= 9) {
+      setUserFormData((prev) => ({ ...prev, id_number: value }));
+    }
+  }
+
+  // Phone: digits only, up to 10
+  function handlePhoneChange(e) {
+    const value = e.target.value;
+    if (/^[0-9]*$/.test(value) && value.length <= 10) {
+      setUserFormData((prev) => ({ ...prev, phone: value }));
+    }
+  }
+
+  async function handleFormSubmit(e) {
     e.preventDefault();
-    setError(""); // איפוס
-  
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    setValidationError("");
 
-    if (!emailRegex.test(form.email)) {
-      setError("כתובת מייל לא תקינה");
+    const payload = {
+      ...userFormData,
+      name: userFormData.name.trim(),
+      id_number: userFormData.id_number.trim(),
+      phone: userFormData.phone.trim(),
+      email: userFormData.email.trim(),
+      password: userFormData.password, // אל תטרים סיסמאות
+    };
+
+    const { name, id_number, role, phone, email, password } = payload;
+
+    if (!name || !id_number || !role || !phone || !email || !password) {
+      setValidationError("יש למלא את כל השדות");
       return;
     }
-  
-    if (!/^[0-9]{7,10}$/.test(form.phone)) {
-      setError("מספר טלפון חייב להכיל 7 עד 10 ספרות בלבד");
+
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(email)) {
+      setValidationError("כתובת מייל לא תקינה");
       return;
     }
-  
-    if (!form.name || !form.role || !form.phone || !form.email || !form.password || !form.id_number) {
-      setError("יש למלא את כל השדות");
+
+    if (!/^[0-9]{7,10}$/.test(phone)) {
+      setValidationError("מספר טלפון חייב להכיל 7 עד 10 ספרות בלבד");
       return;
     }
-       
-  
-    await onAdd(form);
-    setForm({ name: "", role: "", phone: "", email: "", password: "", id_number: "" });
-  };
-  
+
+    if (!/^[0-9]{7,9}$/.test(id_number)) {
+      setValidationError("תעודת זהות חייבת להכיל 7 עד 9 ספרות");
+      return;
+    }
+
+    await onAdd(payload);
+
+    setUserFormData({
+      name: "",
+      id_number: "",
+      role: "",
+      phone: "",
+      email: "",
+      password: "",
+    });
+  }
 
   return (
-    <>
-      <h3 className={classes.addUserTitle}>הוסף משתמש:</h3>
-      <form className={classes.addUserForm} onSubmit={handleSubmit}>
-        <input className={classes.input} name="name" placeholder="שם" value={form.name} onChange={handleChange} />
+    <FormCard title="הוספת משתמש">
+      <input
+        type="text"
+        className={form.input}
+        name="name"
+        placeholder="שם"
+        value={userFormData.name}
+        onChange={handleInputChange}
+        autoComplete="name"
+      />
+
+      <input
+        type="text"
+        className={form.input}
+        name="id_number"
+        placeholder="תעודת זהות"
+        value={userFormData.id_number}
+        onChange={handleIdChange}
+        inputMode="numeric"
+        pattern="[0-9]*"
+        maxLength={9}
+        autoComplete="off"
+      />
+
+      <select
+        className={form.select}
+        name="role"
+        value={userFormData.role}
+        onChange={handleInputChange}
+      >
+        <option value="">בחר תפקיד</option>
+        <option value="manager">manager</option>
+        <option value="worker">worker</option>
+        <option value="tenant">tenant</option>
+      </select>
+
+      <input
+        type="text"
+        className={form.input}
+        name="phone"
+        placeholder="טלפון"
+        value={userFormData.phone}
+        onChange={handlePhoneChange}
+        inputMode="numeric"
+        pattern="[0-9]*"
+        maxLength={10}
+        autoComplete="tel"
+      />
+
+      <input
+        type="email"
+        className={form.input}
+        name="email"
+        placeholder="מייל"
+        value={userFormData.email}
+        onChange={handleInputChange}
+        autoComplete="email"
+      />
+
+      {/* סיסמה + כפתור עין (לא מכסה את כל השדה) */}
+      <div className={form.passwordField}>
         <input
-          className={classes.input}
-          placeholder="תעודת זהות"
-          name="id_number"
-          value={form.id_number}
-          onChange={(e) => {
-            const value = e.target.value;
-            if (/^[0-9]*$/.test(value) && value.length <= 9) {
-              setForm({ ...form, id_number: value });
-            }
-          }}
-          inputMode="numeric"
+          className={form.input}
+          type={showPassword ? "text" : "password"}
+          name="password"
+          placeholder="סיסמה"
+          value={userFormData.password}
+          onChange={handleInputChange}
+          autoComplete="new-password"
         />
-        <select className={classes.input} name="role" value={form.role} onChange={handleChange}>
-          <option value="">בחר תפקיד</option>
-          <option value="manager">manager</option>
-          <option value="worker">worker</option>
-          <option value="tenant">tenant</option>
-        </select>
-        <input
-          className={classes.input}
-          name="phone"
-          placeholder="טלפון"
-          value={form.phone}
-          onChange={(e) => {
-            const value = e.target.value;
-            if (/^[0-9]*$/.test(value) && value.length <= 10) {
-              setForm({ ...form, phone: value });
-            }
+        <button
+          type="button"
+          className={form.passwordToggle}
+          onClick={() => setShowPassword((p) => !p)}
+          aria-label={showPassword ? "הסתר סיסמה" : "הצג סיסמה"}
+          tabIndex={-1}
+        >
+          {showPassword ? "🙈" : "👁️"}
+        </button>
+      </div>
+
+      {validationError && (
+        <div
+          style={{
+            color: "#b3261e",
+            background: "#fde7e9",
+            border: "1px solid #f4b4bb",
+            padding: "8px 12px",
+            borderRadius: "12px",
+            fontFamily: "Heebo, Segoe UI, sans-serif",
+            fontSize: "0.95rem",
           }}
-          inputMode="numeric"
-        />
-        {error && <div className={classes.error}>{error}</div>}
-        <input className={classes.input} name="email" placeholder="מייל" value={form.email} onChange={handleChange} />
-        <div className={classes.passwordWrapper}>
-  <input
-    className={classes.inputPassword}
-    type={showPassword ? "text" : "password"}
-    name="password"
-    placeholder="סיסמה"
-    value={form.password}
-    onChange={handleChange}
-    autoComplete="new-password"
-  />
-  <button
-    type="button"
-    className={classes.toggleBtn}
-    tabIndex={-1}
-    onClick={() => setShowPassword(prev => !prev)}
-    aria-label={showPassword ? "הסתר סיסמה" : "הצג סיסמה"}
-  >
-    {showPassword ? "🙈" : "👁️"}
-  </button>
-</div>
-        <button className={classes.addUserBtn}>הוסף</button>
-      </form>
-    </>
+        >
+          {validationError}
+        </div>
+      )}
+
+      <button className={form.button} onClick={handleFormSubmit} type="button">
+        הוסף משתמש חדש
+      </button>
+    </FormCard>
   );
 }

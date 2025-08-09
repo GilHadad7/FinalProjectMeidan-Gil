@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from "react";
-import classes from "./ServiceCallForm.module.css";
+// src/components/ServiceCallForm.jsx
+import React, { useEffect, useState } from "react";
+import FormCard from "./ui/FormCard";
+import form from "./ui/FormKit.module.css";
 
 export default function ServiceCallForm({ onSuccess }) {
   const [buildings, setBuildings] = useState([]);
@@ -7,129 +9,160 @@ export default function ServiceCallForm({ onSuccess }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
+
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const user = JSON.parse(sessionStorage.getItem("user"));
-  const createdBy = user?.name;
+  const createdBy = user?.name || "";
 
   useEffect(() => {
     fetch("http://localhost:3000/api/buildings")
       .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data)) setBuildings(data);
-      })
+      .then((data) => Array.isArray(data) && setBuildings(data))
       .catch((err) => console.error("Failed to fetch buildings:", err));
   }, []);
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
+  function handleImageChange(e) {
+    const file = e.target.files?.[0] || null;
     setImageFile(file);
-    if (file) setImagePreview(URL.createObjectURL(file));
-  };
+    setImagePreview(file ? URL.createObjectURL(file) : null);
+  }
 
-  const handleSubmit = async (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
+    if (submitting) return;
 
-    const formData = new FormData();
-    formData.append("building_id", buildingId);
-    formData.append("description", description);
-    formData.append("location_in_building", location || "");
-    formData.append("service_type", title);
-    formData.append("status", "Open");
-    formData.append("read_index", "0");
-    formData.append("created_by", createdBy);
-    if (imageFile) formData.append("image", imageFile);
+    if (!buildingId) return alert("בחר/י בניין");
+    if (!title) return alert("בחר/י סוג תקלה");
+    if (!description.trim()) return alert("כתוב/כתבי תיאור תקלה");
+
+    const fd = new FormData();
+    fd.append("building_id", buildingId);
+    fd.append("description", description.trim());
+    fd.append("location_in_building", (location || "").trim());
+    fd.append("service_type", title);
+    fd.append("status", "Open");
+    fd.append("read_index", "0");
+    fd.append("created_by", createdBy);
+    if (imageFile) fd.append("image", imageFile);
 
     try {
+      setSubmitting(true);
       const res = await fetch("http://localhost:3000/api/service-calls", {
         method: "POST",
-        body: formData,
+        body: fd,
       });
-
       const data = await res.json();
 
-      if (res.ok) {
-        alert("הקריאה נשלחה בהצלחה!");
-        onSuccess();
-        setBuildingId("");
-        setTitle("");
-        setDescription("");
-        setLocation("");
-        setImageFile(null);
-        setImagePreview(null);
-      } else {
+      if (!res.ok) {
         console.error("Server response error:", data);
-        alert(data.message || "שגיאה בשליחה");
+        alert(data?.message || "שגיאה בשליחה");
+        return;
       }
+
+      alert("הקריאה נשלחה בהצלחה ✅");
+      onSuccess?.();
+      // reset
+      setBuildingId("");
+      setTitle("");
+      setDescription("");
+      setLocation("");
+      setImageFile(null);
+      setImagePreview(null);
     } catch (err) {
       console.error("שגיאה בשליחה:", err);
       alert("שגיאה בשרת");
+    } finally {
+      setSubmitting(false);
     }
-  };
+  }
 
   return (
-    <div className={classes.formContainer}>
-      <h3 className={classes.title}>פתיחת קריאת שירות</h3>
-      <form className={classes.form} onSubmit={handleSubmit}>
-        <select
-          value={buildingId}
-          onChange={(e) => setBuildingId(e.target.value)}
-          required
-          className={classes.input}
-        >
-          <option value="">בחר בניין...</option>
-          {buildings.map((b) => (
-            <option key={b.building_id} value={b.building_id}>
-              {b.full_address}
-            </option>
-          ))}
-        </select>
+    <FormCard title="פתיחת קריאת שירות">
+      {/* בניין */}
+      <select
+        className={form.select}
+        value={buildingId}
+        onChange={(e) => setBuildingId(e.target.value)}
+      >
+        <option value="">בחר בניין…</option>
+        {buildings.map((b) => (
+          <option key={b.building_id} value={b.building_id}>
+            {b.full_address || b.name}
+          </option>
+        ))}
+      </select>
 
-        <select
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-          className={classes.input}
-        >
-          <option value="">בחר סוג תקלה...</option>
-          <option value="חשמל">חשמל</option>
-          <option value="נזילה">נזילה</option>
-          <option value="תקלה טכנית">תקלה טכנית</option>
-          <option value="אינסטלציה">אינסטלציה</option>
-          <option value="נזק">נזק</option>
-          <option value="אחר">אחר</option>
-        </select>
+      {/* סוג תקלה */}
+      <select
+        className={form.select}
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      >
+        <option value="">בחר סוג תקלה…</option>
+        <option value="חשמל">חשמל</option>
+        <option value="נזילה">נזילה</option>
+        <option value="תקלה טכנית">תקלה טכנית</option>
+        <option value="אינסטלציה">אינסטלציה</option>
+        <option value="נזק">נזק</option>
+        <option value="אחר">אחר</option>
+      </select>
 
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="תיאור"
-          required
-          className={classes.input}
-        />
+      {/* תיאור */}
+      <textarea
+        className={form.textarea}
+        placeholder="תיאור"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+      />
 
-        <input
-          type="text"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          placeholder="מיקום תקלה"
-          className={classes.input}
-        />
+      {/* מיקום בבניין */}
+      <input
+        className={form.input}
+        type="text"
+        placeholder="מיקום תקלה"
+        value={location}
+        onChange={(e) => setLocation(e.target.value)}
+        autoComplete="off"
+      />
 
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleImageChange}
-          className={classes.input}
-        />
+      {/* העלאת תמונה – אזור גדול ואסתטי */}
+      <input
+        id="servicecall-file"
+        type="file"
+        accept="image/*"
+        onChange={handleImageChange}
+        className={form.srOnlyInput}   /* קלט חבוי נגיש */
+      />
+      <label htmlFor="servicecall-file" className={form.uploadBox}>
+        <span className={form.uploadIcon}>📷</span>
+        <div className={form.uploadText}>
+          <div className={form.uploadTitle}>העלאת תמונה</div>
+          <div className={form.uploadHint}>
+            גרור/י לכאן או לחצ/י לבחירה מתוך המחשב
+          </div>
+          {imageFile && (
+            <div className={form.uploadFilename}>{imageFile.name}</div>
+          )}
+        </div>
+        <span className={form.fakeButton}>העלאת תמונה</span>
+      </label>
 
-        {imagePreview && (
-          <img src={imagePreview} alt="preview" className={classes.previewImage} />
-        )}
+      {/* תצוגה מקדימה */}
+      {imagePreview && (
+        <img src={imagePreview} alt="preview" className={form.uploadThumb} />
+      )}
 
-        <button className={classes.button} type="submit">שלח קריאה</button>
-      </form>
-    </div>
+      <button
+        className={form.button}
+        onClick={handleSubmit}
+        type="button"
+        disabled={submitting}
+      >
+        {submitting ? "שולח…" : "שלח קריאה"}
+      </button>
+    </FormCard>
   );
 }

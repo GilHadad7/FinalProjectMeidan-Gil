@@ -1,3 +1,4 @@
+
 .formContainer {
     background: #f8f6f3;
     padding: 32px 16px;
@@ -77,5 +78,68 @@
   
   .button:hover {
     background: linear-gradient(90deg, #cbb7a0 0%, #e0cfc1 100%);
+  }
+  /* עמודת פעולות – מרכזת את הכפתורים ושומרת ריווח אחיד */
+  .wrapper {
+    width: 100vw;        /* תמיד יתפוס את כל רוחב החלון */
+    max-width: 100%;     /* בלי הגבלת רוחב */
+    padding: 1rem;
+  }
+  
+  .title {
+    font-size: 1.6rem;
+    margin-bottom: 1rem;
+    color: #5a4a3b;
+  }
+  .table {
+    width: 100% !important;
+    table-layout: auto;
+  }
+  .editInput {
+    width: 100%;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+  }
+  
+  .editRow {
+    background-color: #faf4ef;
+  }
+  
+  .previewImg {
+    max-width: 60px;
+    max-height: 60px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  
+  .actionsCell {
+    display: flex;
+    flex-direction: row; /* לוודא שזה בשורה */
+    justify-content: center;
+    align-items: center;
+    gap: 10px; /* רווח בין הכפתורים */
+  }
+  
+  .actionBtn {
+    background-color: #e7e0d8;
+    border: none;
+    border-radius: 6px;
+    padding: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    width: auto;  /* במקום 100% */
+    min-width: 35px; /* שיהיה קצת מקום לאייקון */
+  }
+  
+  
+  .actionBtn:hover {
+    background-color: #d4c5b4;
+  }
+  
+  .closedText {
+    color: rgb(255, 0, 0);
+    font-weight: bold;
   }
   

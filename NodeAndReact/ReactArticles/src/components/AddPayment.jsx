@@ -1,17 +1,27 @@
-import React, { useState, useEffect } from "react";
-import styles from "./AddPayment.module.css";
+// src/components/AddPayment.jsx
+import React, { useEffect, useState } from "react";
+import DatePicker, { registerLocale } from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { he } from "date-fns/locale";
+
+// קיט עיצוב אחיד
+import FormCard from "./ui/FormCard";
+import form from "./ui/FormKit.module.css";
+
+registerLocale("he", he);
 
 export default function AddPayment({ onAdd }) {
-  const [tenants, setTenants] = useState([]);
   const [buildings, setBuildings] = useState([]);
+  const [tenants, setTenants] = useState([]);
+  const [submitting, setSubmitting] = useState(false);
 
-  const [form, setForm] = useState({
+  const [paymentForm, setPaymentForm] = useState({
     building_id: "",
     tenant_id: "",
-    date: "",
+    payment_date: null, // Date object
     category: "",
     customCategory: "",
-    desc: "",
+    description: "",
     amount: "",
     status: "שולם",
   });
@@ -28,80 +38,109 @@ export default function AddPayment({ onAdd }) {
       .catch(console.error);
   }, []);
 
-  const handleChange = (e) => {
+  function handleChange(e) {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
+    setPaymentForm((prev) => ({ ...prev, [name]: value }));
+  }
 
-  const cleanStatus = (str) =>
-    (str || "")
+  function formatDateToYMD(date) {
+    if (!date) return "";
+    const d = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+    return d.toISOString().split("T")[0];
+  }
+
+  function cleanStatus(str) {
+    return (str || "")
       .normalize("NFKD")
-      .replace(/[\u200E\u200F\u202A-\u202E"“””]/g, "")
+      .replace(/[\u200E\u200F\u202A-\u202E"“”]/g, "")
       .trim();
+  }
 
-  const handleSubmit = (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
-    const categoryValue =
-      form.category === "אחר" ? form.customCategory.trim() : form.category;
+    if (submitting) return;
+
+    const {
+      building_id,
+      tenant_id,
+      payment_date,
+      category,
+      customCategory,
+      description,
+      amount,
+      status,
+    } = paymentForm;
+
+    if (!building_id) return alert("אנא בחר/י בניין");
+    if (!tenant_id) return alert("אנא בחר/י דייר");
+    if (!payment_date) return alert("אנא בחר/י תאריך");
+    const finalCategory = category === "אחר" ? customCategory.trim() : category;
+    if (!finalCategory) return alert("אנא בחר/י קטגוריה");
+    if (!amount || Number(amount) <= 0) return alert("אנא הזן/י סכום תקין");
 
     const payload = {
-      building_id: Number(form.building_id),
-      tenant_id: Number(form.tenant_id),
-      payment_date: form.date,
-      category: categoryValue,
-      description: form.desc,
-      amount: Number(form.amount),
-      status: cleanStatus(form.status),
+      building_id: Number(building_id),
+      tenant_id: Number(tenant_id),
+      payment_date: formatDateToYMD(payment_date),
+      category: finalCategory,
+      description: description.trim(),
+      amount: Number(amount),
+      status: cleanStatus(status),
     };
 
-    fetch("http://localhost:8801/api/payments", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    })
-      .then((res) => res.json())
-      .then(() => {
-        onAdd();
-        setForm({
-          building_id: "",
-          tenant_id: "",
-          date: "",
-          category: "",
-          customCategory: "",
-          desc: "",
-          amount: "",
-          status: "שולם",
-        });
-      })
-      .catch(console.error);
-  };
+    try {
+      setSubmitting(true);
+      const res = await fetch("http://localhost:8801/api/payments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        alert("שגיאה בהוספת תשלום");
+        return;
+      }
+
+      // איפוס טופס ורענון טבלה
+      setPaymentForm({
+        building_id: "",
+        tenant_id: "",
+        payment_date: null,
+        category: "",
+        customCategory: "",
+        description: "",
+        amount: "",
+        status: "שולם",
+      });
+      onAdd?.();
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
-    <form onSubmit={handleSubmit} className={styles.container}>
-
-      {/* בחר בניין ראשון */}
+    <FormCard /* בלי title כדי לא להכפיל את הכותרת הגדולה של הדף */>
+      {/* בניין */}
       <select
+        className={form.select}
         name="building_id"
-        value={form.building_id}
+        value={paymentForm.building_id}
         onChange={handleChange}
-        className={`${styles.input} ${styles.dropdown}`}
-        required
       >
         <option value="">בחר בניין</option>
         {buildings.map((b) => (
           <option key={b.building_id} value={b.building_id}>
-            {b.name}
+            {b.full_address || b.name}
           </option>
         ))}
       </select>
 
-      {/* אחר כך בחר דייר */}
+      {/* דייר */}
       <select
+        className={form.select}
         name="tenant_id"
-        value={form.tenant_id}
+        value={paymentForm.tenant_id}
         onChange={handleChange}
-        className={`${styles.input} ${styles.dropdown}`}
-        required
       >
         <option value="">בחר דייר</option>
         {tenants.map((t) => (
@@ -112,22 +151,26 @@ export default function AddPayment({ onAdd }) {
       </select>
 
       {/* תאריך */}
-      <input
-        type="date"
-        name="date"
-        value={form.date}
-        onChange={handleChange}
-        className={styles.input}
-        required
-      />
+      <div className={form.control}>
+        <DatePicker
+          selected={paymentForm.payment_date}
+          onChange={(date) =>
+            setPaymentForm((prev) => ({ ...prev, payment_date: date }))
+          }
+          dateFormat="dd/MM/yyyy"
+          locale="he"
+          className={form.input}
+          placeholderText="dd/mm/yyyy"
+          calendarStartDay={0}
+        />
+      </div>
 
       {/* קטגוריה */}
       <select
+        className={form.select}
         name="category"
-        value={form.category}
+        value={paymentForm.category}
         onChange={handleChange}
-        className={`${styles.input} ${styles.dropdown}`}
-        required
       >
         <option value="">בחר קטגוריה</option>
         <option value="תחזוקת בניין">תחזוקת בניין</option>
@@ -139,53 +182,61 @@ export default function AddPayment({ onAdd }) {
       </select>
 
       {/* קטגוריה חופשית אם נבחר "אחר" */}
-      {form.category === "אחר" && (
+      {paymentForm.category === "אחר" && (
         <input
+          className={form.input}
           name="customCategory"
-          value={form.customCategory}
-          onChange={handleChange}
           placeholder="הכנס קטגוריה אחרת"
-          className={styles.input}
-          required
+          value={paymentForm.customCategory}
+          onChange={handleChange}
+          autoComplete="off"
         />
       )}
 
       {/* תיאור */}
       <input
-        name="desc"
-        value={form.desc}
-        onChange={handleChange}
+        className={form.input}
+        name="description"
         placeholder="תיאור"
-        className={styles.input}
+        value={paymentForm.description}
+        onChange={handleChange}
+        autoComplete="off"
       />
 
       {/* סכום */}
       <input
         type="number"
+        className={form.input}
         name="amount"
-        value={form.amount}
-        onChange={handleChange}
         placeholder="סכום"
-        className={styles.input}
+        value={paymentForm.amount}
+        onChange={handleChange}
+        min="0"
+        step="0.01"
+        inputMode="decimal"
         required
       />
 
       {/* סטטוס */}
       <select
+        className={form.select}
         name="status"
-        value={form.status}
+        value={paymentForm.status}
         onChange={handleChange}
-        className={styles.input}
-        required
       >
         <option value="שולם">שולם</option>
         <option value="ממתין">ממתין</option>
         <option value="חוב">חוב</option>
       </select>
 
-      <button type="submit" className={styles.submitBtn}>
-        הוספת תשלום
+      <button
+        className={form.button}
+        onClick={handleSubmit}
+        type="button"
+        disabled={submitting}
+      >
+        {submitting ? "שולח…" : "הוספת תשלום"}
       </button>
-    </form>
+    </FormCard>
   );
 }
