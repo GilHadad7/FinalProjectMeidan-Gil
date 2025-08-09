@@ -1,14 +1,15 @@
 /* src/pages/DetailsOfBuildingsPage.module.css */
 
+/* ===== פריסת העמוד ===== */
 .pageWrapper {
   display: flex;
   direction: rtl;
   background: #f8f6f3;
   min-height: 100vh;
-  font-family: 'Heebo', Arial, sans-serif;
+  font-family: "Heebo", Arial, sans-serif;
 }
 
-/* הפאנל השמאלי (הטופס) */
+/* ===== הפאנל השמאלי (טופס) ===== */
 .leftPanel {
   width: 320px;
   background: #f8f6f3;
@@ -18,47 +19,54 @@
   border-left: 1px solid #e0dbd2;
 }
 
-/* מסתיר את תיבת החיפוש הישנה בשמאל */
+/* הסתרת חיפוש ישן בפאנל השמאלי (אם קיים) */
 .leftPanel .filtersRow,
 .leftPanel input[type="text"] {
   display: none !important;
 }
 
-/* הפאנל הימני (הטבלה) */
+/* ===== הפאנל הימני (טבלה) ===== */
 .rightPanel {
-  position: relative;
+  position: relative;           /* עוגן למיקום האבסולוטי של תיבת החיפוש */
   flex: 1;
-  padding: 32px 40px;
+  /* ריווח עליון מוגדל כדי לפנות מקום לכותרת + תיבת חיפוש שממוקמת אבסולוטית */
+  padding: 90px 40px 32px 40px; /* ← שים לב ל־90px למעלה */
   background: #f8f6f3;
   display: flex;
   flex-direction: column;
 }
 
-/* כפתור ניהול מימין למעלה */
-.manageBtn {
-  align-self: flex-end;
-  background: #d2bba0;
-  border: none;
-  border-radius: 16px;
-  padding: 8px 20px;
+/* ===== כותרת העמוד ===== */
+.pageTitle {
+  position: absolute;  /* ממקם את הכותרת בחלק העליון הימני */
+  top: 24px;
+  right: 40px;
+  font-size: 1.4rem;
   font-weight: bold;
-  cursor: pointer;
-  margin-bottom: 1rem;
+  color: #7a6248;
+  background: #ede8e0;
+  border-radius: 22px;
+  padding: 8px 36px;
+  margin: 0;           /* לא צריך מרווח כי היא מוחלטת */
 }
 
-/* מכולת החיפוש (ממוקמת מעל הטבלה, מימין) */
+/* ===== תיבת חיפוש חדשה (מעל הטבלה, מימין) ===== */
 .searchWrapper {
-  position: absolute;
-  top: 90px;    /* הגובה שבו תיבה תנוח */
-  right: 40px;  /* תואם את ה-padding של rightPanel */
-  z-index: 1;
+  position: absolute;  /* מצמיד לפאנל הימני */
+  top: 24px;           /* בקו אחד עם הכותרת */
+  right: 40px;         /* מיושר לריווח של הפאנל */
+  transform: translateY(20px); /* מוריד מתחת לכותרת (24px + 48px = 72px) */
+  z-index: 2;
+  width: 250px;
+  height: 100px; 
+  
+  
 }
 
-/* עיצוב תיבת החיפוש החדשה כך שתיראה זהה לזו המקורית */
 .searchBox {
   padding: 8px 16px;
   font-size: 1rem;
-  width: 280px;              /* תוכל לכוונן לפי צורך */
+  width: 280px;
   max-width: 100%;
   color: #7a6c5d;
   border: 1px solid #c7b89f;
@@ -66,32 +74,22 @@
   background: #fff;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   direction: rtl;
+  text-align: right;
+  outline: none;
+  transition: box-shadow .2s, border-color .2s, background .2s;
+}
+.searchBox:focus {
+  background: #fff;
+  border-color: #bfae9e;
+  box-shadow: 0 0 0 4px #d2bba022;
 }
 
-/* הדחקת הטבלה מטה כדי לא לחתוך אותה עם החיפוש */
-.rightPanel .table {
-  margin-top: 4.5rem;
-}
-
-/* כותרת העמודה */
-.pageTitle {
-  font-size: 1.4rem;
-  font-weight: bold;
-  color: #7a6248;
-  background: #ede8e0;
-  border-radius: 22px;
-  padding: 8px 36px;
-  margin-bottom: 16px;
-  align-self: flex-start;
-}
-
-/* שאר העיצוב לטבלה */
+/* ===== טבלה כללית (סגנון בסיסי – לא מחייב שהמחלקה קיימת על הטבלה המודולרית) ===== */
 .table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0 7px;
 }
-
 .table th {
   background: #e4dbcf;
   color: #7a6c5d;
@@ -101,7 +99,6 @@
   text-align: center;
   font-size: 1rem;
 }
-
 .table td {
   background: #fff;
   color: #4a3a2a;
@@ -110,4 +107,14 @@
   border-bottom: 1px solid #e4dbcf;
   border-radius: 0 0 10px 10px;
   font-size: 1rem;
+}
+
+/* ===== רספונסיביות קלה ===== */
+@media (max-width: 1200px) {
+  .searchBox { width: 220px; }
+}
+@media (max-width: 992px) {
+  .rightPanel { padding: 100px 20px 24px 20px; }
+  .pageTitle { right: 20px; }
+  .searchWrapper { right: 20px; transform: translateY(56px); }
 }

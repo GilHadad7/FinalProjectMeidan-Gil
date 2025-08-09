@@ -8,6 +8,9 @@
   font-family: "Heebo", "Segoe UI", sans-serif;
   font-size: 1.2rem;
   color: #4a3a2a;
+
+  /* ריווח קטן בין התיבה לטבלה */
+  margin-top: 14px;
 }
 
 /* -------------- עיצוב כללי ל-th ו-td -------------- */
@@ -158,11 +161,19 @@
   margin: 0;
 }
 
-/* ===================== סגנון תיבת חיפוש ===================== */
+/* ===================== סגנון תיבת חיפוש (מעל הטבלה) ===================== */
 .searchWrapper {
   display: flex;
   justify-content: flex-end;
-  margin: 0 20px 15px 20px;
+
+  /* מעלה את התיבה מעל הטבלה */
+  transform: translateY(-50px);
+
+  /* ריווחים נוחים לצדדים ולמטה */
+  margin: 0 20px 6px 20px;
+
+  position: relative;
+  z-index: 5; /* שלא תיחתך ע"י כותרת/צל */
 }
 
 .searchInput {
@@ -176,6 +187,7 @@
   width: 240px;
   transition: all 0.3s ease;
   outline: none;
+  text-align: right; /* נעים יותר ב־RTL */
 }
 
 .searchInput::placeholder {

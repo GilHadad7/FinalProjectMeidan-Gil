@@ -1,12 +1,11 @@
 /* קבוצת כפתורים */
 .actionBtns {
   display: flex;
-  flex-direction: row;    /* כפתורים אחד לצד השני */
+  flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 16px;              /* רווח בין הכפתורים */
-  width: auto; 
-  gap: 8px;   
+  gap: 8px;
+  width: auto;
 }
 
 /* כפתור עגול כללי */
@@ -17,70 +16,40 @@
   border: none;
   margin: 0;
   background-color: #e7e0d8;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: 0.2s;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
 }
+.roundBtn:hover { background-color: #d4c5b4; }
 
-.roundBtn:hover {
-  background-color: #d4c5b4;
-}
-
-/* צבעים לפי פעולה */
-.editBtn.roundBtn {
-  background-color: #e3f2fd; /* גוון תכלת בהיר */
-}
-.editBtn.roundBtn:hover {
-  background-color: #bbdefb;
+/* אימוג'י בתוך כפתור */
+.emojiIcon {
+  font-size: 18px;
+  line-height: 1;
+  display: inline-block;
+  transform: translateY(1px);
 }
 
-.deleteBtn.roundBtn {
-  background-color: #ffebee; /* גוון אדום בהיר */
-}
-.deleteBtn.roundBtn:hover {
-  background-color: #ffcdd2;
-}
-
-.bellBtn.roundBtn {
-  background-color: #fff8e1; /* גוון צהבהב פסטלי */
-}
-.bellBtn.roundBtn:hover {
-  background-color: #ffecb3;
-}
+/* צבעים לפי פעולה (אם תרצה להשתמש) */
+.editBtn.roundBtn { background-color: #e3f2fd; }
+.editBtn.roundBtn:hover { background-color: #bbdefb; }
+.deleteBtn.roundBtn { background-color: #ffebee; }
+.deleteBtn.roundBtn:hover { background-color: #ffcdd2; }
+.bellBtn.roundBtn { background-color: #fff8e1; }
+.bellBtn.roundBtn:hover { background-color: #ffecb3; }
 
 /* אנימציה קלה */
-.roundBtn svg {
-  font-size: 1rem;
-  transition: transform 0.15s ease;
-}
-.roundBtn:hover svg {
-  transform: scale(1.2);
-}
+.roundBtn svg { font-size: 1rem; transition: transform 0.15s ease; }
+.roundBtn:hover svg { transform: scale(1.2); }
 
 /* סטטוס תשלום */
-.statusPaid {
-  color: #2e7d32;
-  background: #dcedc8;
-  border: 1px solid #a5d6a7;
-}
-.statusDebt {
-  color: #c62828;
-  background: #ffcdd2;
-  border: 1px solid #ef9a9a;
-}
-.statusPending {
-  color: #f57f17;
-  background: #ffe082;
-  border: 1px solid #ffcc80;
-}
-
-/* סגנון אחיד לסטטוסים */
-.statusPaid,
-.statusDebt,
-.statusPending {
+.statusPaid { color: #2e7d32; background: #dcedc8; border: 1px solid #a5d6a7; }
+.statusDebt { color: #c62828; background: #ffcdd2; border: 1px solid #ef9a9a; }
+.statusPending { color: #f57f17; background: #ffe082; border: 1px solid #ffcc80; }
+.statusPaid, .statusDebt, .statusPending {
   padding: 6px 12px;
   border-radius: 999px;
   font-weight: bold;
@@ -90,7 +59,7 @@
   font-size: 0.9rem;
 }
 
-/* תגית קטגוריה מעוצבת */
+/* תגית קטגוריה מעוצבת (אם בשימוש) */
 .categoryBadge {
   display: inline-block;
   background-color: #eef3f8;
@@ -101,7 +70,7 @@
   font-weight: 500;
 }
 
-/* ===== עיצוב טבלה ושיפור חלל מת */
+/* ===== עיצוב טבלה ===== */
 .tableWrapper table {
   width: 100%;
   border-collapse: collapse;
@@ -111,30 +80,53 @@
 .tableWrapper td {
   padding: 0.75rem 1rem;
   word-wrap: break-word;
-  vertical-align: middle; /* מיישר ורטיקלי */
+  vertical-align: middle;
 }
 
-/* רוחב עמודות מותאם */
+/* רוחב עמודות (התאמות שלך) */
 .tableWrapper th:nth-child(1), .tableWrapper td:nth-child(1) { width: 800px; } /* שם דייר */
-.tableWrapper th:nth-child(2), .tableWrapper td:nth-child(2) { width: 70px; } /* שם בניין */
-.tableWrapper th:nth-child(3), .tableWrapper td:nth-child(3) { width: 80px; } /* סכום */
-.tableWrapper th:nth-child(4), .tableWrapper td:nth-child(4) { width: 60px; } /* תאריך */
-.tableWrapper th:nth-child(5), .tableWrapper td:nth-child(5) { width: 90px; } /* קטגוריה */
-.tableWrapper th:nth-child(6), .tableWrapper td:nth-child(6) { width: 90px; } /* תיאור */
-.tableWrapper th:nth-child(7), .tableWrapper td:nth-child(7) { width: 80px; } /* סטטוס */
-.tableWrapper th:nth-child(8), .tableWrapper td:nth-child(8) { width: 100px; } /* פעולות */
+.tableWrapper th:nth-child(2), .tableWrapper td:nth-child(2) { width: 70px; }  /* שם בניין */
+.tableWrapper th:nth-child(3), .tableWrapper td:nth-child(3) { width: 80px; }  /* סכום */
+.tableWrapper th:nth-child(4), .tableWrapper td:nth-child(4) { width: 80px; }  /* תאריך */
+.tableWrapper th:nth-child(5), .tableWrapper td:nth-child(5) { width: 90px; }  /* קטגוריה */
+.tableWrapper th:nth-child(6), .tableWrapper td:nth-child(6) { width: 90px; }  /* תיאור */
+.tableWrapper th:nth-child(7), .tableWrapper td:nth-child(7) { width: 80px; }  /* סטטוס */
+.tableWrapper th:nth-child(8), .tableWrapper td:nth-child(8) { width: 150px; } /* פעולות */
 
-/* התאמת כפתורי פעולות */
+/* >>> שדה תיאור במצב עריכה – קטן ויציב רק בעמודה 6 <<< */
+.tableWrapper td:nth-child(6) input:not([type="checkbox"]),
+.tableWrapper td:nth-child(6) textarea {
+  height: 36px;
+  max-height: 36px;
+  padding: 6px 8px;
+  border: 1px solid #d2bba0;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+  width: 100%;
+  line-height: 1.2;
+  resize: vertical;         /* אם תרצה לתת אפשרות להגדיל ידנית – תשאיר; אם לא, מחק שורה זו */
+}
+
+/* התאמת כפתורי פעולות – יישור אחיד תמיד */
 .tableWrapper td:nth-child(8) {
   display: flex;
-  justify-content:  space-between;
+  justify-content: center;   /* במקום space-between */
   align-items: center;
+  gap: 12px;                  /* רווח קבוע בין הכפתורים */
   padding: 0.5rem 1rem;
+  white-space: nowrap;
 }
 
-.tableWrapper th:nth-child(8),
-.tableWrapper td:nth-child(8) {
-  width: auto;
-  white-space: nowrap;
-  width: 150px;
+/* תופס מקום במקום הפעמון כשאין צורך */
+.placeholder {
+  width: 36px;
+  height: 36px;
+  display: inline-block;      /* תופס מקום, בלי רקע */
+}
+
+/* רספונסיביות קלה */
+@media (max-width: 900px) {
+  .roundBtn { width: 34px; height: 34px; }
+  .tableWrapper td:nth-child(8) { gap: 10px; }
 }

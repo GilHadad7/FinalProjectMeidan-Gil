@@ -3,7 +3,7 @@ import Select from "react-select";
 import BaseTable from "./ui/BaseTable";
 import classes from "./BuildingsTable.module.css";
 
-export default function BuildingsTable({ buildings, onDelete }) {
+export default function BuildingsTable({ buildings, onDelete, searchTerm = "" }) {
   const [editIdx, setEditIdx] = useState(null);
   const [editForm, setEditForm] = useState({
     name: "",
@@ -16,7 +16,6 @@ export default function BuildingsTable({ buildings, onDelete }) {
   });
 
   const [workers, setWorkers] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     fetch("http://localhost:3000/api/users?role=worker")
@@ -33,9 +32,7 @@ export default function BuildingsTable({ buildings, onDelete }) {
     setEditForm({ ...editForm, [e.target.name]: e.target.value });
   };
 
-  const handleEditCancel = () => {
-    setEditIdx(null);
-  };
+  const handleEditCancel = () => setEditIdx(null);
 
   const handleDelete = async (buildingId) => {
     if (!window.confirm("האם למחוק בניין זה?")) return;
@@ -47,11 +44,11 @@ export default function BuildingsTable({ buildings, onDelete }) {
   };
 
   const handleEditSave = async (idx) => {
-    // בדיקה שכל ה־IDs שהוכנסו קיימים ברשימת העובדים
+    // Validate that all worker IDs exist
     const entered = editForm.assigned_workers
-      ? editForm.assigned_workers.split(",").map(i => i.trim()).filter(i => i)
+      ? editForm.assigned_workers.split(",").map((i) => i.trim()).filter(Boolean)
       : [];
-    const invalid = entered.filter(id => !workers.some(w => w.user_id.toString() === id));
+    const invalid = entered.filter((id) => !workers.some((w) => w.user_id.toString() === id));
     if (invalid.length > 0) {
       return alert(`אין עובד כזה במערכת: ${invalid.join(", ")}`);
     }
@@ -72,22 +69,13 @@ export default function BuildingsTable({ buildings, onDelete }) {
     }
   };
 
+  // Filter by external search term (from the right search box)
   const filteredBuildings = buildings.filter((b) =>
-    b.name.toLowerCase().includes(searchTerm.toLowerCase())
+    (b.name || "").toLowerCase().includes((searchTerm || "").toLowerCase())
   );
 
   return (
-    <>
-      <div className={classes.searchWrapper}>
-        <input
-          type="text"
-          placeholder="🔍 חפש לפי שם בניין..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className={classes.searchInput}
-        />
-      </div>
-
+    <div className={classes.wrapper}>
       <BaseTable
         className={classes.table}
         headers={[
@@ -173,7 +161,9 @@ export default function BuildingsTable({ buildings, onDelete }) {
                           const w = workers.find(
                             (w) => w.user_id.toString() === id.trim()
                           );
-                          return { value: w.user_id.toString(), label: w.name };
+                          return w
+                            ? { value: w.user_id.toString(), label: w.name }
+                            : { value: id.trim(), label: `ID ${id.trim()}` };
                         })
                       : []
                   }
@@ -244,6 +234,6 @@ export default function BuildingsTable({ buildings, onDelete }) {
           )
         )}
       </BaseTable>
-    </>
+    </div>
   );
 }

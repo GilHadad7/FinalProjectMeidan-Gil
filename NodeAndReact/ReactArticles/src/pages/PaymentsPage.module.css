@@ -55,37 +55,57 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
+/* ===== שורת סינון ===== */
 .filtersRow {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;              /* טיפה יותר ריווח */
+  gap: 16px;
   align-items: flex-end;
-  margin-bottom: 28px;    /* יותר רווח מהטבלה */
-  padding-top: 12px;      /* רווח מעל */
+  margin-bottom: 20px;
+  padding-top: 12px;
 }
 
-/* עיצוב מוגדל לכל תיבת קלט/סינון */
+/* אחידות לכל השדות בשורת הסינון */
 .filtersRow input,
-.filtersRow select {
-  padding: 10px 14px;         /* יותר גובה */
+.filtersRow select,
+.dateFilterWrapper input[type="date"] {
+  padding: 10px 14px;
   border-radius: 12px;
   border: 1px solid #ccc;
   font-family: inherit;
-  font-size: 1.05rem;         /* טיפה יותר טקסט */
-  width: 180px;               /* טיפה יותר רחב */
+  font-size: 1.05rem;
+  width: 180px;
   background-color: #f8f6f3;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  box-sizing: border-box;
+  height: 35px;
 }
+
+/* ===== בלוקי התאריך ===== */
 .dateFilterWrapper {
   display: flex;
   flex-direction: column;
-  font-size: 0.85rem;        /* טיפה יותר קריא */
-  color: #555;
+  align-items: center;       /* הכותרת בדיוק מעל השדה */
+  min-width: 180px;
 }
 
 .dateFilterWrapper label {
-  margin-bottom: 6px;
-  padding-right: 4px;
-  text-align: right;
-  font-weight: 600;
+  margin-bottom: 8px;
+  padding-right: 2px;
+  text-align: center;
+  font-weight: 500;          /* מודגש יותר */
+  font-size: 1.2rem;         /* ← הגדלת המלל "מתאריך"/"עד תאריך" */
+  color: #7a6248;            /* צבע זהה לכותרת הדף */
+  letter-spacing: .1px;
+}
+
+/* רספונסיביות קלה */
+@media (max-width: 960px) {
+  .filtersRow input,
+  .filtersRow select,
+  .dateFilterWrapper input[type="date"] {
+    width: 160px;
+  }
+  .dateFilterWrapper { min-width: 160px; }
+  .dateFilterWrapper label { font-size: 1.1rem; }
 }

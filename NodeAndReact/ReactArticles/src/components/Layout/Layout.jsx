@@ -19,7 +19,7 @@ export default function Layout() {
           <NavLink to="/manager/schedule"        className={({isActive})=>isActive?classes.active:classes.link}>לוח זמנים</NavLink>
           <NavLink to="/manager/payments"        className={({isActive})=>isActive?classes.active:classes.link}>תשלומים</NavLink>
           <NavLink to="/manager/buildings"       className={({isActive})=>isActive?classes.active:classes.link}>ניהול בניינים</NavLink>
-          <NavLink to="/manager/assignments"     className={({isActive})=>isActive?classes.active:classes.link}>משימות</NavLink>
+          <NavLink to="/manager/assignments"     className={({isActive})=>isActive?classes.active:classes.link}>ניהול משימות</NavLink>
           <NavLink to="/manager/UserManagement"  className={({isActive})=>isActive?classes.active:classes.link}>ניהול משתמשים</NavLink>
           <NavLink to="/manager/suppliers"       className={({isActive})=>isActive?classes.active:classes.link}>ספקים חיצוניים</NavLink>
           <NavLink to="/manager/reports"         className={({isActive})=>isActive?classes.active:classes.link}>דוחות</NavLink>

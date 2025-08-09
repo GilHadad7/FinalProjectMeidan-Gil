@@ -10,6 +10,7 @@
   min-height: 100vh;
 }
 
+/* טופס (שמאל ב־RTL) */
 .formSection {
   width: 340px;
   background: #fff;
@@ -18,16 +19,8 @@
   padding: 30px 20px 20px 20px;
   margin-right: 20px;
 }
-.formTitle {
-  margin-bottom: 18px;
-  color: #4b4b4b;
-  font-size: 1.17em;
-}
-.form label {
-  display: block;
-  margin-bottom: 12px;
-  color: #333;
-}
+.formTitle { margin-bottom: 18px; color: #4b4b4b; font-size: 1.17em; }
+.form label { display: block; margin-bottom: 12px; color: #333; }
 .form input {
   width: 100%;
   padding: 7px 10px;
@@ -54,11 +47,10 @@
   background: linear-gradient(90deg, #e2d3bc 20%, #bca98c 100%);
 }
 
-.tableSection {
-  flex: 1;
-  min-width: 600px;
-}
+/* אזור הטבלה (ימין ב־RTL) */
+.tableSection { flex: 1; min-width: 600px; }
 
+/* אינפוטי עריכה בתוך הטבלה (אם יש) */
 .editInput {
   width: 100%;
   min-width: 90px;
@@ -78,85 +70,42 @@
   border-color: #8b7d5a;
   background: #f7f3e6;
 }
+
+/* —— שורת חיפוש מעל הטבלה (ימין) —— */
 .headerRow {
   display: flex;
-  justify-content: space-between; /* כותרת ימין, חיפוש שמאל */
+  justify-content: flex-end;   /* מצמיד לימין */
   align-items: center;
   flex-wrap: wrap;
   margin-bottom: 18px;
   padding: 0 20px;
 }
 
-.titleBox {
-  background: #e2d3bc;
-  border-radius: 18px;
-  padding: 12px 32px;
-  font-size: 1.5em;
-  font-weight: bold;
-  color: #3d3d3d;
-  box-shadow: 0 2px 8px #0002;
-  white-space: nowrap;
-}
-
-.searchBox {
+/* קופסת חיפוש בצד ימין */
+.searchBoxRight {
   display: flex;
   align-items: center;
-  flex-direction: row-reverse; /* כדי שהטקסט יהיה מימין לשדה */
   gap: 10px;
-  font-size: 1.1em;
-}
-.searchLabel {
-  font-weight: bold;
-  color: #333;
 }
 
+.searchLabel {
+  font-weight: 700;
+  color: #7a6c5d;
+}
 
 .searchInput {
-  border-radius: 12px;
-    border: 1px solid #ccc;
-    background: #e4dbcf;
-    padding: 10px 16px;
-    font-size: 1.6rem;
-    direction: rtl;
+  width: 300px;              /* גודל קבוע */
+  height: 30px;
+  padding: 0 16px;
+  border: 1px solid #d7cfc5;  /* מסגרת עדינה */
+  border-radius: 22px;
+  background: #fff;          /* רקע לבן */
+  color: #333;               /* טקסט כהה */
+  font-size: 1rem;
+  outline: none;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05); /* צל עדין */
 }
-.tasksTable {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0 6px;
-  background: none;
-  table-layout: fixed;
-}
-.tasksTable th, .tasksTable td {
-  overflow: visible;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  vertical-align: middle;
-  padding: 8px 6px;
-  border-bottom: 1px solid #eee;
-}
-.tasksTable th {
-  background: #f3ede2;
-  color: #4b4b4b;
-  font-weight: bold;
-}
-.tasksTable tr:last-child td {
-  border-bottom: none;
-}
-.actionsCol {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
-  text-align: center;
-}
-.iconEdit, .iconDelete {
-  margin: 0 5px;
-  cursor: pointer;
-  font-size: 1.2em;
-}
-.iconEdit:hover {
-  color: #bca98c;
-}
-.iconDelete:hover {
-  color: #e57373;
+
+.searchInput::placeholder {
+  color: #999; /* צבע placeholder */
 }

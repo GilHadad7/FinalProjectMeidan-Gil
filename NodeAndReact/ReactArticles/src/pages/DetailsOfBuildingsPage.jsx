@@ -69,7 +69,6 @@ export default function DetailsOfBuildingsPage() {
           <BuildingsForm onSuccess={triggerRefresh} />
         </div>
         <div className={classes.rightPanel}>
-          <h2 className={classes.pageTitle}>ניהול בניינים</h2>
           <div className={classes.searchWrapper}>
             <input
               type="text"
