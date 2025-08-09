@@ -33,7 +33,7 @@
   transform: translateY(1px);
 }
 
-/* צבעים לפי פעולה (אם תרצה להשתמש) */
+/* צבעים לפי פעולה */
 .editBtn.roundBtn { background-color: #e3f2fd; }
 .editBtn.roundBtn:hover { background-color: #bbdefb; }
 .deleteBtn.roundBtn { background-color: #ffebee; }
@@ -59,7 +59,7 @@
   font-size: 0.9rem;
 }
 
-/* תגית קטגוריה מעוצבת (אם בשימוש) */
+/* תגית קטגוריה מעוצבת */
 .categoryBadge {
   display: inline-block;
   background-color: #eef3f8;
@@ -83,17 +83,17 @@
   vertical-align: middle;
 }
 
-/* רוחב עמודות (התאמות שלך) */
-.tableWrapper th:nth-child(1), .tableWrapper td:nth-child(1) { width: 800px; } /* שם דייר */
-.tableWrapper th:nth-child(2), .tableWrapper td:nth-child(2) { width: 70px; }  /* שם בניין */
-.tableWrapper th:nth-child(3), .tableWrapper td:nth-child(3) { width: 80px; }  /* סכום */
-.tableWrapper th:nth-child(4), .tableWrapper td:nth-child(4) { width: 80px; }  /* תאריך */
-.tableWrapper th:nth-child(5), .tableWrapper td:nth-child(5) { width: 90px; }  /* קטגוריה */
-.tableWrapper th:nth-child(6), .tableWrapper td:nth-child(6) { width: 90px; }  /* תיאור */
-.tableWrapper th:nth-child(7), .tableWrapper td:nth-child(7) { width: 80px; }  /* סטטוס */
-.tableWrapper th:nth-child(8), .tableWrapper td:nth-child(8) { width: 150px; } /* פעולות */
+/* רוחב עמודות */
+.tableWrapper th:nth-child(1), .tableWrapper td:nth-child(1) { width: 800px; }
+.tableWrapper th:nth-child(2), .tableWrapper td:nth-child(2) { width: 70px; }
+.tableWrapper th:nth-child(3), .tableWrapper td:nth-child(3) { width: 80px; }
+.tableWrapper th:nth-child(4), .tableWrapper td:nth-child(4) { width: 80px; }
+.tableWrapper th:nth-child(5), .tableWrapper td:nth-child(5) { width: 90px; }
+.tableWrapper th:nth-child(6), .tableWrapper td:nth-child(6) { width: 90px; }
+.tableWrapper th:nth-child(7), .tableWrapper td:nth-child(7) { width: 80px; }
+.tableWrapper th:nth-child(8), .tableWrapper td:nth-child(8) { width: 150px; }
 
-/* >>> שדה תיאור במצב עריכה – קטן ויציב רק בעמודה 6 <<< */
+/* >>> שדה תיאור במצב עריכה – עמודה 6 <<< */
 .tableWrapper td:nth-child(6) input:not([type="checkbox"]),
 .tableWrapper td:nth-child(6) textarea {
   height: 36px;
@@ -105,28 +105,39 @@
   box-sizing: border-box;
   width: 100%;
   line-height: 1.2;
-  resize: vertical;         /* אם תרצה לתת אפשרות להגדיל ידנית – תשאיר; אם לא, מחק שורה זו */
+  resize: vertical;
 }
 
-/* התאמת כפתורי פעולות – יישור אחיד תמיד */
+/* כפתורי פעולות */
 .tableWrapper td:nth-child(8) {
   display: flex;
-  justify-content: center;   /* במקום space-between */
+  justify-content: center;
   align-items: center;
-  gap: 12px;                  /* רווח קבוע בין הכפתורים */
+  gap: 12px;
   padding: 0.5rem 1rem;
   white-space: nowrap;
 }
 
-/* תופס מקום במקום הפעמון כשאין צורך */
+/* מקום פעמון */
 .placeholder {
   width: 36px;
   height: 36px;
-  display: inline-block;      /* תופס מקום, בלי רקע */
+  display: inline-block;
 }
 
-/* רספונסיביות קלה */
+/* רספונסיביות */
 @media (max-width: 900px) {
   .roundBtn { width: 34px; height: 34px; }
   .tableWrapper td:nth-child(8) { gap: 10px; }
+}
+
+/* אחידות פונט בשדות החיפוש */
+.searchInput,
+.searchBoxRight select,
+.searchBoxRight input[type="date"],
+.searchBoxRight input[type="text"] {
+  font-family: 'Assistant', sans-serif; /* כמו בכותרות הטבלה */
+  font-weight: bold;
+  font-size: 0.95rem;
+  color: #333;
 }

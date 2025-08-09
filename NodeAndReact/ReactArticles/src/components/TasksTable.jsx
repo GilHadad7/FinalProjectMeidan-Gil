@@ -8,40 +8,24 @@ import BaseTable from "./ui/BaseTable";
 
 registerLocale("he", he);
 
-/**
- * Try parsing various date-string formats into a valid Date object.
- * Supports:
- *  - ISO full datetime (e.g. "2025-08-10T00:00:00.000Z")
- *  - "YYYY-MM-DD"
- *  - "D/M/YYYY" or "DD/MM/YYYY"
- *  - "D.M.YYYY" or "DD.MM.YYYY"
- * Returns null if parsing fails.
- */
+// Parse date string into Date (supports ISO, YYYY-MM-DD, DD/MM/YYYY, DD.MM.YYYY)
 function parseDateString(str) {
   if (!str) return null;
 
-  // 1) Full ISO (with T) or plain YYYY-MM-DD
   const isoTs = Date.parse(str);
-  if (!isNaN(isoTs)) {
-    return new Date(isoTs);
-  }
+  if (!isNaN(isoTs)) return new Date(isoTs);
 
-  // 2) Split by any non-digit
   const parts = str.trim().split(/\D+/).map(Number);
   if (parts.length === 3) {
     let [a, b, c] = parts;
-    // אם הראשון > 31, סביר שזה שנה
     let [y, m, d] = a > 31 ? [a, b, c] : [c, b, a];
     const date = new Date(y, m - 1, d);
     if (!isNaN(date.getTime())) return date;
   }
-
   return null;
 }
 
-/**
- * Format a Date into 'YYYY-MM-DD' in local timezone
- */
+// Format Date to 'YYYY-MM-DD' (local tz)
 function formatDateLocal(date) {
   const tzOffsetMs = date.getTimezoneOffset() * 60_000;
   const localDate = new Date(date.getTime() - tzOffsetMs);
@@ -52,35 +36,32 @@ export default function TasksTable({ tasks, search, onRefresh }) {
   const [editIdx, setEditIdx] = useState(null);
   const [editForm, setEditForm] = useState({});
 
+  // --- SEARCH: address + type + frequency (ONLY) ---
+  const norm = (v) => String(v ?? "").toLowerCase().trim();
+
   const filtered = tasks.filter((task) => {
-    const s = search.toLowerCase().trim();
-    if (!s) return true;
-    return [
-      task.full_address,
-      task.task_name,
-      task.type,
-      task.frequency,
-      task.worker,
-      getHebrewDay(task.next_date, task.frequency),
-      task.time
-    ]
+    const q = norm(search);
+    if (!q) return true;
+
+    const tokens = q.split(/\s+/); // support multi-word queries
+    const haystack = [task.full_address, task.type, task.frequency]
       .filter(Boolean)
-      .some((v) => v.toLowerCase().includes(s));
+      .map(norm)
+      .join(" | ");
+
+    // Require all words to appear in either address/type/frequency
+    return tokens.every((t) => haystack.includes(t));
   });
+  // -------------------------------------------------
 
   const handleEditClick = (idx) => {
     const task = filtered[idx];
     const [hour = "", minute = ""] = (task.task_time || "").split(":");
 
-    // parse the stored string
     const parsed = parseDateString(task.next_date);
-    // fallback ל־new Date(“2025-08-10”) אם המשך-API מחזיר ISO
     const fallback = new Date(task.next_date);
     const localNextDate =
-      parsed ||
-      (!isNaN(fallback.getTime())
-        ? fallback
-        : new Date()); // ברירת מחדל: היום
+      parsed || (!isNaN(fallback.getTime()) ? fallback : new Date());
 
     setEditIdx(idx);
     setEditForm({
@@ -132,7 +113,9 @@ export default function TasksTable({ tasks, search, onRefresh }) {
 
   const handleDelete = async (taskId) => {
     if (!window.confirm("האם למחוק את המשימה?")) return;
-    const res = await fetch(`http://localhost:3000/api/tasks/${taskId}`, { method: "DELETE" });
+    const res = await fetch(`http://localhost:3000/api/tasks/${taskId}`, {
+      method: "DELETE"
+    });
     if (res.ok) onRefresh();
     else alert("שגיאה במחיקה");
   };
@@ -275,10 +258,7 @@ export default function TasksTable({ tasks, search, onRefresh }) {
                   >
                     💾
                   </button>
-                  <button
-                    className={classes.btn}
-                    onClick={handleEditCancel}
-                  >
+                  <button className={classes.btn} onClick={handleEditCancel}>
                     ❌
                   </button>
                 </td>

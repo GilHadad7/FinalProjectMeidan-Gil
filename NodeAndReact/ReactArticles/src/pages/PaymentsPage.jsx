@@ -129,7 +129,7 @@ export default function PaymentsPage() {
 
   return (
     <FormWithTableLayout
-      title="טבלת תשלומים"
+      title="הוספת תשלומים"
       formComponent={<AddPayment buildingsList={buildingsList} onAdd={fetchPayments} />}
       summaryComponent={
         <div className={classes.summaryCards}>
@@ -149,13 +149,13 @@ export default function PaymentsPage() {
           <div className={classes.filtersRow}>
             <input
               type="text"
-              placeholder="חפש לפי דייר"
+              placeholder=" 🔍 חפש לפי דייר"
               value={filters.tenant}
               onChange={e => setFilters({ ...filters, tenant: e.target.value })}
             />
             <input
               type="text"
-              placeholder="חפש לפי בניין"
+              placeholder="🔍 חפש לפי בניין"
               value={filters.building}
               onChange={e => setFilters({ ...filters, building: e.target.value })}
             />

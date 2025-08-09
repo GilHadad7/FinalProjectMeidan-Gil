@@ -78,7 +78,6 @@ export default function AddPayment({ onAdd }) {
 
   return (
     <form onSubmit={handleSubmit} className={styles.container}>
-      <h2 className={styles.title}>הוספת תשלום חדש</h2>
 
       {/* בחר בניין ראשון */}
       <select

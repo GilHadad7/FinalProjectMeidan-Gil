@@ -65,20 +65,32 @@
   padding-top: 12px;
 }
 
-/* אחידות לכל השדות בשורת הסינון */
+/* אחידות לכל השדות בשורת הסינון (מראה לבן כמו שרצית) */
 .filtersRow input,
 .filtersRow select,
 .dateFilterWrapper input[type="date"] {
-  padding: 10px 14px;
-  border-radius: 12px;
-  border: 1px solid #ccc;
+  height: 42px;                       /* גובה אחיד */
+  padding: 0 14px;                    /* מרווחים פנימיים */
+  border-radius: 22px;
+  border: 1px solid #d7cfc5;
+  background: #fff;                   /* לבן */
+  color: #333;
   font-family: inherit;
   font-size: 1.05rem;
   width: 180px;
-  background-color: #f8f6f3;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
   box-sizing: border-box;
-  height: 35px;
+}
+
+/* תיקון חיתוך טקסט ב-select (סטטוס) + איחוד רינדור */
+.filtersRow select {
+  line-height: 1.2;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  direction: rtl;
+  text-align: right;
 }
 
 /* ===== בלוקי התאריך ===== */
@@ -93,10 +105,42 @@
   margin-bottom: 8px;
   padding-right: 2px;
   text-align: center;
-  font-weight: 500;          /* מודגש יותר */
-  font-size: 1.2rem;         /* ← הגדלת המלל "מתאריך"/"עד תאריך" */
-  color: #7a6248;            /* צבע זהה לכותרת הדף */
+  font-weight: 500;
+  font-size: 1.2rem;         /* “מתאריך / עד תאריך” גדול וקריא */
+  color: #7a6248;
   letter-spacing: .1px;
+}
+
+/* —— הפוך את כל שדות החיפוש לאותו פונט/משקל/גודל כמו כותרות הטבלה —— */
+.searchInput,
+.searchBoxRight input[type="text"],
+.searchBoxRight input[type="date"],
+.searchBoxRight select,
+.filtersRow input,
+.filtersRow select {
+  font-family: "Heebo", "Segoe UI", sans-serif;  /* כמו בכותרות הטבלה */
+  font-size: 1.2rem;                             /* כמו .table th */
+  font-weight: bold;                             /* כמו .table th */
+  color: #7a6c5d;                                /* כמו .table th */
+}
+
+/* placeholder תואם */
+.searchInput::placeholder,
+.searchBoxRight input::placeholder,
+.filtersRow input::placeholder {
+  color: #7a6c5d;
+  opacity: .8;
+}
+
+/* תמיכה ב-react-select (אם בשימוש) */
+.react-select__control .react-select__value-container,
+.react-select__single-value,
+.react-select__placeholder,
+.react-select__input-container input {
+  font-family: "Heebo", "Segoe UI", sans-serif !important;
+  font-size: 1.2rem !important;
+  font-weight: bold !important;
+  color: #7a6c5d !important;
 }
 
 /* רספונסיביות קלה */
@@ -105,6 +149,11 @@
   .filtersRow select,
   .dateFilterWrapper input[type="date"] {
     width: 160px;
+    height: 38px;
+  }
+  .filtersRow select {
+    padding-top: 3px;
+    padding-bottom: 3px;
   }
   .dateFilterWrapper { min-width: 160px; }
   .dateFilterWrapper label { font-size: 1.1rem; }

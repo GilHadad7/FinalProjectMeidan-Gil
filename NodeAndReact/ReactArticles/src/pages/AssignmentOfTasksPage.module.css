@@ -109,3 +109,10 @@
 .searchInput::placeholder {
   color: #999; /* צבע placeholder */
 }
+.searchInput::placeholder {
+  font-family: "Heebo", "Segoe UI", sans-serif; /* אותו פונט כמו בכותרות */
+  font-size: 1.2rem; /* אותו גודל כמו בכותרות */
+  font-weight: bold; /* אותו משקל כמו בכותרות */
+  color: #7a6c5d; /* אותו צבע כמו בכותרות */
+  opacity: 1; /* מבטל שקיפות ברירת מחדל של placeholder */
+}

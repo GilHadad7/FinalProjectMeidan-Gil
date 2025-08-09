@@ -28,6 +28,10 @@ input[type="number"] {
     font-size: 1rem;
     color: #4a3a2a;
     box-sizing: border-box;
+
+    /* ✅ פונט מותאם לשורת הסינון */
+    font-family: "Heebo", "Segoe UI", sans-serif;
+    font-weight: 500; /* מודגש יותר */
 }
 
 .submitBtn {
@@ -46,6 +50,7 @@ input[type="number"] {
 .submitBtn:hover {
     background: #695949;
 }
+
 .dropdown {
     max-height: 220px;
     overflow-y: auto;

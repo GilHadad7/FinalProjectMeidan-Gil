@@ -34,7 +34,7 @@ export default function AssignmentOfTasksPage() {
               className={classes.searchInput}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="🔍 חיפוש לפי כתובת, סוג משימה…"
+              placeholder="🔍 חיפוש לפי כתובת, סוג משימה , תדירות..."
               dir="rtl"
             />
           </div>
