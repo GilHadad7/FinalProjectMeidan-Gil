@@ -1,23 +1,45 @@
 .layoutWrapper {
-    display: flex;
-    padding: 2rem;
-    gap: 2rem;
-    direction: rtl;
-  }
-  
-  .formArea {
-    flex: 0.5;
-    background: #f7f1e8;
-    padding: 1.5rem;
-    border-radius: 16px;
-    box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
-  }
-  
-  .tableArea {
-    flex: 1.7;
-    background: white;
-    padding: 1rem;
-    border-radius: 16px;
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.08);
-  }
-  
+  display: flex;
+  padding: 2rem;
+  gap: 2rem;
+  direction: rtl;
+}
+
+/* צד ימין – טופס (כרטיס בז’) */
+.formArea {
+  flex: 0.5;
+  background: #f7f1e8;
+  padding: 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+}
+
+/* צד שמאל – טבלה (כרטיס לבן) */
+.tableArea {
+  flex: 1.7;
+  background: #ffffff;
+  padding: 1rem;
+  border-radius: 16px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.08);
+}
+
+/* ===== מצבים אופציונליים (לאירות נקודתית בלבד) ===== */
+
+/* מבטל רקע/צל/ריפוד – שימושי לעמוד תשלומים כדי להיראות כמו "ניהול בניינים" */
+.plainTableArea {
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  border-radius: 0;
+}
+
+/* אם תרצה גם לבטל את כרטיס הטופס (בדרך כלל לא צריך) */
+.plainFormArea {
+  background: transparent;
+  box-shadow: none;
+}
+
+/* עטיפה קומפקטית יותר אם תרצה להפחית מרווחים */
+.compactWrapper {
+  padding: 1rem;
+}

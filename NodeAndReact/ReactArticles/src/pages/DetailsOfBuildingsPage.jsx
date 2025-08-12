@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from "react";
+// src/pages/DetailsOfBuildingsPage.jsx
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import BuildingsForm from "../components/BuildingsForm";
 import BuildingsTable from "../components/BuildingsTable";
@@ -12,6 +13,19 @@ export default function DetailsOfBuildingsPage() {
   const [users, setUsers]             = useState([]);
   const [refreshFlag, setRefreshFlag] = useState(false);
   const [searchTerm, setSearchTerm]   = useState("");
+
+  const searchInputRef = useRef(null);
+
+  // 🔹 חדש: אם הגענו עם ?name=... נכניס את הערך לחיפוש
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const nameFromQuery = params.get("name");
+    if (nameFromQuery) {
+      setSearchTerm(nameFromQuery);
+      // אופציונלי: פוקוס לשדה החיפוש
+      setTimeout(() => searchInputRef.current?.focus(), 0);
+    }
+  }, [location.search]);
 
   useEffect(() => {
     fetch("http://localhost:3000/api/buildings")
@@ -49,13 +63,8 @@ export default function DetailsOfBuildingsPage() {
     return enrichedBuildings.filter((b) => {
       const matchName    = b.name?.toLowerCase().includes(term);
       const matchAddress = b.full_address?.toLowerCase().includes(term);
-
-      const workersStr = b.workersList
-        .map((w) => w.name)
-        .join(" ");
-
+      const workersStr   = b.workersList.map((w) => w.name).join(" ");
       const matchWorkers = workersStr.toLowerCase().includes(term);
-
       return matchName || matchAddress || matchWorkers;
     });
   }, [searchTerm, enrichedBuildings]);
@@ -71,8 +80,9 @@ export default function DetailsOfBuildingsPage() {
         <div className={classes.rightPanel}>
           <div className={classes.searchWrapper}>
             <input
+              ref={searchInputRef}
               type="text"
-              placeholder="🔍 חפש לפי כתובת, שם בניין או שם עובד..."
+              placeholder=" חפש לפי כתובת, שם בניין או שם עובד...                                             🔎"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className={classes.searchBox}

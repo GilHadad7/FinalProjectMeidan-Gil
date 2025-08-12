@@ -1,56 +1,151 @@
-.usersTable {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 7px;
-    background: transparent;
-    font-family: 'Heebo', Arial, sans-serif;
-    direction: rtl;
+/* ===== טבלת ספקים – עיצוב וטיפוגרפיה כמו בבניינים ===== */
+.suppliersTable {
+  width: 100%;
+  table-layout: fixed;                /* חלוקת רוחב יציבה כמו בבניינים */
+  border-collapse: separate;
+  border-spacing: 0 7px;
+  background: transparent;
+  direction: rtl;
+  font-family: "Heebo", "Segoe UI", sans-serif;  /* אותו פונט */
+  font-size: 1.2rem;                              /* בסיס זהה */
+  color: #4a3a2a;
+  margin-top: 14px;                               /* ריווח מעל הטבלה */
+
+  /* שליטה נוחה ברוחבי עמודות */
+  --col-name-min: 180px;
+  --col-name-max: 260px;
+
+  --col-field-min: 120px;
+  --col-field-max: 200px;
+
+  --col-phone-min: 120px;
+  --col-phone-max: 160px;
+
+  --col-email-min: 200px;
+  --col-email-max: 320px;
+
+  --col-actions-width: 150px;
 }
 
-.usersTable th {
-    background: #e4dbcf;
-    color: #7a6c5d;
-    font-weight: bold;
-    padding: 10px 0;
-    text-align: center;
-    border-radius: 10px 10px 0 0;
-  }
-  
-  .table td {
-    background: #fff;
-    padding: 10px 12px;
-    text-align: center;
-    border-bottom: 1px solid #e4dbcf;
-    border-radius: 0 0 10px 10px;
-    color: #4a3a2a;
-  }
-  
-  .input {
-    width: 100%;
-    padding: 7px 10px;
-    border-radius: 6px;
-    border: 1px solid #bca98c;
-    font-size: 1rem;
-    background: #fffbe8;
-  }
-  
-  .actions {
-    display: flex;
-    justify-content: center;
-    gap: 6px;
-  }
-  
-  .actions button {
-    background: #d2bba0;
-    border: none;
-    padding: 6px 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background 0.2s;
-  }
-  
-  .actions button:hover {
-    background: #bfae9e;
-  }
-  
+/* כותרות */
+.suppliersTable th {
+  background: #e4dbcf;
+  color: #7a6c5d;
+  font-weight: bold;
+  padding: 16px 10px;                 /* כמו בבניינים */
+  text-align: center;
+  border-radius: 10px 10px 0 0;
+  font-size: 1.2rem;                  /* כמו בבניינים */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* תאים */
+.suppliersTable td {
+  background: #fff;
+  color: #4a3a2a;
+  padding: 14px 10px;                 /* כמו בבניינים */
+  text-align: center;
+  border-bottom: 1px solid #e4dbcf;
+  border-radius: 0 0 10px 10px;
+  font-size: 1.4rem;                  /* כמו בבניינים */
+  font-weight: 500;                   /* כמו בבניינים */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* שורה + הובר */
+.suppliersTable tr {
+  box-shadow: 0 2px 6px #00000008;
+  transition: background 0.2s ease;
+}
+.suppliersTable tr:hover {
+  background: #f3f0ed;
+}
+
+/* ===== החלת רוחבי העמודות בעזרת המשתנים ===== */
+/* 1: שם ספק */
+.suppliersTable th:nth-child(1),
+.suppliersTable td:nth-child(1) {
+  min-width: var(--col-name-min);
+  max-width: var(--col-name-max);
+  white-space: normal;                /* מאפשר שבירת שורות */
+  overflow: visible;
+  text-overflow: unset;
+  word-break: break-word;
+}
+
+/* 2: תחום */
+.suppliersTable th:nth-child(2),
+.suppliersTable td:nth-child(2) {
+  min-width: var(--col-field-min);
+  max-width: var(--col-field-max);
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+  word-break: break-word;
+}
+
+/* 3: טלפון */
+.suppliersTable th:nth-child(3),
+.suppliersTable td:nth-child(3) {
+  min-width: var(--col-phone-min);
+  max-width: var(--col-phone-max);
+  white-space: nowrap;                /* טלפון בשורה אחת */
+}
+
+/* 4: מייל */
+.suppliersTable th:nth-child(4),
+.suppliersTable td:nth-child(4) {
+  min-width: var(--col-email-min);
+  max-width: var(--col-email-max);
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+  word-break: break-all;              /* שלא יפרק את הטבלה */
+  direction: ltr;                     /* מיילים מיושרים נכון */
+}
+.suppliersTable td:nth-child(4) a {
+  word-break: break-all;
+}
+
+/* 5: פעולות */
+.suppliersTable th:nth-child(5),
+.suppliersTable td:nth-child(5) {
+  width: var(--col-actions-width);
+  min-width: var(--col-actions-width);
+  white-space: nowrap;
+}
+
+/* ===== קלטים וכפתורים ===== */
+.input {
+  width: 100%;
+  padding: 10px 14px;                 /* ריווח נעים */
+  border-radius: 10px;
+  border: 1px solid #bca98c;
+  font: inherit;                      /* Heebo + גדלים */
+  background: #fffbe8;
+  box-sizing: border-box;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;                          /* כמו בבניינים */
+  align-items: center;
+  flex-wrap: nowrap;
+}
+.actions button {
+  background: #d2bba0;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 18px;
+  transition: background 0.2s;
+}
+.actions button:hover {
+  background: #bfae9e;
+}

@@ -1,135 +1,107 @@
 .table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 7px;
-    background: transparent;
-    direction: rtl;
-    font-family: "Heebo", "Segoe UI", sans-serif;
-    font-size: 1.2rem;
-    color: #4a3a2a;
-  }
-  
-  .table th,
-  .table td {
-    text-align: center;
-    vertical-align: middle;
-  }
-  
-  .table th {
-    background: #e4dbcf;
-    color: #7a6c5d;
-    font-weight: bold;
-    padding: 16px 10px;
-    border-radius: 10px 10px 0 0;
-    font-size: 1.2rem;
-  }
-  
-  .table td {
-    background: #fff;
-    padding: 14px 10px;
-    border-bottom: 1px solid #e4dbcf;
-    font-size: 1.4rem;
-    border-radius: 0 0 10px 10px;
-    font-weight: 500;
-  }
-  
-  .table tr {
-    box-shadow: 0 2px 6px #00000008;
-    transition: background 0.2s ease;
-  }
-  .table tr:hover {
-    background: #f3f0ed;
-  }
-  
-  .closedRow td,
-  .closedText {
-    color: red;
-    font-weight: bold;
-  }
-  
-  .actionGroup {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-  }
-  .actionBtn {
-    background: #d2bba0;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 18px;
-    transition: background 0.2s;
-  }
-  .actionBtn:hover {
-    background: #bfae9e;
-  }
-  
-  .editRow td input,
-  .editRow td select {
-    width: 100%;
-    padding: 10px 14px;
-    font-size: 1.1rem;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    background: #fdf7f2;
-    font-family: inherit;
-    box-sizing: border-box;
-  }
-  
-  .editRow td textarea {
-    resize: none;
-    min-height: 90px;
-    line-height: 1.4;
-    background: #fdf7f2;
-    border-radius: 10px;
-    border: 1px solid #ccc;
-    font-family: inherit;
-    padding: 10px 14px;
-  }
-  
-  .previewImg {
-    width: 100px;
-    height: 100px;
-    object-fit: cover;
-    border-radius: 10px;
-    cursor: pointer;
-    border: 1.5px solid #c7d0db;
-    background-color: #f9f9f9;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
-    margin-bottom: 6px;
-  }
-  
-  .editRow input[type="file"] {
-    margin-top: 6px;
-    font-size: 0.9rem;
-  }
-  
-  .editInput {
-    width: 100%;
-    padding: 10px 14px;
-    font-size: 1.1rem;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    background: #fdf7f2;
-    font-family: inherit;
-    box-sizing: border-box;
-  }
-  
-  .tableContainer {
-    background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
-    padding: 16px;
-    overflow-x: auto;
-  }
-  
-  .table th:first-child,
-  .table td:first-child {
-    min-width: 50px;
-    max-width: 50px;
-    width: 2px;
-    text-align: center;
-  }
-  
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 7px;
+  background: transparent;
+  direction: rtl;
+  font-family: "Heebo", "Segoe UI", sans-serif;
+  font-size: 1.2rem;
+  color: #4a3a2a;
+}
+
+.table th,
+.table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.table th {
+  background: #e4dbcf;
+  color: #7a6c5d;
+  font-weight: bold;
+  padding: 16px 10px;
+  border-radius: 10px 10px 0 0;
+  font-size: 1.2rem;
+}
+
+.table td {
+  background: #fff;
+  padding: 14px 10px;
+  border-bottom: 1px solid #e4dbcf;
+  font-size: 1.4rem;
+  border-radius: 0 0 10px 10px;
+  font-weight: 500;
+}
+
+.table tr {
+  box-shadow: 0 2px 6px #00000008;
+  transition: background 0.2s ease;
+}
+
+/* כדי שההובר ייראה למרות רקע לבן על ה-td */
+.table tr:hover td {
+  background: #f3f0ed;
+}
+
+/* שורות/טקסט מצב סגור */
+.closedRow td,
+.closedText {
+  color: red;
+  font-weight: bold;
+}
+
+/* קבוצת כפתורי פעולה אנכית */
+.actionGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.actionBtn {
+  background: #d2bba0;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 18px;
+  transition: background 0.2s;
+}
+
+.actionBtn:hover {
+  background: #bfae9e;
+}
+
+/* עריכת שורה */
+.editRow td input,
+.editRow td select {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 1.1rem;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background: #fdf7f2;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.editRow td textarea {
+  resize: none;
+  min-height: 90px;
+  line-height: 1.4;
+  background: #fdf7f2;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-family: inherit;
+  padding: 10px 14px;
+}
+
+/* תמונת תצוגה מקדימה */
+.previewImg {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 10px;
+  cursor: pointer;
+  border: 1.5px solid;
+}

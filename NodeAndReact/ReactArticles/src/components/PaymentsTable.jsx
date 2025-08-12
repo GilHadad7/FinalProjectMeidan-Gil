@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { FaSave, FaTimes } from "react-icons/fa";
 import classes from "./PaymentsTable.module.css";
 import BaseTable from "../components/ui/BaseTable";
 
@@ -23,7 +22,6 @@ export default function PaymentsTable({ payments, onEdit, onDelete }) {
       amount: Number(editForm.amount),
       status: editForm.status,
     };
-
     onEdit(updated);
     setEditingId(null);
     setEditForm({});
@@ -46,10 +44,8 @@ export default function PaymentsTable({ payments, onEdit, onDelete }) {
         } else if (res.status === 409) {
           const data = await res.json();
           const lastSent = new Date(data.last_sent).toLocaleString("he-IL");
-          alert(
-            `⚠️ כבר נשלחה תזכורת לדייר ${tenant_name} ב־24 השעות האחרונות.\nתזכורת אחרונה: ${lastSent}`
-          );
-        } else {
+          alert(`⚠️ כבר נשלחה תזכורת לדייר ${tenant_name} ב־24 השעות האחרונות.\nתזכורת אחרונה: ${lastSent}`);
+          } else {
           alert("⚠️ שגיאה בשליחת תזכורת");
         }
       })
@@ -69,12 +65,12 @@ export default function PaymentsTable({ payments, onEdit, onDelete }) {
           "סטטוס",
           "פעולות",
         ]}
+        plainContainer
+        containerStyle={{ background: "transparent", boxShadow: "none", padding: 0 }}
       >
         {payments.length === 0 ? (
           <tr>
-            <td colSpan="8" style={{ textAlign: "center" }}>
-              לא נמצאו תשלומים
-            </td>
+            <td colSpan="8" style={{ textAlign: "center" }}>לא נמצאו תשלומים</td>
           </tr>
         ) : (
           payments.map((p) => (
@@ -88,7 +84,9 @@ export default function PaymentsTable({ payments, onEdit, onDelete }) {
                     <input
                       name="amount"
                       type="number"
-                      value={editForm.amount}
+                      step="0.01"
+                      inputMode="decimal"
+                      value={editForm.amount ?? ""}
                       onChange={handleChange}
                     />
                   </td>
@@ -96,14 +94,14 @@ export default function PaymentsTable({ payments, onEdit, onDelete }) {
                     <input
                       name="payment_date"
                       type="date"
-                      value={editForm.payment_date}
+                      value={editForm.payment_date ?? ""}
                       onChange={handleChange}
                     />
                   </td>
                   <td>
                     <select
                       name="category"
-                      value={editForm.category}
+                      value={editForm.category ?? ""}
                       onChange={handleChange}
                       className={classes.selectInput}
                     >
@@ -118,14 +116,14 @@ export default function PaymentsTable({ payments, onEdit, onDelete }) {
                   <td>
                     <input
                       name="description"
-                      value={editForm.description}
+                      value={editForm.description ?? ""}
                       onChange={handleChange}
                     />
                   </td>
                   <td>
                     <select
                       name="status"
-                      value={editForm.status}
+                      value={editForm.status ?? ""}
                       onChange={handleChange}
                     >
                       <option value="שולם">שולם</option>
@@ -133,23 +131,35 @@ export default function PaymentsTable({ payments, onEdit, onDelete }) {
                       <option value="חוב">חוב</option>
                     </select>
                   </td>
+
+                  {/* פעולות (עריכה) */}
                   <td className={classes.actionsCell}>
-                    <button
-                      onClick={() => handleSave(p.payment_id)}
-                      className={classes.roundBtn}
-                      title="שמור"
-                      aria-label="שמור"
-                    >
-                      <FaSave />
-                    </button>
-                    <button
-                      onClick={handleCancel}
-                      className={classes.roundBtn}
-                      title="בטל"
-                      aria-label="בטל"
-                    >
-                      <FaTimes />
-                    </button>
+                    <div className={classes.actionsInner}>
+                      {/* שמור – מימין */}
+                      <button
+                        type="button"
+                        onClick={() => handleSave(p.payment_id)}
+                        className={`${classes.roundBtn} ${classes.saveBtn}`}
+                        title="שמור"
+                        aria-label="שמור"
+                      >
+                        <span className={classes.emojiIcon}>💾</span>
+                      </button>
+
+                      {/* בטל – משמאל לשמור */}
+                      <button
+                        type="button"
+                        onClick={handleCancel}
+                        className={`${classes.roundBtn} ${classes.cancelBtn}`}
+                        title="בטל"
+                        aria-label="בטל"
+                      >
+                        <span className={classes.emojiIcon}>❌</span>
+                      </button>
+
+                      {/* פלייסהולדר לשמירת פריסה תלת־משבצות */}
+                      <span className={`${classes.roundBtn} ${classes.ghost}`} aria-hidden="true" />
+                    </div>
                   </td>
                 </>
               ) : (
@@ -174,60 +184,59 @@ export default function PaymentsTable({ payments, onEdit, onDelete }) {
                       {p.status}
                     </span>
                   </td>
+
+                  {/* פעולות (קריאה) */}
                   <td className={classes.actionsCell}>
-                    {/* ✏️ עריכה */}
-                    <button
-                      onClick={() => {
-                        const localDate = new Date(
-                          p.payment_date
-                        ).toLocaleDateString("sv-SE");
-                        setEditingId(p.payment_id);
-                        setEditForm({
-                          tenant_id: p.tenant_id,
-                          building_id: p.building_id,
-                          payment_date: localDate,
-                          category: p.category,
-                          description: p.description,
-                          amount: p.amount,
-                          status: p.status,
-                        });
-                      }}
-                      className={classes.roundBtn}
-                      title="ערוך"
-                      aria-label="ערוך"
-                    >
-                      <span className={classes.emojiIcon}>✏️</span>
-                    </button>
-
-                    {/* 🗑️ מחיקה */}
-                    <button
-                      onClick={() => onDelete(p.payment_id)}
-                      className={classes.roundBtn}
-                      title="מחק"
-                      aria-label="מחק"
-                    >
-                      <span className={classes.emojiIcon}>🗑️</span>
-                    </button>
-
-                    {/* 🔔 פעמון (אם צריך) או placeholder לשמירת יישור */}
-                    {["חוב", "ממתין"].includes(p.status) ? (
+                    <div className={classes.actionsInner}>
+                      {/* ✏️ – תמיד מימין */}
                       <button
-                        onClick={() =>
-                          handleReminder(
-                            p.payment_id,
-                            p.tenant_id,
-                            p.tenant_name
-                          )
-                        }
-                        className={classes.roundBtn}
-                        title="שלח תזכורת"
-                        aria-label="שלח תזכורת"
+                        type="button"
+                        onClick={() => {
+                          const localDate = new Date(p.payment_date).toLocaleDateString("sv-SE");
+                          setEditingId(p.payment_id);
+                          setEditForm({
+                            tenant_id: p.tenant_id,
+                            building_id: p.building_id,
+                            payment_date: localDate,
+                            category: p.category,
+                            description: p.description,
+                            amount: p.amount,
+                            status: p.status,
+                          });
+                        }}
+                        className={`${classes.roundBtn} ${classes.editBtn}`}
+                        title="ערוך"
+                        aria-label="ערוך"
                       >
-                        <span className={classes.emojiIcon}>🔔</span>
+                        <span className={classes.emojiIcon}>✏️</span>
                       </button>
-                    ) : (
-                      <span className={classes.placeholder} aria-hidden="true" />
-                    )}
+
+                      {/* 🗑️ – באמצע */}
+                      <button
+                        type="button"
+                        onClick={() => onDelete(p.payment_id)}
+                        className={`${classes.roundBtn} ${classes.deleteBtn}`}
+                        title="מחק"
+                        aria-label="מחק"
+                      >
+                        <span className={classes.emojiIcon}>🗑️</span>
+                      </button>
+
+                      {/* 🔔 – שמאלי; אם אין, פלייסהולדר שקוף */}
+                      {["חוב", "ממתין"].includes(p.status) ? (
+                        <button
+                          type="button"
+                          onClick={() => handleReminder(p.payment_id, p.tenant_id, p.tenant_name)}
+                          className={`${classes.roundBtn} ${classes.bellBtn}`}
+                          title="שלח תזכורת"
+                          aria-label="שלח תזכורת"
+                        >
+                          <span className={classes.emojiIcon}>🔔</span>
+                        </button>
+                      ) : (
+                        <span className={`${classes.roundBtn} ${classes.ghost}`} aria-hidden="true" />
+                      )}
+                    </div>
                   </td>
                 </>
               )}

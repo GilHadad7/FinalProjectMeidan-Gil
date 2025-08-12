@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import classes from "./ServiceCallsTable.module.css";
 
 export default function ServiceCallsTable({ refreshFlag, setRefreshFlag, filters }) {
@@ -12,28 +12,57 @@ export default function ServiceCallsTable({ refreshFlag, setRefreshFlag, filters
   const [editedImage, setEditedImage] = useState(null);
   const [previewUrls, setPreviewUrls] = useState({});
 
-  useEffect(() => {
-    fetch("http://localhost:3000/api/service-calls")
-      .then((res) => res.json())
-      .then((data) => setCalls(data))
-      .catch((err) => console.error("Error fetching service calls:", err));
-  }, [refreshFlag]);
+  // --- helpers ---
+  // Keep only one row per call_id (latest by updated_at/created_at)
+  function uniqueById(arr) {
+    const map = new Map();
+    for (const item of (Array.isArray(arr) ? arr : [])) {
+      const key = item.call_id;
+      const curTS = new Date(item.updated_at || item.created_at || 0).getTime();
+      if (!map.has(key)) {
+        map.set(key, { item, ts: curTS });
+      } else if (curTS > map.get(key).ts) {
+        map.set(key, { item, ts: curTS });
+      }
+    }
+    return Array.from(map.values()).map(v => v.item);
+  }
 
-  const translateStatus = (status) => {
+  function translateStatus(status) {
     switch (status) {
       case "Open": return "פתוח";
       case "In Progress": return "בטיפול";
       case "Closed": return "סגור";
       default: return status;
     }
-  };
+  }
 
-  const filteredCalls = calls.filter((call) => {
-    if (filters.building && !call.building_address?.toLowerCase().includes(filters.building.toLowerCase())) return false;
-    if (filters.status && call.status !== filters.status) return false;
-    if (filters.service_type && call.service_type !== filters.service_type) return false;
-    return true;
-  });
+  useEffect(() => {
+    const ac = new AbortController();
+    fetch("http://localhost:3000/api/service-calls", { signal: ac.signal })
+      .then((res) => res.json())
+      .then((data) => {
+        const deduped = uniqueById(data).sort(
+          (a, b) => new Date(b.created_at) - new Date(a.created_at)
+        );
+        setCalls(deduped);
+      })
+      .catch((err) => {
+        if (err.name !== "AbortError") {
+          console.error("Error fetching service calls:", err);
+        }
+      });
+    return () => ac.abort();
+  }, [refreshFlag]);
+
+  const filteredCalls = useMemo(() => {
+    return calls.filter((call) => {
+      if (filters.building && !call.building_address?.toLowerCase().includes(filters.building.toLowerCase())) return false;
+      if (filters.status && call.status !== filters.status) return false;
+      if (filters.service_type && call.service_type !== filters.service_type) return false;
+      return true;
+    });
+  }, [calls, filters]);
 
   const handleDelete = async (callId) => {
     if (!window.confirm("האם אתה בטוח שברצונך למחוק את הקריאה?")) return;
@@ -65,11 +94,8 @@ export default function ServiceCallsTable({ refreshFlag, setRefreshFlag, filters
     formData.append("service_type", editedType);
     formData.append("location_in_building", editedLocation);
     if (editedCost !== "") formData.append("cost", editedCost);
-    if (editedStatus === "Closed" && user?.name) {
-      formData.append("closed_by", user.name);
-    } else {
-      formData.append("closed_by", "");
-    }
+    if (editedStatus === "Closed" && user?.name) formData.append("closed_by", user.name);
+    else formData.append("closed_by", "");
     if (editedImage) formData.append("image", editedImage);
 
     try {
@@ -79,7 +105,7 @@ export default function ServiceCallsTable({ refreshFlag, setRefreshFlag, filters
       });
       if (res.ok) {
         setEditingCallId(null);
-        setRefreshFlag((prev) => !prev);
+        setRefreshFlag((prev) => !prev); // refetch (will be deduped)
       } else {
         alert("שגיאה בעדכון הקריאה");
       }
@@ -91,7 +117,6 @@ export default function ServiceCallsTable({ refreshFlag, setRefreshFlag, filters
 
   return (
     <div className={classes.wrapper}>
-      <h2 className={classes.title}>הקריאות שלי</h2>
       <table className={classes.table}>
         <thead>
           <tr>
@@ -112,7 +137,11 @@ export default function ServiceCallsTable({ refreshFlag, setRefreshFlag, filters
           {filteredCalls.map((call) =>
             editingCallId === call.call_id ? (
               <tr key={call.call_id} className={classes.editRow}>
-                <td>{new Date(call.created_at).toLocaleDateString("he-IL")}<br />{new Date(call.created_at).toLocaleTimeString("he-IL")}</td>
+                <td>
+                  {new Date(call.created_at).toLocaleDateString("he-IL")}
+                  <br />
+                  {new Date(call.created_at).toLocaleTimeString("he-IL")}
+                </td>
                 <td>{call.created_by_name || "—"}</td>
                 <td>{call.building_address}</td>
                 <td>
@@ -134,50 +163,53 @@ export default function ServiceCallsTable({ refreshFlag, setRefreshFlag, filters
                   </select>
                 </td>
                 <td>{call.updated_by_name || "—"}</td>
-                <td><textarea value={editedDescription} onChange={(e) => setEditedDescription(e.target.value)} className={classes.editInput} rows={3} /></td>
-                <td><input type="text" value={editedLocation} onChange={(e) => setEditedLocation(e.target.value)} className={classes.editInput} /></td>
-                <td><input type="number" step="1" placeholder="0" value={editedCost} onChange={(e) => setEditedCost(e.target.value)} className={classes.editInput} /></td>
+                <td>
+                  <textarea value={editedDescription} onChange={(e) => setEditedDescription(e.target.value)} className={classes.editInput} rows={3} />
+                </td>
+                <td>
+                  <input type="text" value={editedLocation} onChange={(e) => setEditedLocation(e.target.value)} className={classes.editInput} />
+                </td>
+                <td>
+                  <input type="number" step="1" placeholder="0" value={editedCost} onChange={(e) => setEditedCost(e.target.value)} className={classes.editInput} />
+                </td>
                 <td>
                   {previewUrls[call.call_id] && (
-                    <img src={previewUrls[call.call_id]} alt="תמונה" className={classes.previewImg} onClick={() => window.open(previewUrls[call.call_id], "_blank")} />
+                    <img
+                      src={previewUrls[call.call_id]}
+                      alt="תמונה"
+                      className={classes.previewImg}
+                      onClick={() => window.open(previewUrls[call.call_id], "_blank")}
+                    />
                   )}
-                  <input type="file" accept="image/*" className={classes.editInput}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className={classes.editInput}
                     onChange={(e) => {
-                      const file = e.target.files[0];
-                      setEditedImage(file);
+                      const file = e.target.files?.[0];
+                      setEditedImage(file || null);
                       if (file) {
                         const reader = new FileReader();
                         reader.onloadend = () => {
-                          setPreviewUrls((prev) => ({
-                            ...prev,
-                            [call.call_id]: reader.result,
-                          }));
+                          setPreviewUrls((prev) => ({ ...prev, [call.call_id]: reader.result }));
                         };
                         reader.readAsDataURL(file);
                       }
-                    }} />
+                    }}
+                  />
                 </td>
                 <td className={classes.actionsEditModeCell}>
-  <button 
-    className={`${classes.actionBtnEditMode} ${classes.saveBtn}`} 
-    onClick={() => handleSave(call.call_id)} 
-    title="שמור"
-  >
-    💾
-  </button>
-  <button 
-    className={`${classes.actionBtnEditMode} ${classes.cancelBtn}`} 
-    onClick={() => setEditingCallId(null)} 
-    title="ביטול"
-  >
-    ❌
-  </button>
-</td>
-
+                  <button className={`${classes.actionBtnEditMode} ${classes.saveBtn}`} onClick={() => handleSave(call.call_id)} title="שמור">💾</button>
+                  <button className={`${classes.actionBtnEditMode} ${classes.cancelBtn}`} onClick={() => setEditingCallId(null)} title="ביטול">❌</button>
+                </td>
               </tr>
             ) : (
               <tr key={call.call_id}>
-                <td>{new Date(call.created_at).toLocaleDateString("he-IL")}<br />{new Date(call.created_at).toLocaleTimeString("he-IL")}</td>
+                <td>
+                  {new Date(call.created_at).toLocaleDateString("he-IL")}
+                  <br />
+                  {new Date(call.created_at).toLocaleTimeString("he-IL")}
+                </td>
                 <td>{call.created_by_name || "—"}</td>
                 <td>{call.building_address}</td>
                 <td>{call.service_type}</td>
@@ -186,13 +218,22 @@ export default function ServiceCallsTable({ refreshFlag, setRefreshFlag, filters
                 <td>{call.description || "—"}</td>
                 <td>{call.location_in_building || "—"}</td>
                 <td>{!isNaN(parseFloat(call.cost)) ? parseFloat(call.cost).toFixed(2) : "—"}</td>
-                <td>{call.image_url && (<img src={call.image_url} alt="תמונה" className={classes.previewImg} onClick={() => window.open(call.image_url, "_blank")} />)}</td>
+                <td>
+                  {call.image_url && (
+                    <img
+                      src={call.image_url}
+                      alt="תמונה"
+                      className={classes.previewImg}
+                      onClick={() => window.open(call.image_url, "_blank")}
+                    />
+                  )}
+                </td>
                 <td className={classes.actionsCell}>
-  <div className={classes.actionsGroup}>
-    <button className={classes.actionBtn} onClick={() => handleEdit(call)} title="ערוך">✏️</button>
-    <button className={classes.actionBtn} onClick={() => handleDelete(call.call_id)} title="מחק">🗑️</button>
-  </div>
-</td>
+                  <div className={classes.actionsGroup}>
+                    <button className={classes.actionBtn} onClick={() => handleEdit(call)} title="ערוך">✏️</button>
+                    <button className={classes.actionBtn} onClick={() => handleDelete(call.call_id)} title="מחק">🗑️</button>
+                  </div>
+                </td>
               </tr>
             )
           )}

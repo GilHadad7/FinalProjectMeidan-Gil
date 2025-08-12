@@ -1,8 +1,9 @@
-// ✅ ExternalSuppliersPage.jsx – גרסה חדשה עם חיבור ל-API וטופס/טבלה נפרדים
 import React, { useEffect, useState } from "react";
 import classes from "./ExternalSuppliersPage.module.css";
 import SupplierForm from "../components/SupplierForm";
 import SuppliersTable from "../components/SuppliersTable";
+import FiltersBar from "../components/ui/FiltersBar";
+import SearchInput from "../components/ui/SearchInput";
 
 export default function ExternalSuppliersPage() {
   const [suppliers, setSuppliers] = useState([]);
@@ -11,33 +12,33 @@ export default function ExternalSuppliersPage() {
   const [editForm, setEditForm] = useState({});
   const [refreshFlag, setRefreshFlag] = useState(false);
 
-
   useEffect(() => {
     fetch("http://localhost:3000/api/suppliers")
-      .then(res => res.json())
-      .then(data => setSuppliers(data))
-      .catch(err => console.error("Error loading suppliers:", err));
+      .then((res) => res.json())
+      .then((data) => setSuppliers(data))
+      .catch((err) => console.error("Error loading suppliers:", err));
   }, [refreshFlag]);
 
-  const triggerRefresh = () => setRefreshFlag(prev => !prev);
+  const triggerRefresh = () => setRefreshFlag((prev) => !prev);
 
-  
   const handleAdd = async (newSupplier) => {
     const res = await fetch("http://localhost:3000/api/suppliers", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newSupplier)
+      body: JSON.stringify(newSupplier),
     });
     if (res.ok) {
       const added = await res.json();
-      setSuppliers([...suppliers, added]);
+      setSuppliers((prev) => [...prev, added]);
     }
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm("למחוק את הספק?")) return;
-    const res = await fetch(`http://localhost:3000/api/suppliers/${id}`, { method: "DELETE" });
-    if (res.ok) setSuppliers(suppliers.filter(s => s.id !== id));
+    const res = await fetch(`http://localhost:3000/api/suppliers/${id}`, {
+      method: "DELETE",
+    });
+    if (res.ok) setSuppliers((prev) => prev.filter((s) => s.id !== id));
   };
 
   const handleEditSave = async () => {
@@ -45,41 +46,43 @@ export default function ExternalSuppliersPage() {
       alert("מספר טלפון לא תקין – חייב להכיל בין 7 ל־10 ספרות בלבד");
       return;
     }
-  
     const res = await fetch(`http://localhost:3000/api/suppliers/${editId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(editForm)
+      body: JSON.stringify(editForm),
     });
-  
     if (res.ok) {
       const updated = await res.json();
-      setSuppliers(suppliers.map(s => (s.id === editId ? updated : s)));
+      setSuppliers((prev) => prev.map((s) => (s.id === editId ? updated : s)));
       setEditId(null);
     }
   };
-  
 
-  const filtered = suppliers.filter(s => {
-    const searchLower = search.toLowerCase();
-    return [s.name, s.field, s.phone, s.email].some(v => (v || "").toLowerCase().includes(searchLower));
+  // סינון לפי החיפוש
+  const filtered = suppliers.filter((s) => {
+    const q = search.toLowerCase();
+    return [s.name, s.field, s.phone, s.email].some((v) =>
+      (v || "").toLowerCase().includes(q)
+    );
   });
 
   return (
     <div className={classes.pageWrapper}>
       <div className={classes.leftPanel}>
-        <SupplierForm onAdd={handleAdd} onSuccess={triggerRefresh}/>
+        <SupplierForm onAdd={handleAdd} onSuccess={triggerRefresh} />
       </div>
-      <div className={classes.rightPanel}>
-        <div className={classes.headerRow}>
-          <div className={classes.headerTitle}>ספקים חיצוניים</div>
-          <input
-            className={classes.searchInput}
-            placeholder="חיפוש..."
+
+      <div className={`${classes.rightPanel} ${classes.suppliersPage}`}>
+        {/* 🔎 חיפוש מעל הטבלה – בדיוק כמו בניהול משתמשים */}
+        <FiltersBar>
+          <SearchInput
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={setSearch}
+            placeholder="חפש לפי שם, תחום, טלפון או מייל…"
+            width={520}
           />
-        </div>
+        </FiltersBar>
+
         <SuppliersTable
           suppliers={filtered}
           editId={editId}
@@ -88,6 +91,7 @@ export default function ExternalSuppliersPage() {
           setEditForm={setEditForm}
           onDelete={handleDelete}
           onEditSave={handleEditSave}
+          search={search}          // לסינון פנימי (אותו ערך)
         />
       </div>
     </div>

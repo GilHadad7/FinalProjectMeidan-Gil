@@ -1,5 +1,5 @@
 // src/components/UserForm.jsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import FormCard from "./ui/FormCard";
 import form from "./ui/FormKit.module.css";
 
@@ -13,9 +13,19 @@ export default function UserForm({ onAdd }) {
     phone: "",
     email: "",
     password: "",
+    building_id: "", // ⬅️ חדש: יישלח רק אם role === "tenant"
   });
 
+  const [buildings, setBuildings] = useState([]); // ⬅️ חדש: רשימת בניינים
   const [validationError, setValidationError] = useState("");
+
+  // טעינת בניינים מהשרת
+  useEffect(() => {
+    fetch("http://localhost:3000/api/buildings")
+      .then((r) => r.json())
+      .then((data) => setBuildings(Array.isArray(data) ? data : []))
+      .catch((e) => console.error("Error loading buildings:", e));
+  }, []);
 
   function handleInputChange(e) {
     const { name, value } = e.target;
@@ -51,7 +61,7 @@ export default function UserForm({ onAdd }) {
       password: userFormData.password, // אל תטרים סיסמאות
     };
 
-    const { name, id_number, role, phone, email, password } = payload;
+    const { name, id_number, role, phone, email, password, building_id } = payload;
 
     if (!name || !id_number || !role || !phone || !email || !password) {
       setValidationError("יש למלא את כל השדות");
@@ -74,8 +84,20 @@ export default function UserForm({ onAdd }) {
       return;
     }
 
+    // אם זה דייר – חייב לבחור בניין
+    if (role === "tenant" && !building_id) {
+      setValidationError("דייר חייב להיות משויך לבניין. בחר בניין מהרשימה.");
+      return;
+    }
+
+    // אם זה לא דייר – לא שולחים building_id
+    if (payload.role !== "tenant") {
+      delete payload.building_id;
+    }
+
     await onAdd(payload);
 
+    // ניקוי טופס
     setUserFormData({
       name: "",
       id_number: "",
@@ -83,6 +105,7 @@ export default function UserForm({ onAdd }) {
       phone: "",
       email: "",
       password: "",
+      building_id: "",
     });
   }
 
@@ -118,10 +141,27 @@ export default function UserForm({ onAdd }) {
         onChange={handleInputChange}
       >
         <option value="">בחר תפקיד</option>
-        <option value="manager">manager</option>
-        <option value="worker">worker</option>
-        <option value="tenant">tenant</option>
+        <option value="manager">מנהל</option>
+        <option value="worker">עובד</option>
+        <option value="tenant">דייר</option>
       </select>
+
+      {/* ⬇️ שדה שיוך בניין – מוצג רק כשנבחר דייר */}
+      {userFormData.role === "tenant" && (
+        <select
+          className={form.select}
+          name="building_id"
+          value={userFormData.building_id}
+          onChange={handleInputChange}
+        >
+          <option value="">בחר בניין…</option>
+          {buildings.map((b) => (
+            <option key={b.building_id ?? b.id} value={b.building_id ?? b.id}>
+              {b.name ?? b.full_address ?? "בניין ללא שם"}
+            </option>
+          ))}
+        </select>
+      )}
 
       <input
         type="text"
@@ -146,7 +186,7 @@ export default function UserForm({ onAdd }) {
         autoComplete="email"
       />
 
-      {/* סיסמה + כפתור עין (לא מכסה את כל השדה) */}
+      {/* סיסמה + כפתור עין */}
       <div className={form.passwordField}>
         <input
           className={form.input}

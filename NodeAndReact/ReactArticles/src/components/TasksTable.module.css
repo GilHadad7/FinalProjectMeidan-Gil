@@ -1,94 +1,122 @@
+/* רוחבי עמודות דרך colWidths ב-TasksTable.jsx */
 .table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 8px;
-    font-family: "Heebo", sans-serif;
-    direction: rtl;
-    font-size: 1.1rem;
-    background: none;
-  }
-  
-  .table th {
-    background: #f3ede2;
-    color: #4b4b4b;
-    padding: 12px 10px;
-    font-weight: bold;
-    text-align: center;
-    border-radius: 10px 10px 0 0;
-  }
-  
-  .table td {
-    background: #fff;
-    padding: 10px 12px;
-    text-align: center;
-    border-bottom: 1px solid #eee;
-    border-radius: 0 0 10px 10px;
-    color: #3d3d3d;
-  }
-  
-  .input, .selectTime {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 6px 8px;
-    font-size: 1rem;
-    min-height: 36px;
-  }
-  
-  .actions, .actionsCol {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 6px;
-  }
-  
-  .timeRow {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    justify-content: center;
-  }
-  
-  .btn {
-    background: #d2bba0;
-    border: none;
-    padding: 6px 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background 0.2s;
-  }
-  
-  .btn:hover {
-    background: #bfae9e;
-  }
-  
-  .timeRow {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    direction: ltr;
-  }
-  
-  .selectTime {
-    padding: 10px 12px;
-    font-size: 1.4rem;
-    background: #e4dbcf;
-    border: 1px solid #ccc;
-    border-radius: 12px;
-    width: 80px;
-    text-align: center;
-    color: #4b3f35;
-  }
-  th:nth-child(9), td:nth-child(9) {
-    min-width: 40px;
-    width: 140px;
-    max-width: 160px;
-  }
-  th:nth-child(1), td:nth-child(1) {
-    min-width: 40px;
-    width: 40px;
-    max-width: 40px;
-  }
-  
-  
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+  background: none;
+  direction: rtl;
+
+  /* טיפוגרפיה כמו בניהול בניינים */
+  font-family: "Heebo", "Segoe UI", sans-serif;
+  font-size: 1.1rem;
+  color: #4a3a2a;
+}
+
+/* תאימות טקסט בתאים */
+.table th,
+.table td {
+  text-align: center;
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* כותרות – זהות לניהול בניינים */
+.table th {
+  background: #e4dbcf;
+  color: #7a6c5d;
+  padding: 12px 10px;
+  font-weight: bold;
+  border-radius: 10px 10px 0 0;
+}
+
+/* תאים רגילים */
+.table td {
+  background: #fff;
+  padding: 10px 12px;
+  text-align: center;
+  border-bottom: 1px solid #e4dbcf;
+  border-radius: 0 0 10px 10px;
+  color: #3d3d3d;
+}
+
+/* הובר */
+.table tr {
+  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+  transition: background 0.2s ease;
+}
+.table tr:hover td {
+  background: #f3f0ed;
+}
+
+/* קלטים */
+.input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  font-size: 1rem;
+  min-height: 36px;
+  font-family: inherit;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background: #fdf7f2;
+}
+.selectBtnFrequency {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  min-height: 36px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background: #fdf7f2;
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+/* שעה – מראה של טקסט רגיל, עריכה ידנית */
+.timeInput {
+  width: 100%;
+  box-sizing: border-box;
+  font: inherit;
+  text-align: center;
+  background: transparent;
+  border: none;
+  padding: 0;
+  height: 28px;
+  direction: ltr;
+}
+.timeInput:focus {
+  outline: 2px solid #d2bba0;
+  border-radius: 6px;
+  background: #fff;
+}
+
+/* פעולות */
+.actions,
+.actionsCol {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.btn {
+  background: #d2bba0;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.2s;
+}
+.btn:hover { background: #bfae9e; }
+
+/* כתובת – לא לחתוך שורות ארוכות */
+.addr {
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* (אין nth-child – הרוחבים דרך colWidths) */

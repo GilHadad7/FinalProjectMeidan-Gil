@@ -17,82 +17,55 @@ export default function PaymentsPage() {
     toDate: '',
   });
 
-  useEffect(() => {
-    fetchPayments();
-  }, []);
+  useEffect(() => { fetchPayments(); }, []);
 
   const fetchPayments = () => {
     fetch("http://localhost:8801/api/payments")
       .then(res => res.json())
       .then(data => setPayments(Array.isArray(data) ? data : []))
-      .catch(err => {
-        console.error("Error fetching payments:", err);
-        setPayments([]);
-      });
+      .catch(err => { console.error("Error fetching payments:", err); setPayments([]); });
   };
 
-  const cleanString = (str) => {
-    return (str || "")
-      .normalize("NFKD")
+  const cleanString = (str) =>
+    (str || "").normalize("NFKD")
       .replace(/[\u200E\u200F\u202A-\u202E]/g, "")
       .replace(/\s+/g, "")
       .trim()
       .toLowerCase();
-  };
 
-  // applyFilters עם סינון ותיקון טווח תאריכים ו- sort לפי קרבה ל"היום"
   const applyFilters = useCallback(() => {
     let result = payments;
 
-    if (filters.tenant) {
-      result = result.filter(p => p.tenant_name.includes(filters.tenant));
-    }
-    if (filters.building) {
-      result = result.filter(p => p.building_name?.includes(filters.building));
-    }
-    if (filters.status) {
-      result = result.filter(p => cleanString(p.status) === cleanString(filters.status));
-    }
+    if (filters.tenant)   result = result.filter(p => p.tenant_name.includes(filters.tenant));
+    if (filters.building) result = result.filter(p => p.building_name?.includes(filters.building));
+    if (filters.status)   result = result.filter(p => cleanString(p.status) === cleanString(filters.status));
     if (filters.fromDate) {
-      const from = new Date(filters.fromDate).setHours(0, 0, 0, 0);
-      result = result.filter(p => {
-        const paymentDate = new Date(p.payment_date).setHours(0, 0, 0, 0);
-        return paymentDate >= from;
-      });
+      const from = new Date(filters.fromDate).setHours(0,0,0,0);
+      result = result.filter(p => new Date(p.payment_date).setHours(0,0,0,0) >= from);
     }
     if (filters.toDate) {
-      const to = new Date(filters.toDate).setHours(0, 0, 0, 0);
-      result = result.filter(p => {
-        const paymentDate = new Date(p.payment_date).setHours(0, 0, 0, 0);
-        return paymentDate <= to;
-      });
+      const to = new Date(filters.toDate).setHours(0,0,0,0);
+      result = result.filter(p => new Date(p.payment_date).setHours(0,0,0,0) <= to);
     }
 
-    // מיון תוצאות לפי קרבה לתאריך היום
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    result = [...result].sort((a, b) => {
-      const da = Math.abs(new Date(a.payment_date).setHours(0, 0, 0, 0) - today);
-      const db = Math.abs(new Date(b.payment_date).setHours(0, 0, 0, 0) - today);
+    const today = new Date(); today.setHours(0,0,0,0);
+    result = [...result].sort((a,b) => {
+      const da = Math.abs(new Date(a.payment_date).setHours(0,0,0,0) - today);
+      const db = Math.abs(new Date(b.payment_date).setHours(0,0,0,0) - today);
       return da - db;
     });
 
     setFilteredPayments(result);
   }, [payments, filters]);
 
-  useEffect(() => {
-    applyFilters();
-  }, [filters, payments, applyFilters]);
+  useEffect(() => { applyFilters(); }, [filters, payments, applyFilters]);
 
   const handleDelete = (paymentId) => {
-    if (window.confirm("האם אתה בטוח שברצונך למחוק את התשלום?")) {
-      fetch(`http://localhost:8801/api/payments/${paymentId}`, {
-        method: "DELETE",
-      })
-        .then(res => res.json())
-        .then(() => fetchPayments())
-        .catch(err => console.error("Error deleting payment:", err));
-    }
+    if (!window.confirm("האם אתה בטוח שברצונך למחוק את התשלום?")) return;
+    fetch(`http://localhost:8801/api/payments/${paymentId}`, { method: "DELETE" })
+      .then(res => res.json())
+      .then(() => fetchPayments())
+      .catch(err => console.error("Error deleting payment:", err));
   };
 
   const handleEdit = (updatedPayment) => {
@@ -117,45 +90,35 @@ export default function PaymentsPage() {
       });
   };
 
-  const totalPaid = filteredPayments.reduce(
-    (sum, p) => sum + (p.status === "שולם" ? Number(p.amount) : 0),
-    0
-  );
-  const openDebts = filteredPayments.reduce(
-    (sum, p) => sum + (p.status !== "שולם" ? Number(p.amount) : 0),
-    0
-  );
+  const totalPaid   = filteredPayments.reduce((s,p) => s + (p.status === "שולם" ? Number(p.amount) : 0), 0);
+  const openDebts   = filteredPayments.reduce((s,p) => s + (p.status !== "שולם" ? Number(p.amount) : 0), 0);
   const debtTenants = filteredPayments.filter(p => p.status !== "שולם").map(p => p.tenant_name);
 
   return (
     <FormWithTableLayout
       title="הוספת תשלומים"
       formComponent={<AddPayment buildingsList={buildingsList} onAdd={fetchPayments} />}
+
       summaryComponent={
         <div className={classes.summaryCards}>
-          <div className={classes.card}>
-            💰 סה״כ גבייה: <b>{totalPaid.toLocaleString()} ₪</b>
-          </div>
-          <div className={classes.card}>
-            ❌ חובות פתוחים: <b>{openDebts.toLocaleString()} ₪</b>
-          </div>
-          <div className={classes.card}>
-            🧍‍♂️ דיירים חייבים: <b>{debtTenants.length}</b>
-          </div>
+          <div className={classes.card}>💰 סה״כ גבייה: <b>{totalPaid.toLocaleString()} ₪</b></div>
+          <div className={classes.card}>❌ חובות פתוחים: <b>{openDebts.toLocaleString()} ₪</b></div>
+          <div className={classes.card}>🧍‍♂️ דיירים חייבים: <b>{debtTenants.length}</b></div>
         </div>
       }
+
       tableComponent={
         <>
           <div className={classes.filtersRow}>
             <input
               type="text"
-              placeholder=" 🔍 חפש לפי דייר"
+              placeholder="חפש לפי דייר                    🔎"
               value={filters.tenant}
               onChange={e => setFilters({ ...filters, tenant: e.target.value })}
             />
             <input
               type="text"
-              placeholder="🔍 חפש לפי בניין"
+              placeholder="חפש לפי בניין                   🔎"
               value={filters.building}
               onChange={e => setFilters({ ...filters, building: e.target.value })}
             />
@@ -168,6 +131,7 @@ export default function PaymentsPage() {
               <option value="ממתין">ממתין</option>
               <option value="חוב">חוב</option>
             </select>
+
             <div className={classes.dateFilterWrapper}>
               <label>מתאריך</label>
               <input
@@ -193,6 +157,13 @@ export default function PaymentsPage() {
           />
         </>
       }
+
+      /* ↓ זה מה שמוריד את הרקע הלבן */
+      plainTableArea
+      /* ↓ מקטין ריווח כללי של הפריסה */
+      compact
+      /* ↓ כוונון נוסף לריווח העליון בעמוד הזה */
+      wrapperClassName={classes.tightTop}
     />
   );
 }

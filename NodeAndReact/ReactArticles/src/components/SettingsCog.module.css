@@ -1,0 +1,89 @@
+/* פלטת צבעים תואמת לפורמים */
+:root { --bg-card:#fbf9f5; --bg-input:#f5efe6; --bd:#e9dfcf; --ink:#3b2f22; --ink-sub:#7a6c5d; --btn:#e8dccb; --btn-hover:#dfd1bc; }
+
+.wrapper { position: relative; display: inline-block; }
+
+/* כפתור גלגל */
+.cogBtn {
+  background: transparent; border: none; font-size: 20px; cursor: pointer;
+  padding: 8px; line-height: 1; border-radius: 50%;
+}
+.cogBtn:hover { background: rgba(0,0,0,0.06); }
+
+/* כרטיס הפאנל */
+.panel {
+  position: absolute; top: 42px; right: 0; width: 320px;
+  background: var(--bg-card);
+  border: 1px solid var(--bd);
+  border-radius: 20px;
+  box-shadow: 0 6px 22px rgba(0,0,0,.08);
+  padding: 16px;
+  z-index: 1000;
+  animation: pop .12s ease-out;
+  font-family: "Heebo","Segoe UI",sans-serif;
+  color: var(--ink);
+}
+@keyframes pop { from { transform: translateY(-4px); opacity:.0 } to { transform: translateY(0); opacity:1 } }
+
+/* כותרת */
+.header { display:flex; align-items:center; gap:12px; padding-bottom:10px; }
+.avatar {
+  width:46px; height:46px; border-radius:50%;
+  background: #efe7da; display:flex; align-items:center; justify-content:center;
+  font-weight:800; color:#5b4634;
+}
+.meta { display:flex; flex-direction:column; }
+.name { font-weight:800; font-size:1.1rem; }
+.role { font-size:.85rem; color: var(--ink-sub); }
+
+/* שדות בסגנון FormKit */
+.field { display:flex; flex-direction:column; gap:6px; margin-top:10px; }
+.label { font-weight:800; letter-spacing:.2px; color: var(--ink); }
+.input {
+  background: var(--bg-input);
+  border: 1px solid var(--bd);
+  border-radius: 14px;
+  padding: 10px 12px;
+  font-size: 0.98rem;
+  outline: none;
+}
+.input:focus { box-shadow: 0 0 0 2px rgba(59,47,34,0.08); }
+
+/* מפריד */
+.divider { height:1px; background: var(--bd); margin: 12px 0; }
+
+/* צ'קבוקס נקי */
+.checkboxRow { display:flex; align-items:center; gap:10px; user-select:none; cursor:pointer; font-weight:700; }
+.checkbox { accent-color:#b8925c; transform: scale(1.1); }
+
+/* כפתורים כמו אצלך בפורמים */
+.actions { display:flex; flex-direction:column; gap:10px; margin-top:8px; }
+.btn, .btnSecondary {
+  width:100%; border:none; border-radius:14px; padding:12px; cursor:pointer;
+  font-weight:800; font-family:"Heebo","Segoe UI",sans-serif; transition: background .16s ease;
+}
+.btn { background: var(--btn); color: #3b2f22; }
+.btn:hover { background: var(--btn-hover); }
+.btnSecondary {
+  background: #efe7da; color:#3b2f22; border:1px solid var(--bd);
+}
+.btnSecondary:hover { background:#e8decd; }
+
+/* תמיכה במצב כהה (אופציונלי) */
+:root[data-theme="dark"] .panel { background:#2a2927; color:#f2f2f2; border-color:#3a3a3a; }
+:root[data-theme="dark"] .input { background:#333; border-color:#444; color:#eee; }
+:root[data-theme="dark"] .divider { background:#3a3a3a; }
+:root[data-theme="dark"] .btn { background:#3a3328; color:#f2f2f2; }
+:root[data-theme="dark"] .btn:hover { background:#453c2d; }
+:root[data-theme="dark"] .btnSecondary { background:#343434; color:#f2f2f2; border-color:#444; }
+
+.name { font-size: 1.5rem; }    /* היה ~1.1rem */
+.role { font-size: 1.1rem; }    /* היה ~0.85rem */
+
+.actions { gap: 8px; }           /* היה 10px – קצת מצמצמים רווח אנכי */
+
+.btn, .btnSecondary {
+  padding: 10px 12px;            /* היה 12px – מעט פחות גבוה */
+  font-size: 1.2rem;            /* טיפה קטן יותר */
+  border-radius: 12px;           /* היה 14px – ייראה קצת קומפקטי יותר */
+}

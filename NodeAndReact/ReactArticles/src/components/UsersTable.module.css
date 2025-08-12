@@ -1,78 +1,114 @@
+/* UsersTable.module.css – טיפוגרפיה ועיצוב כמו BuildingsTable */
+
 .usersTable {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 7px;
-    background: transparent;
-    font-family: 'Heebo', Arial, sans-serif;
-    direction: rtl;
-  }
-  
-  .usersTable th {
-    background: #e4dbcf;
-    color: #7a6c5d;
-    font-weight: bold;
-    padding: 10px 0;
-    border-radius: 10px 10px 0 0;
-    text-align: center;
-    font-size: 1rem;
-  }
-  
-  .usersTable td {
-    background: #fff;
-    color: #4a3a2a;
-    padding: 10px 6px;
-    text-align: center;
-    border-bottom: 1px solid #e4dbcf;
-    border-radius: 0 0 10px 10px;
-    font-size: 1rem;
-  }
-  
-  .usersTable tr {
-    box-shadow: 0 2px 6px #00000008;
-  }
-  
-  .input {
-    width: 100%;
-    padding: 7px 10px;
-    border-radius: 6px;
-    border: 1px solid #bca98c;
-    font-size: 1rem;
-    background: #fffbe8;
-  }
-  
-  button {
-    background: #d2bba0;
-    border: none;
-    padding: 6px 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background 0.2s;
-    margin: 0 3px;
-  }
-  
-  button:hover {
-    background: #bfae9e;
-  }
-  
-  .actions {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-  }
-  .usersTable th:last-child,
-.usersTable td:last-child {
-  min-width: 120px;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 7px;
+  background: transparent;
+  direction: rtl;
+  table-layout: fixed;                          
+  font-family: "Heebo", "Segoe UI", sans-serif; /* אותו פונט */
+  font-size: 1.2rem;                            /* בסיס זהה */
+  color: #4a3a2a;
+  margin-top: 14px;                             /* אותו ריווח מעל הטבלה */
 }
+
+/* כותרות */
+.usersTable th {
+  background: #e4dbcf;
+  color: #7a6c5d;
+  font-weight: bold;
+  padding: 16px 10px;                           /* כמו בבניינים */
+  border-radius: 10px 10px 0 0;
+  text-align: center;
+  font-size: 1.2rem;                            /* כמו BuildingsTable */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* תאים */
+.usersTable td {
+  background: #fff;
+  color: #4a3a2a;
+  padding: 14px 10px;                           /* כמו בבניינים */
+  text-align: center;
+  border-bottom: 1px solid #e4dbcf;
+  border-radius: 0 0 10px 10px;
+  font-size: 1.4rem;                            /* כמו בבניינים */
+  font-weight: 500;                             /* אותו משקל */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* שורה + הובר כמו בבניינים */
+.usersTable tr {
+  box-shadow: 0 2px 6px #00000008;
+  transition: background 0.2s ease;
+}
+.usersTable tr:hover {
+  background: #f3f0ed;
+}
+
+/* פעולות */
 .actions {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 8px; /* רווח ביניהם */
-  flex-wrap: nowrap; /* שלא יגלשו שורה */
+  gap: 10px;                 
+  flex-wrap: nowrap;
 }
+
+/* שיהיה עקבי ולא ישפיע גלובלית */
+.usersTable button {
+  background: #d2bba0;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 18px;
+  transition: background 0.2s;
+}
+.usersTable button:hover {
+  background: #bfae9e;
+}
+
+/* קלטים פנימיים בתאים – טיפוגרפיה תואמת */
+.usersTable .input {
+  width: 100%;
+  padding: 10px 14px;        /* ריווח נעים כמו בשאר המערכת */
+  border-radius: 10px;
+  border: 1px solid #bca98c;
+  background: #fffbe8;
+  font: inherit;             /* ירש Heebo וגדלים */
+  box-sizing: border-box;
+}
+
+/* רוחב מינימום לעמודות קצה (אם צריך, שמרתי) */
+.usersTable th:last-child,
+.usersTable td:last-child { min-width: 100px; }
+
 .usersTable th:first-child,
-.usersTable td:first-child {
-  min-width: 100px;
+.usersTable td:first-child { min-width: 100px; }
+/* עיטוף שדה + הודעת שגיאה קטנה מתחת */
+.field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;     /* מרכז את הטקסט מתחת לשדה */
+}
+
+.errorText {
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: #c85c5c;          /* אדום עדין */
+  line-height: 1.1;
+  text-align: center;
+  direction: rtl;
+}
+
+/* שיפור קטן לנגישות: מסגרת קלה כשלא תקין */
+.input[aria-invalid="true"] {
+  border-color: #c85c5c;
+  box-shadow: 0 0 0 2px rgba(200, 92, 92, 0.12);
 }

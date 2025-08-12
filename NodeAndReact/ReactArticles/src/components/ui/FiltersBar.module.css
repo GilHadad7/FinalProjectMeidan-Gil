@@ -1,0 +1,27 @@
+.wrap{
+    width: 100%;
+    display: flex;
+    justify-content: flex-start; /* RTL = ימין */
+    margin: 0 0 10px 0;
+    direction: rtl;
+  }
+  
+  /* בלי רקע/מסגרת/צל – רק ריווח */
+  .row{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: transparent;   /* היה #fff */
+    padding: 0;                /* היה 10px 12px */
+    border-radius: 0;          /* היה 999px */
+    box-shadow: none;          /* היה צל */
+    border: 0;                 /* היה 1px solid */
+    color: #4a3a2a;
+  }
+  
+  .row > *{
+    height: 40px;
+    display: flex;
+    align-items: center;
+  }
+  

@@ -1,10 +1,9 @@
+// src/components/BuildingsFinanceTable.jsx
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import classes from "./BuildingsFinanceTable.module.css";
 
 export default function BuildingsFinanceTable({ data }) {
-  const navigate = useNavigate();
-
   return (
     <table className={classes.table}>
       <thead>
@@ -19,11 +18,14 @@ export default function BuildingsFinanceTable({ data }) {
       <tbody>
         {data.map((row, i) => (
           <tr key={i}>
-            <td
-              onClick={() => navigate("/manager/buildings", { state: { buildingId: row.building_id } })}
-              style={{ cursor: "pointer", fontWeight: "bold", color: "#1a73e8" }}
-            >
-              {row.building_name}
+            <td>
+              <Link
+                className={classes.buildingLink}
+                to={`/manager/buildings?name=${encodeURIComponent(row.building_name)}`}
+                title={`הצג רק את "${row.building_name}"`}
+              >
+                {row.building_name}
+              </Link>
             </td>
             <td>{row.address}</td>
             <td>₪{row.total_paid?.toLocaleString?.() ?? "—"}</td>

@@ -1,76 +1,10 @@
-/* קבוצת כפתורים */
-.actionBtns {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: auto;
+/* ===== בסיס ===== */
+.noPanel {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
 }
 
-/* כפתור עגול כללי */
-.roundBtn {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: none;
-  margin: 0;
-  background-color: #e7e0d8;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: 0.2s;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
-}
-.roundBtn:hover { background-color: #d4c5b4; }
-
-/* אימוג'י בתוך כפתור */
-.emojiIcon {
-  font-size: 18px;
-  line-height: 1;
-  display: inline-block;
-  transform: translateY(1px);
-}
-
-/* צבעים לפי פעולה */
-.editBtn.roundBtn { background-color: #e3f2fd; }
-.editBtn.roundBtn:hover { background-color: #bbdefb; }
-.deleteBtn.roundBtn { background-color: #ffebee; }
-.deleteBtn.roundBtn:hover { background-color: #ffcdd2; }
-.bellBtn.roundBtn { background-color: #fff8e1; }
-.bellBtn.roundBtn:hover { background-color: #ffecb3; }
-
-/* אנימציה קלה */
-.roundBtn svg { font-size: 1rem; transition: transform 0.15s ease; }
-.roundBtn:hover svg { transform: scale(1.2); }
-
-/* סטטוס תשלום */
-.statusPaid { color: #2e7d32; background: #dcedc8; border: 1px solid #a5d6a7; }
-.statusDebt { color: #c62828; background: #ffcdd2; border: 1px solid #ef9a9a; }
-.statusPending { color: #f57f17; background: #ffe082; border: 1px solid #ffcc80; }
-.statusPaid, .statusDebt, .statusPending {
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-weight: bold;
-  display: inline-block;
-  min-width: 70px;
-  text-align: center;
-  font-size: 0.9rem;
-}
-
-/* תגית קטגוריה מעוצבת */
-.categoryBadge {
-  display: inline-block;
-  background-color: #eef3f8;
-  color: #334e68;
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 0.85rem;
-  font-weight: 500;
-}
-
-/* ===== עיצוב טבלה ===== */
 .tableWrapper table {
   width: 100%;
   border-collapse: collapse;
@@ -78,22 +12,35 @@
 }
 .tableWrapper th,
 .tableWrapper td {
-  padding: 0.75rem 1rem;
+  padding: 0.7rem 1rem;
   word-wrap: break-word;
   vertical-align: middle;
 }
 
-/* רוחב עמודות */
-.tableWrapper th:nth-child(1), .tableWrapper td:nth-child(1) { width: 800px; }
-.tableWrapper th:nth-child(2), .tableWrapper td:nth-child(2) { width: 70px; }
-.tableWrapper th:nth-child(3), .tableWrapper td:nth-child(3) { width: 80px; }
-.tableWrapper th:nth-child(4), .tableWrapper td:nth-child(4) { width: 80px; }
-.tableWrapper th:nth-child(5), .tableWrapper td:nth-child(5) { width: 90px; }
-.tableWrapper th:nth-child(6), .tableWrapper td:nth-child(6) { width: 90px; }
-.tableWrapper th:nth-child(7), .tableWrapper td:nth-child(7) { width: 80px; }
-.tableWrapper th:nth-child(8), .tableWrapper td:nth-child(8) { width: 150px; }
+/* ===== רוחבי עמודות – נשלטים במשתני CSS =====
+   1=שם דייר, 2=שם בניין, 3=סכום, 4=תאריך, 5=קטגוריה, 6=תיאור, 7=סטטוס, 8=פעולות */
+.tableWrapper{
+  --w-tenant:   14%;
+  --w-building: 14%;
+  --w-amount:   10%;
+  --w-date:     14%;   /* הגדל/הקטן כרצונך */
+  --w-category: 16%;
+  --w-desc:     22%;
+  --w-status:   10%;
+  --w-actions:  14%;
+}
 
-/* >>> שדה תיאור במצב עריכה – עמודה 6 <<< */
+/* מיפוי המשתנים לעמודות בפועל */
+.tableWrapper th:nth-child(1), .tableWrapper td:nth-child(1) { width: var(--w-tenant); }
+.tableWrapper th:nth-child(2), .tableWrapper td:nth-child(2) { width: var(--w-building); }
+.tableWrapper th:nth-child(3), .tableWrapper td:nth-child(3) { width: var(--w-amount); }
+.tableWrapper th:nth-child(4), .tableWrapper td:nth-child(4) { width: var(--w-date); }
+.tableWrapper th:nth-child(5), .tableWrapper td:nth-child(5) { width: var(--w-category); }
+.tableWrapper th:nth-child(6), .tableWrapper td:nth-child(6) { width: var(--w-desc); }
+.tableWrapper th:nth-child(7), .tableWrapper td:nth-child(7) { width: var(--w-status); }
+.tableWrapper th:nth-child(8), .tableWrapper td:nth-child(8) { width: var(--w-actions); }
+
+/* שדה תיאור במצב עריכה – עמודה 6 */
 .tableWrapper td:nth-child(6) input:not([type="checkbox"]),
 .tableWrapper td:nth-child(6) textarea {
   height: 36px;
@@ -108,36 +55,183 @@
   resize: vertical;
 }
 
-/* כפתורי פעולות */
-.tableWrapper td:nth-child(8) {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 12px;
-  padding: 0.5rem 1rem;
-  white-space: nowrap;
-}
-
-/* מקום פעמון */
-.placeholder {
-  width: 36px;
+/* תאריך בעמודה 4 – שלא ייחתך */
+.tableWrapper td:nth-child(4) input[type="date"]{
+  width: 100%;
+  min-width: 9.5rem;
   height: 36px;
+  padding: 6px 10px;
+  border: 1px solid #d2bba0;
+  border-radius: 10px;
+  box-sizing: border-box;
+  direction: ltr;
+  font-size: 1.3rem;
+}
+
+/* ===== תא פעולות ===== */
+.tableWrapper td.actionsCell {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  padding-top: 0.7rem;
+  padding-bottom: 0.7rem;
+  overflow: hidden;
+}
+.actionsInner {
+  display: flex;
+  flex-direction: row-reverse;     /* ✏️ בימין, אח"כ 🗑️, ואז 🔔/ghost בשמאל */
+  justify-content: space-between;  /* פריסה מקצה לקצה */
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 10px;
+  gap: 0;
+  white-space: nowrap;
+  overflow: clip;
+  min-width: 110px;
+  --btn-size: 28px;
+}
+
+/* כפתורים */
+.roundBtn {
+  width: var(--btn-size);
+  height: var(--btn-size);
+  border-radius: 8px;
+  border: none;
+  background: #d2bba0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform .12s ease, background .2s ease, box-shadow .2s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,.08), inset 0 -2px 0 rgba(0,0,0,.06);
+  padding: 0;
+}
+.roundBtn:hover {
+  background: #c8b198;
+  box-shadow: 0 3px 8px rgba(0,0,0,.10), inset 0 -2px 0 rgba(0,0,0,.08);
+  transform: translateY(-1px);
+}
+.roundBtn:active { transform: translateY(0); }
+
+/* כפתורי שמירה/ביטול – (ישן, לא חובה) */
+.saveBtn{
+  background:#34a853;
+  color:#fff;
+  box-shadow:0 2px 6px rgba(0,0,0,.12), inset 0 -2px 0 rgba(0,0,0,.12);
+}
+.saveBtn:hover{ background:#2f974b; }
+.saveBtn:active{ background:#2a8943; }
+.cancelBtn{ background:#eee6db; color:#6b6b6b; }
+.cancelBtn:hover{ background:#e6ddcf; }
+.cancelBtn:active{ background:#dfd4c4; }
+
+/* פלייסהולדר שקוף */
+.ghost {
+  visibility: hidden;
+  pointer-events: none;
+  box-shadow: none;
+}
+
+/* אייקון */
+.emojiIcon {
+  font-size: 14px;
+  line-height: 1;
   display: inline-block;
+  transform: translateY(1px);
 }
 
-/* רספונסיביות */
-@media (max-width: 900px) {
-  .roundBtn { width: 34px; height: 34px; }
-  .tableWrapper td:nth-child(8) { gap: 10px; }
-}
-
-/* אחידות פונט בשדות החיפוש */
-.searchInput,
-.searchBoxRight select,
-.searchBoxRight input[type="date"],
-.searchBoxRight input[type="text"] {
-  font-family: 'Assistant', sans-serif; /* כמו בכותרות הטבלה */
+/* תגיות סטטוס (ללא שינוי) */
+.statusPaid   { color: #2e7d32; background: #dcedc8; border: 1px solid #a5d6a7; }
+.statusDebt   { color: #c62828; background: #ffcdd2; border: 1px solid #ef9a9a; }
+.statusPending{ color: #f57f17; background: #ffe082; border: 1px solid #ffcc80; }
+.statusPaid, .statusDebt, .statusPending {
+  padding: 6px 12px;
+  border-radius: 999px;
   font-weight: bold;
-  font-size: 0.95rem;
-  color: #333;
+  display: inline-block;
+  min-width: 70px;
+  text-align: center;
+  font-size: 0.9rem;
 }
+
+/* ===== רספונסיביות – משנים רק משתנים ===== */
+@media (max-width: 1280px) {
+  .actionsInner { --btn-size: 26px; }
+}
+@media (max-width: 1120px) {
+  .actionsInner { --btn-size: 24px; }
+}
+@media (max-width: 980px) {
+  .actionsInner {
+    --btn-size: 22px;
+    justify-content: flex-end;
+    gap: 6px;
+    padding: 0 8px;
+  }
+  .tableWrapper{
+    --w-actions: 16%;
+    --w-desc:    18%;
+    --w-date:    16%;
+  }
+}
+
+/* ===== סדר הכפתורים ב-CSS בלבד ===== */
+/* מצב קריאה: ✏️ -> 🗑️ -> 🔔 (ימין לשמאל) */
+.actionsInner [aria-label="ערוך"]           { order: 2; }
+.actionsInner [aria-label="מחק"]            { order: 1; }
+.actionsInner [aria-label="שלח תזכורת"]     { order: 0; }
+.actionsInner .ghost                        { order: 0; }
+
+/* מצב עריכה: "שמור" מימין, "בטל" משמאלו, ghost בשמאל ביותר */
+.actionsInner [aria-label="שמור"]           { order: 2; }
+.actionsInner [aria-label="בטל"]            { order: 1; }
+
+/* פוקוס נגיש */
+.roundBtn:focus-visible{
+  outline:2px solid #7fb5ff;
+  outline-offset:2px;
+}
+
+/* ===== עריכה: שמור + בטל בעיצוב קפסולה בז' עם אייקון אדום ===== */
+.actionsInner [aria-label="שמור"],
+.actionsInner [aria-label="בטל"] {
+  width: var(--btn-size, 28px);
+  height: var(--btn-size, 28px);
+  border-radius: 8px;
+  background: #d2bba0;
+  box-shadow: 0 2px 6px rgba(0,0,0,.08),
+              inset 0 -2px 0 rgba(0,0,0,.06);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: transform .12s ease, background .2s ease, box-shadow .2s ease;
+}
+.actionsInner [aria-label="שמור"]:hover,
+.actionsInner [aria-label="בטל"]:hover {
+  background: #c8b198;
+  box-shadow: 0 3px 8px rgba(0,0,0,.10),
+              inset 0 -2px 0 rgba(0,0,0,.08);
+  transform: translateY(-1px);
+}
+.actionsInner [aria-label="שמור"]:active,
+.actionsInner [aria-label="בטל"]:active {
+  transform: translateY(0);
+}
+
+/* אייקונים באדום נעים */
+.actionsInner [aria-label="שמור"] svg,
+.actionsInner [aria-label="בטל"] svg {
+  font-size: 16px;
+  color: #e85263;
+}
+/* === הסרת חיצים משדה סכום (input[type=number]) בעמודה 3 === */
+/* Chrome/Edge/Safari/Opera */
+.tableWrapper td:nth-child(3) input[type="number"]::-webkit-outer-spin-button,
+.tableWrapper td:nth-child(3) input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+

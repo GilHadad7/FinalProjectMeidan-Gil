@@ -1,66 +1,91 @@
-/* 📄 WorkerReportsTable.module.css – עיצוב טבלת דוחות עובדים */
+/* 📄 WorkerReportsTable.module.css – תואם ל-UsersTable */
+
 .table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 8px;
-    font-family: "Heebo", sans-serif;
-    direction: rtl;
-    font-size: 1.1rem;
-    background: none;
-  }
-  
-  .table th {
-    background: #f3ede2;
-    color: #4b4b4b;
-    padding: 12px 10px;
-    font-weight: bold;
-    text-align: center;
-    border-radius: 10px 10px 0 0;
-  }
-  
-  .table td {
-    background: #fff;
-    padding: 10px 12px;
-    text-align: center;
-    border-bottom: 1px solid #eee;
-    border-radius: 0 0 10px 10px;
-    color: #3d3d3d;
-  }
-  
-  .input {
-    width: 100%;
-    padding: 7px 10px;
-    border-radius: 6px;
-    border: 1px solid #bca98c;
-    font-size: 1rem;
-    background: #fffbe8;
-  }
-  
-  .paidBtn {
-    background: #d2bba0;
-    border: none;
-    padding: 6px 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 18px;
-    transition: background 0.2s;
-  }
-  
-  .paidBtn:hover {
-    background: #bfae9e;
-  }
-  
-  button {
-    background: #e6e1d6;
-    border: none;
-    padding: 6px 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    margin: 0 3px;
-    font-size: 1.1rem;
-  }
-  
-  button:hover {
-    background: #cfc6b4;
-  }
-  
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 7px;                      /* כמו UsersTable */
+  direction: rtl;
+  table-layout: fixed;
+  background: transparent;
+  font-family: "Heebo", "Segoe UI", sans-serif; /* אותו פונט */
+  font-size: 1.2rem;                            /* בסיס זהה */
+  color: #4a3a2a;
+}
+
+/* כותרות */
+.table th {
+  background: #e4dbcf;      /* כמו UsersTable */
+  color: #7a6c5d;
+  font-weight: bold;
+  padding: 16px 10px;       /* כמו בבניינים/משתמשים */
+  border-radius: 10px 10px 0 0;
+  text-align: center;
+  font-size: 1.2rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* שורות ותאים */
+.table td {
+  background: #fff;
+  color: #4a3a2a;
+  padding: 14px 10px;        /* כמו UsersTable */
+  text-align: center;
+  border-bottom: 1px solid #e4dbcf;
+  border-radius: 0 0 10px 10px;
+  font-size: 1.4rem;         /* תואם */
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* צל עדין והובר לכל שורה */
+.table tr {
+  box-shadow: 0 2px 6px #00000008;
+  transition: background 0.2s ease;
+}
+.table tr:hover {
+  background: #f3f0ed;
+}
+
+/* קלטים בתוך טבלה – תואם */
+.input {
+  width: 100%;
+  padding: 10px 14px;                 /* כמו UsersTable .input */
+  border-radius: 10px;
+  border: 1px solid #bca98c;
+  background: #fffbe8;
+  font: inherit;                      /* יורש Heebo וגדלים */
+  box-sizing: border-box;
+}
+
+/* כפתור "שולם"/פעולות – אותו סטייל */
+.paidBtn,
+.table button {
+  background: #d2bba0;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 18px;
+  transition: background 0.2s;
+  color: inherit;
+}
+.paidBtn:hover,
+.table button:hover {
+  background: #bfae9e;
+}
+
+/* אם יש כפתורי פעולה נוספים – שמור מקומי לטבלה בלבד */
+.table button {
+  margin: 0 3px;
+  font-size: 1.1rem;  /* אפשר להשאיר 18px מעל, זה לכפתורים קטנים יותר */
+}
+
+/* אופציונלי: שדה שגוי */
+.input[aria-invalid="true"] {
+  border-color: #c85c5c;
+  box-shadow: 0 0 0 2px rgba(200, 92, 92, 0.12);
+}

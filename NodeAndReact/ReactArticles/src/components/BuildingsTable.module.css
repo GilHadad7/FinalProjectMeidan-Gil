@@ -88,13 +88,13 @@
 /* עמודה 3 – דירות */
 .table th:nth-child(3),
 .table td:nth-child(3) {
-  width: 30px;
+  width: 40px;
 }
 
 /* עמודה 4 – קומות */
 .table th:nth-child(4),
 .table td:nth-child(4) {
-  width: 30px;
+  width: 40px;
 }
 
 /* עמודה 5 – ועד בית */
@@ -106,13 +106,13 @@
 /* עמודה 6 – טלפון */
 .table th:nth-child(6),
 .table td:nth-child(6) {
-  width: 60px;
+  width: 70px;
 }
 
 /* עמודה 7 – עובדים */
 .table th:nth-child(7),
 .table td:nth-child(7) {
-  width: 100px;
+  width: 120px;
 }
 
 /* עמודה 8 – פעולות */

@@ -1,10 +1,10 @@
 // src/pages/ServiceCallsPage.jsx
-
 import React, { useState } from "react";
 import ServiceCallForm from "../components/ServiceCallForm";
 import ServiceCallsTable from "../components/ServiceCallsTable";
 import FormWithTableLayout from "../components/ui/FormWithTableLayout";
-import classes from "./ServiceCallsPage.module.css";
+import FiltersBar from "../components/ui/FiltersBar";
+import styles from "./ServiceCallsPage.module.css"; // ← חשוב!
 
 export default function ServiceCallsPage() {
   const user = JSON.parse(sessionStorage.getItem("user"));
@@ -13,23 +13,25 @@ export default function ServiceCallsPage() {
   const [refreshFlag, setRefreshFlag] = useState(false);
   const triggerRefresh = () => setRefreshFlag((prev) => !prev);
 
-  // סינון לפי כתובת בניין, סטטוס וסוג תקלה
   const [filters, setFilters] = useState({
     building: "",
     status: "",
     service_type: "",
   });
 
-  const filterInputs = (
-    <div className={classes.filtersRow}>
+  const filterBar = (
+    // מעבירים className ל-FiltersBar כדי שהכללים ייושמו
+    <FiltersBar className={styles.filtersBar}>
+      {/* שדה החיפוש – מקבל גם grow וגם searchInput כדי לקבל את מראה ה"גלולה" הלבנה + זכוכית מגדלת */}
       <input
         type="text"
-        placeholder="כתובת בניין"
+        className={`${styles.grow} ${styles.searchInput}`}
+        placeholder="חפש לפי כתובת, שם בניין או שם עובד… 🔎"
         value={filters.building}
-        onChange={(e) =>
-          setFilters({ ...filters, building: e.target.value })
-        }
+        onChange={(e) => setFilters({ ...filters, building: e.target.value })}
       />
+
+      {/* select – אין חובה למחלקה נוספת; הכללים של .filtersBar תופסים */}
       <select
         value={filters.service_type}
         onChange={(e) =>
@@ -44,17 +46,16 @@ export default function ServiceCallsPage() {
         <option value="נזק">נזק</option>
         <option value="אחר">אחר</option>
       </select>
+
       <select
         value={filters.status}
-        onChange={(e) =>
-          setFilters({ ...filters, status: e.target.value })
-        }
+        onChange={(e) => setFilters({ ...filters, status: e.target.value })}
       >
         <option value="">סטטוס</option>
         <option value="Open">פתוח</option>
         <option value="Closed">סגור</option>
       </select>
-    </div>
+    </FiltersBar>
   );
 
   return (
@@ -63,7 +64,7 @@ export default function ServiceCallsPage() {
       formComponent={<ServiceCallForm role={role} onSuccess={triggerRefresh} />}
       tableComponent={
         <>
-          {filterInputs}
+          {filterBar}
           <ServiceCallsTable
             role={role}
             refreshFlag={refreshFlag}

@@ -57,150 +57,129 @@
 }
 
 /* רוחב עמודות (לפי סדר): */
-/* 1. תאריך */
 .table th:nth-child(1),
-.table td:nth-child(1) {
-  width: 260px;
-  white-space: nowrap;
-}
-
-/* 2. משתמש שפתח */
+.table td:nth-child(1) { width: 100px; white-space: nowrap; }
 .table th:nth-child(2),
-.table td:nth-child(2) {
-  width: 100px;
-}
-
-/* 3. כתובת בניין */
+.table td:nth-child(2) { width: 100px; }
 .table th:nth-child(3),
-.table td:nth-child(3) {
-  width: 120px;
-}
-
-/* 4. סוג תקלה */
+.table td:nth-child(3) { width: 120px; }
 .table th:nth-child(4),
-.table td:nth-child(4) {
-  width: 100px;
-}
-
-/* 5. סטטוס */
+.table td:nth-child(4) { width: 100px; }
 .table th:nth-child(5),
-.table td:nth-child(5) {
-  width: 100px;
-  min-width: 6ch;
-}
-
-/* 6. בוצע על ידי */
+.table td:nth-child(5) { width: 100px; min-width: 6ch; }
 .table th:nth-child(6),
-.table td:nth-child(6) {
-  width: 80px;
-}
-
-/* 7. תיאור */
+.table td:nth-child(6) { width: 80px; }
 .table th:nth-child(7),
-.table td:nth-child(7) {
-  width: 140px;
-}
-
-/* 8. מיקום */
+.table td:nth-child(7) { width: 140px; }
 .table th:nth-child(8),
-.table td:nth-child(8) {
-  width: 120px;
-}
-
-/* 9. עלות (₪) */
+.table td:nth-child(8) { width: 120px; }
 .table th:nth-child(9),
 .table td:nth-child(9),
-.editRow td:nth-child(9) {
-  width: 90px;
-  text-align: center;
-}
-
-/* 10. תמונה */
+.editRow td:nth-child(9) { width: 90px; text-align: center; }
 .table th:nth-child(10),
-.table td:nth-child(10) {
-  width: 120px;
-}
-
-/* 11. פעולות */
+.table td:nth-child(10) { width: 120px; }
 .table th:nth-child(11),
-.table td:nth-child(11) {
-  width: 100px;
-}
+.table td:nth-child(11) { width: 100px; }
 
 /* סטייל לשורה סגורה */
 .closedRow td,
-.closedText {
-  color: red;
-  font-weight: bold;
-}
+.closedText { color: red; font-weight: bold; }
 
 /* תמונת תצוגה מקדימה */
 .previewImg {
-  width: 100px;
-  height: 100px;
-  object-fit: cover;
-  border-radius: 10px;
-  cursor: pointer;
-  border: 1.5px solid #c7d0db;
-  background-color: #f9f9f9;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
-  margin-bottom: 6px;
+  width: 100px; height: 100px; object-fit: cover; border-radius: 10px;
+  cursor: pointer; border: 1.5px solid #c7d0db; background-color: #f9f9f9;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09); margin-bottom: 6px;
 }
 
 /* שורת עריכה */
-.editRow td {
-  white-space: normal;
-  word-break: break-word;
-}
+.editRow td { white-space: normal; word-break: break-word; }
 
 /* קלטים בעריכה */
 .editRow td input,
 .editRow td select,
 .editRow td textarea,
 .editInput {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 10px 14px;
-  font-size: 1.1rem;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  background: #fdf7f2;
-  font-family: inherit;
-  white-space: normal;
-  margin: 0;
+  width: 100%; box-sizing: border-box; padding: 10px 14px; font-size: 1.1rem;
+  border: 1px solid #ccc; border-radius: 10px; background: #fdf7f2;
+  font-family: inherit; white-space: normal; margin: 0;
 }
 
 /* גובה מינימלי ל־textarea */
-.editRow td textarea {
-  min-height: 90px;
-  line-height: 1.4;
-  resize: none;
-}
+.editRow td textarea { min-height: 90px; line-height: 1.4; resize: none; }
 
 /* קלט קובץ */
-.editRow input[type="file"] {
-  margin-top: 6px;
-  font-size: 0.9rem;
-}
+.editRow input[type="file"] { margin-top: 6px; font-size: 0.9rem; }
 
-/* כפתורי פעולה */
+/* כפתורי פעולה – מצב קריאה */
 .actionGroup {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 16px;                 /* רווח בין הכפתורים במצב קריאה */
   height: 100%;
 }
-.actionBtn {
-  background: #d2bba0;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 18px;
-  transition: background 0.2s;
+/* העטיפה האנונימית שבתא הפעולות (מצב קריאה) */
+.table td:nth-child(11) > div {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
 }
-.actionBtn:hover {
-  background: #bfae9e;
+/* Fallback אם אין div */
+.table td:nth-child(11) .actionBtn + .actionBtn { margin-top: 12px; }
+
+.actionBtn {
+  background: #d2bba0; border: none; padding: 6px 12px; border-radius: 8px;
+  cursor: pointer; font-size: 18px; transition: background 0.2s;
+}
+.actionBtn:hover { background: #bfae9e; }
+
+/* ===== עריכה: רווח בין הכפתורים בעמודת "פעולות" ===== */
+.table tr.editRow td:nth-child(11) {
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+.table tr.editRow td:nth-child(11) > div {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;                         /* רווח בעריכה */
+}
+.table tr.editRow td:nth-child(11) .actionBtn + .actionBtn,
+.table tr.editRow td:nth-child(11) button + button {
+  margin-top: 14px;
+}
+
+/* ===== שלב 2: ביטול הרקע/צל/ריפוד של הפאנל הלבן של FormWithTableLayout סביב הטבלה והחיפוש ===== */
+:global([class^="FormWithTableLayout_tableArea"]) {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+}
+/* === טיפוגרפיה כמו בבניינים (בלי לגעת בפריסה) === */
+.table { 
+  font-family: "Heebo", "Segoe UI", sans-serif; /* אחידות פונט */
+}
+
+/* כותרות */
+.table th {
+  font-size: 1.2rem;          /* כמו בבניינים */
+  font-weight: bold;          /* כבר קיים, משאירים ליתר ביטחון */
+}
+
+/* תאים */
+.table td {
+  font-size: 1.4rem;          /* כמו בבניינים */
+  font-weight: 500;           /* כבר קיים, משאירים ליתר ביטחון */
+}
+
+/* קישורים בתוך תאים יורשים טיפוגרפיה */
+.table td a {
+  font: inherit;
+  color: inherit;
 }

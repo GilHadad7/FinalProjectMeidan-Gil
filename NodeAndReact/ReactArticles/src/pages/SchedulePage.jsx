@@ -136,7 +136,6 @@ export default function SchedulePage() {
 
   return (
     <div className={classes.SchedulePage}>
-      <h1 className={classes.Title}>לוח זמנים של מנהל</h1>
 
       <div className={classes.FiltersRow}>
         <div className={classes.Filters}>

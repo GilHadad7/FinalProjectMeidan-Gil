@@ -1,0 +1,41 @@
+.box {
+    position: relative;
+    background: #ffffff;
+    border: 1px solid #e4dbcf;
+    border-radius: 999px;
+    box-shadow: 0 6px 22px rgba(0,0,0,.06);
+    padding: 8px 16px 8px 14px;
+    color: #4a3a2a;
+  }
+  
+  .icon {
+    position: absolute;
+    left: 10px; /* RTL – האייקון בצד שמאל של השדה */
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    opacity: .7;
+    pointer-events: none;
+  }
+  
+  .input {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: "Heebo","Segoe UI",sans-serif;
+    font-size: 1rem;
+    color: #4a3a2a;
+    padding-inline-start: 6px;
+    padding-inline-end: 24px;
+  }
+  
+  /* ✅ התאמת placeholder */
+  .input::placeholder {
+    font-family: "Heebo", "Segoe UI", sans-serif;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #7a6c5d;
+    opacity: 1;
+  }
+  

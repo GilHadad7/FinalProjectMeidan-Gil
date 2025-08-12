@@ -1,39 +1,68 @@
-/* 🏢 BuildingsFinanceTable.module.css */
+/* 🏢 BuildingsFinanceTable.module.css – טיפוגרפיה תואמת לטבלאות האחרות */
+
 .table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0 8px;
-  font-family: "Heebo", sans-serif;
   direction: rtl;
-  font-size: 1.1rem;
   background: none;
+
+  /* טיפוגרפיה אחידה */
+  font-family: "Heebo", "Segoe UI", sans-serif;
+  font-size: 1.2rem;        /* בסיס כמו בטבלאות האחרות */
+  color: #4a3a2a;
+  table-layout: fixed;      /* כדי שהרוחבים יישמרו יפה */
 }
 
+/* כותרות */
 .table th {
-  background: #f3ede2;
-  color: #4b4b4b;
-  padding: 12px 10px;
+  background: #e4dbcf;
+  color: #7a6c5d;
   font-weight: bold;
+  padding: 16px 10px;
   text-align: center;
   border-radius: 10px 10px 0 0;
+  font-size: 1.2rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
+/* תאים */
 .table td {
   background: #fff;
-  padding: 10px 12px;
+  padding: 14px 12px;
   text-align: center;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #e4dbcf;
   border-radius: 0 0 10px 10px;
-  color: #3d3d3d;
+
+  /* טיפוגרפיה תואמת */
+  color: #4a3a2a;
+  font-size: 1.4rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
+/* הובר עדין כמו בשאר הטבלאות */
+.table tr {
+  box-shadow: 0 2px 6px #00000008;
+  transition: background 0.2s ease;
+}
+.table tr:hover {
+  background: #f3f0ed;
+}
+
+/* שורות מאוחרות/חריגות */
 .lateRow td {
   background-color: #fff4f4;
-  font-weight: bold;
-  border: 1px solid #ffcccc;
+  font-weight: 700;
+  color: #b24141;
+  border: 1px solid #f7c6c6;
 }
 
-/* ✅ קישור לשם הבניין */
+/* קישור לשם הבניין – נשאר עם הדגשה ועדכון צבע בהובר */
 .buildingLink {
   color: #007bff;
   text-decoration: underline;
@@ -41,7 +70,6 @@
   cursor: pointer;
   transition: color 0.2s;
 }
-
 .buildingLink:hover {
   color: #0056b3;
 }
