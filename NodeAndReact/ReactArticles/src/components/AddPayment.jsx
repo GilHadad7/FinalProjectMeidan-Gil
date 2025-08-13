@@ -4,7 +4,6 @@ import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { he } from "date-fns/locale";
 
-// קיט עיצוב אחיד
 import FormCard from "./ui/FormCard";
 import form from "./ui/FormKit.module.css";
 
@@ -13,12 +12,13 @@ registerLocale("he", he);
 export default function AddPayment({ onAdd }) {
   const [buildings, setBuildings] = useState([]);
   const [tenants, setTenants] = useState([]);
+  const [loadingTenants, setLoadingTenants] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const [paymentForm, setPaymentForm] = useState({
     building_id: "",
     tenant_id: "",
-    payment_date: null, // Date object
+    payment_date: null,
     category: "",
     customCategory: "",
     description: "",
@@ -26,17 +26,39 @@ export default function AddPayment({ onAdd }) {
     status: "שולם",
   });
 
+  // טען בניינים – ממויין לפי שם בניין
   useEffect(() => {
     fetch("http://localhost:8801/api/buildings")
       .then((res) => res.json())
-      .then(setBuildings)
-      .catch(console.error);
-
-    fetch("http://localhost:8801/api/users?role=tenant")
-      .then((res) => res.json())
-      .then(setTenants)
+      .then((data) => {
+        const list = Array.isArray(data) ? data : [];
+        list.sort((a, b) =>
+          (a.name || "").localeCompare(b.name || "", "he", { numeric: true })
+        );
+        setBuildings(list);
+      })
       .catch(console.error);
   }, []);
+
+  // בכל שינוי בניין: הבאת דיירים של אותו בניין בלבד
+  useEffect(() => {
+    const bid = paymentForm.building_id;
+    if (!bid) {
+      setTenants([]);
+      setPaymentForm((prev) => ({ ...prev, tenant_id: "" }));
+      return;
+    }
+
+    setLoadingTenants(true);
+    fetch(`http://localhost:8801/api/tenants?building_id=${bid}`)
+      .then((res) => res.json())
+      .then((data) => setTenants(Array.isArray(data) ? data : []))
+      .catch(() => setTenants([]))
+      .finally(() => {
+        setLoadingTenants(false);
+        setPaymentForm((prev) => ({ ...prev, tenant_id: "" }));
+      });
+  }, [paymentForm.building_id]);
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -74,7 +96,7 @@ export default function AddPayment({ onAdd }) {
     if (!building_id) return alert("אנא בחר/י בניין");
     if (!tenant_id) return alert("אנא בחר/י דייר");
     if (!payment_date) return alert("אנא בחר/י תאריך");
-    const finalCategory = category === "אחר" ? customCategory.trim() : category;
+    const finalCategory = category === "אחר" ? (customCategory || "").trim() : category;
     if (!finalCategory) return alert("אנא בחר/י קטגוריה");
     if (!amount || Number(amount) <= 0) return alert("אנא הזן/י סכום תקין");
 
@@ -83,7 +105,7 @@ export default function AddPayment({ onAdd }) {
       tenant_id: Number(tenant_id),
       payment_date: formatDateToYMD(payment_date),
       category: finalCategory,
-      description: description.trim(),
+      description: (description || "").trim(),
       amount: Number(amount),
       status: cleanStatus(status),
     };
@@ -101,7 +123,6 @@ export default function AddPayment({ onAdd }) {
         return;
       }
 
-      // איפוס טופס ורענון טבלה
       setPaymentForm({
         building_id: "",
         tenant_id: "",
@@ -119,8 +140,8 @@ export default function AddPayment({ onAdd }) {
   }
 
   return (
-    <FormCard /* בלי title כדי לא להכפיל את הכותרת הגדולה של הדף */>
-      {/* בניין */}
+    <FormCard>
+      {/* בניין — מציג לפי שם (name), עם כתובת כגיבוי/רמיזה */}
       <select
         className={form.select}
         name="building_id"
@@ -130,24 +151,31 @@ export default function AddPayment({ onAdd }) {
         <option value="">בחר בניין</option>
         {buildings.map((b) => (
           <option key={b.building_id} value={b.building_id}>
-            {b.full_address || b.name}
+            {b.name || b.full_address || `בניין #${b.building_id}`}
           </option>
         ))}
       </select>
 
-      {/* דייר */}
+      {/* דייר — רק דיירים של הבניין הנבחר */}
       <select
         className={form.select}
         name="tenant_id"
         value={paymentForm.tenant_id}
         onChange={handleChange}
+        disabled={!paymentForm.building_id || loadingTenants}
+        title={!paymentForm.building_id ? "בחר/י קודם בניין" : undefined}
       >
-        <option value="">בחר דייר</option>
-        {tenants.map((t) => (
-          <option key={t.user_id} value={t.user_id}>
-            {t.name}
-          </option>
-        ))}
+        <option value="">
+          {loadingTenants ? "טוען דיירים…" : "בחר דייר"}
+        </option>
+        {tenants.map((t) => {
+          const id = t.tenant_id ?? t.user_id ?? t.id;
+          return (
+            <option key={id} value={id}>
+              {t.name || `דייר #${id}`}
+            </option>
+          );
+        })}
       </select>
 
       {/* תאריך */}
@@ -181,7 +209,6 @@ export default function AddPayment({ onAdd }) {
         <option value="אחר">אחר</option>
       </select>
 
-      {/* קטגוריה חופשית אם נבחר "אחר" */}
       {paymentForm.category === "אחר" && (
         <input
           className={form.input}

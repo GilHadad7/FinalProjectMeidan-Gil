@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import classes from "./PaymentsTable.module.css";
 import BaseTable from "../components/ui/BaseTable";
 
@@ -45,12 +45,25 @@ export default function PaymentsTable({ payments, onEdit, onDelete }) {
           const data = await res.json();
           const lastSent = new Date(data.last_sent).toLocaleString("he-IL");
           alert(`⚠️ כבר נשלחה תזכורת לדייר ${tenant_name} ב־24 השעות האחרונות.\nתזכורת אחרונה: ${lastSent}`);
-          } else {
+        } else {
           alert("⚠️ שגיאה בשליחת תזכורת");
         }
       })
       .catch(() => alert("❌ שגיאה בחיבור לשרת"));
   }
+
+  // === מיון מהחדש לישן (המאוחר ביותר למעלה) ===
+  const sortedPayments = useMemo(() => {
+    const list = Array.isArray(payments) ? [...payments] : [];
+    return list.sort((a, b) => {
+      const ta = Date.parse(a.payment_date);
+      const tb = Date.parse(b.payment_date);
+      if (isNaN(ta) && isNaN(tb)) return 0;
+      if (isNaN(ta)) return 1;      // בלי תאריך -> לתחתית
+      if (isNaN(tb)) return -1;
+      return tb - ta;               // גדול קודם (יורד)
+    });
+  }, [payments]);
 
   return (
     <div className={classes.tableWrapper}>
@@ -68,12 +81,12 @@ export default function PaymentsTable({ payments, onEdit, onDelete }) {
         plainContainer
         containerStyle={{ background: "transparent", boxShadow: "none", padding: 0 }}
       >
-        {payments.length === 0 ? (
+        {sortedPayments.length === 0 ? (
           <tr>
             <td colSpan="8" style={{ textAlign: "center" }}>לא נמצאו תשלומים</td>
           </tr>
         ) : (
-          payments.map((p) => (
+          sortedPayments.map((p) => (
             <tr key={p.payment_id}>
               {editingId === p.payment_id ? (
                 <>
@@ -135,7 +148,6 @@ export default function PaymentsTable({ payments, onEdit, onDelete }) {
                   {/* פעולות (עריכה) */}
                   <td className={classes.actionsCell}>
                     <div className={classes.actionsInner}>
-                      {/* שמור – מימין */}
                       <button
                         type="button"
                         onClick={() => handleSave(p.payment_id)}
@@ -145,8 +157,6 @@ export default function PaymentsTable({ payments, onEdit, onDelete }) {
                       >
                         <span className={classes.emojiIcon}>💾</span>
                       </button>
-
-                      {/* בטל – משמאל לשמור */}
                       <button
                         type="button"
                         onClick={handleCancel}
@@ -156,8 +166,6 @@ export default function PaymentsTable({ payments, onEdit, onDelete }) {
                       >
                         <span className={classes.emojiIcon}>❌</span>
                       </button>
-
-                      {/* פלייסהולדר לשמירת פריסה תלת־משבצות */}
                       <span className={`${classes.roundBtn} ${classes.ghost}`} aria-hidden="true" />
                     </div>
                   </td>
@@ -188,7 +196,6 @@ export default function PaymentsTable({ payments, onEdit, onDelete }) {
                   {/* פעולות (קריאה) */}
                   <td className={classes.actionsCell}>
                     <div className={classes.actionsInner}>
-                      {/* ✏️ – תמיד מימין */}
                       <button
                         type="button"
                         onClick={() => {
@@ -211,7 +218,6 @@ export default function PaymentsTable({ payments, onEdit, onDelete }) {
                         <span className={classes.emojiIcon}>✏️</span>
                       </button>
 
-                      {/* 🗑️ – באמצע */}
                       <button
                         type="button"
                         onClick={() => onDelete(p.payment_id)}
@@ -222,7 +228,6 @@ export default function PaymentsTable({ payments, onEdit, onDelete }) {
                         <span className={classes.emojiIcon}>🗑️</span>
                       </button>
 
-                      {/* 🔔 – שמאלי; אם אין, פלייסהולדר שקוף */}
                       {["חוב", "ממתין"].includes(p.status) ? (
                         <button
                           type="button"

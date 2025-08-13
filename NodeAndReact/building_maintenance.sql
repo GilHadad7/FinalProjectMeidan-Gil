@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 09, 2025 at 01:39 PM
+-- Generation Time: Aug 13, 2025 at 02:15 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -44,11 +44,11 @@ CREATE TABLE `buildings` (
 --
 
 INSERT INTO `buildings` (`building_id`, `full_address`, `maintenance_type`, `name`, `apartments`, `floors`, `committee`, `phone`, `assigned_workers`) VALUES
-(1, '123 Main Street', 'Full', 'חמו', 46, 11, 'יוסי ', '0542101515', '2,9'),
+(1, '123 Main Street', 'Full', 'מרכז העיר', 46, 11, 'יוסי ', '0542101515', '2,9,11'),
 (2, '123 Herzl St, Haifa', 'Full', 'נוף ים', 20, 6, 'שמעון אבדוליאני', '0545565785', '4,9'),
 (5, 'ברל כצלנסון 47 , חיפה', 'Full', 'ברל', 44, 10, 'גדי חדד', '0542510949', '9'),
 (6, 'קיבוץ גליות 20 נשר', 'Full', 'אלמוגים', 4, 2, 'גיל חדד', '0542510949', '9,2'),
-(7, 'העמוס 18 נשר', 'Full', 'עמוס 18', 48, 18, 'אליעד ממן', '0541349549', '2'),
+(7, 'העמוס 18 נשר', 'Full', 'עמוס 18', 48, 18, 'אליעד ממן', '0541349549', '2,11'),
 (9, 'שמואל שרירא 3', 'Full', 'שמואל', 24, 8, 'אלון', '0503817422', '2');
 
 -- --------------------------------------------------------
@@ -112,8 +112,8 @@ CREATE TABLE `employee_reports` (
 
 INSERT INTO `employee_reports` (`report_id`, `employee_id`, `month`, `salary`, `paid`, `payslip_url`, `updated_at`, `updated_by`) VALUES
 (1, 1, '2025-04', 3200.00, 0, 'payslips/april_2025.pdf', '2025-05-26 10:51:18', 'admin'),
-(2, 2, '2025-05', 2000.00, 1, NULL, '2025-06-05 08:14:06', NULL),
-(3, 4, '2025-05', 2000.00, 0, NULL, '2025-05-26 13:22:20', NULL);
+(2, 2, '2025-05', 2000.00, 1, NULL, '2025-08-12 12:51:23', NULL),
+(3, 4, '2025-05', 2000.00, 1, NULL, '2025-08-12 12:51:24', NULL);
 
 -- --------------------------------------------------------
 
@@ -165,10 +165,13 @@ INSERT INTO `payments` (`payment_id`, `tenant_id`, `building_id`, `payment_date`
 (1, 1, 1, '2025-05-25', 'שכר חודשי', 'תשלומים ', 500.00, 'שולם', '2025-06-04 13:11:40'),
 (5, 1, 7, '2025-05-27', 'שכר חודשי', 'תחזוקה', 600.00, 'חוב', '2025-06-04 15:59:04'),
 (6, 3, 5, '2025-05-26', 'שכר חודשי', 'תשלומים ', 100.00, 'שולם', '2025-06-04 16:12:00'),
-(7, 4, 7, '2025-05-14', 'שכר חודשי', 'תשלום חד פעמי', 401.00, 'ממתין', '2025-06-04 16:20:08'),
 (8, 3, 1, '2025-05-06', 'תשלומים', 'חמו', 555.00, 'ממתין', '2025-08-05 13:56:21'),
-(9, 3, 6, '2025-05-10', 'שכר חודשי', 'תשלומים ', 500.00, 'ממתין', '2025-08-06 11:55:18'),
-(10, 3, 2, '2025-08-06', 'תחזוקת בניין', 'תשלומים ', 500.00, 'חוב', '2025-08-06 13:20:12');
+(9, 3, 6, '2025-05-10', 'שכר חודשי', 'תשלומים ', 500.00, 'שולם', '2025-08-06 11:55:18'),
+(10, 3, 2, '2025-08-13', 'תחזוקת בניין', 'תשלומים ', 450.00, 'חוב', '2025-08-06 13:20:12'),
+(11, 10, 5, '2025-08-13', 'תחזוקת בניין', 'תשלום חודשי', 500.00, 'שולם', '2025-08-12 12:31:05'),
+(12, 10, 6, '2025-08-12', 'תחזוקת בניין', 'תשלום חודשי', 1000.00, 'שולם', '2025-08-12 14:35:12'),
+(13, 12, 5, '2025-08-14', 'תחזוקת בניין', 'תשלום חודשי', 450.00, 'שולם', '2025-08-13 13:14:58'),
+(14, 12, 7, '2025-08-18', 'תחזוקת בניין', 'תשלום חודשי', 350.00, 'ממתין', '2025-08-13 13:19:02');
 
 -- --------------------------------------------------------
 
@@ -189,13 +192,13 @@ CREATE TABLE `reminder_logs` (
 
 INSERT INTO `reminder_logs` (`id`, `payment_id`, `tenant_id`, `reminder_date`) VALUES
 (3, 5, 1, '2025-06-04 16:18:16'),
-(4, 7, 4, '2025-06-04 16:20:14'),
-(5, 7, 4, '2025-06-08 11:14:45'),
 (6, 5, 1, '2025-06-19 15:09:55'),
 (7, 8, 3, '2025-08-05 13:56:29'),
 (8, 5, 1, '2025-08-06 12:30:57'),
 (9, 10, 3, '2025-08-08 12:55:32'),
-(10, 10, 3, '2025-08-09 14:21:15');
+(10, 10, 3, '2025-08-09 14:21:15'),
+(12, 10, 3, '2025-08-11 14:39:10'),
+(13, 10, 3, '2025-08-12 16:22:04');
 
 -- --------------------------------------------------------
 
@@ -271,7 +274,9 @@ INSERT INTO `servicecalls` (`call_id`, `building_id`, `read_index`, `service_typ
 (25, 1, '0', 'תקלה אישית', 'Closed', 'הדלת לא נסגרת ', '2025-05-12 08:32:21', 'Meidan Chemo', 'http://localhost:8801/uploads/1747038741912.png', 'קומה 5 דירה 20', NULL, NULL),
 (26, 6, '0', 'אינסטלציה', 'Open', 'קקי בתחתון של מידן חמו ', '2025-05-28 11:48:42', 'מידן חמו', 'http://localhost:8801/uploads/1748432954002.png', 'קומה 4 ליד דלת 15', 80.00, NULL),
 (27, 7, '0', 'אחר', 'Closed', 'לידי', '2025-06-03 10:07:36', 'מידן חמו', 'http://localhost:8801/uploads/1749382502120.png', 'לידור בחדר אשפה', NULL, 'מידן חמו'),
-(28, 7, '0', 'נזילה', 'Closed', 'נזילה בביוב', '2025-06-08 12:00:09', 'מידן חמו', 'http://localhost:8801/uploads/1749384009073.png', 'קומה 23 ליד דלת 69', 7.50, 'מידן חמו');
+(28, 7, '0', 'נזילה', 'Closed', 'נזילה בביוב', '2025-06-08 12:00:09', 'מידן חמו', 'http://localhost:8801/uploads/1749384009073.png', 'קומה 23 ליד דלת 69', 19.00, 'מידן חמו'),
+(30, 7, '0', 'חשמל', 'Closed', 'תקלה במנורה', '2025-08-12 12:34:52', 'מידן חמו', NULL, 'קומה 10', 200.00, 'מידן חמו'),
+(31, 5, '0', 'חשמל', 'Closed', 'מנורה תקולה', '2025-08-12 13:06:37', 'מידן חמו', NULL, 'קומה 15', 50.00, 'מידן חמו');
 
 -- --------------------------------------------------------
 
@@ -300,6 +305,7 @@ CREATE TABLE `users` (
   `name` varchar(100) DEFAULT NULL,
   `email` varchar(100) DEFAULT NULL,
   `role` varchar(50) DEFAULT NULL,
+  `building_id` int(11) DEFAULT NULL,
   `position` varchar(100) DEFAULT NULL,
   `apartment_number` varchar(20) DEFAULT NULL,
   `tax_file` varchar(100) DEFAULT NULL,
@@ -311,13 +317,19 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`user_id`, `id_number`, `name`, `email`, `role`, `position`, `apartment_number`, `tax_file`, `password`, `phone`) VALUES
-(1, '123456789', 'מידן חמו', 'meidan@gmail.com', 'manager', 'מנהל ראשי', NULL, NULL, 'admin123', '0454564867'),
-(2, '987654321', 'איתי כהן', 'itai@worker.com', 'worker', 'super', NULL, 'tax123.pdf', 'worker123', '050-0000002'),
-(3, '456789123', 'נועה לוי', 'noa@tenant.com', 'tenant', NULL, '12', NULL, 'tenant123', '050-0000003'),
-(4, '2502005851', 'לידור סויסה', 'lidi@worker.com', 'worker', 'cleaner', NULL, NULL, '1234', '05412151251'),
-(7, '207433368', 'גיל חדד', 'gil7hadad@gmail.com', 'manager', NULL, NULL, NULL, '1234', '0542510949'),
-(9, '204181511', 'בר סטיאוי', 'stiavi@gmail.com', 'worker', NULL, NULL, NULL, '1234', '0525051505');
+INSERT INTO `users` (`user_id`, `id_number`, `name`, `email`, `role`, `building_id`, `position`, `apartment_number`, `tax_file`, `password`, `phone`) VALUES
+(1, '206455146', 'מידן חמו', 'meidan@gmail.com', 'manager', NULL, 'מנהל ראשי', NULL, NULL, 'admin123', '0454564805'),
+(2, '987654321', 'איתי כהן', 'itai@worker.com', 'worker', NULL, 'super', NULL, 'tax123.pdf', 'worker123', '0500000008'),
+(3, '456709123', 'נועה לוי', 'noa@tenant.com', 'tenant', 5, NULL, '12', NULL, 'tenant123', '0500000003'),
+(4, '206415574', 'לידור סויסה', 'lidi@worker.com', 'worker', NULL, 'cleaner', NULL, NULL, '1234', '0543365055'),
+(7, '207433368', 'גיל חדד', 'gil7hadad@gmail.com', 'manager', NULL, NULL, NULL, NULL, '1234', '0542510949'),
+(9, '204181511', 'בר סטיאוי', 'stiavi@gmail.com', 'worker', NULL, NULL, NULL, NULL, '1234', '0525051505'),
+(10, '206455149', 'מידן חמו', 'meidanchemo10@gmail.com', 'tenant', 5, NULL, NULL, NULL, '123456', '0503874710'),
+(11, '207455194', 'תום חמו', 'meidan@admin.com', 'worker', NULL, NULL, NULL, NULL, '123456', '0506667576'),
+(12, '204455149', 'דולב חזיזה', 'haziza@gmail.com', 'tenant', 7, NULL, NULL, NULL, '123456', '0503745124'),
+(13, '204556661', 'אביב קציר', 'aviv@gmail.com', 'tenant', NULL, NULL, NULL, NULL, '1234789', '0546325541'),
+(14, '204555566', 'אביב', 'lidi@worker.com', 'tenant', 9, NULL, NULL, NULL, '123', '0546666666'),
+(15, '204565149', 'ארז', 'erez@gmail.com', 'tenant', 7, NULL, NULL, NULL, '123456', '0547896321');
 
 --
 -- Indexes for dumped tables
@@ -398,7 +410,8 @@ ALTER TABLE `servicecallupdates`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`user_id`),
-  ADD UNIQUE KEY `id_number` (`id_number`);
+  ADD UNIQUE KEY `id_number` (`id_number`),
+  ADD KEY `idx_users_building_id` (`building_id`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -426,13 +439,13 @@ ALTER TABLE `external_suppliers`
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `reminder_logs`
 --
 ALTER TABLE `reminder_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `routinetaskexecutions`
@@ -450,7 +463,7 @@ ALTER TABLE `routinetasks`
 -- AUTO_INCREMENT for table `servicecalls`
 --
 ALTER TABLE `servicecalls`
-  MODIFY `call_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `call_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT for table `servicecallupdates`
@@ -462,7 +475,7 @@ ALTER TABLE `servicecallupdates`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- Constraints for dumped tables

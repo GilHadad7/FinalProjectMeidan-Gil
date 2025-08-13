@@ -20,18 +20,18 @@ export default function ServiceCallsPage() {
   });
 
   const filterBar = (
-    // מעבירים className ל-FiltersBar כדי שהכללים ייושמו
     <FiltersBar className={styles.filtersBar}>
-      {/* שדה החיפוש – מקבל גם grow וגם searchInput כדי לקבל את מראה ה"גלולה" הלבנה + זכוכית מגדלת */}
+      {/* תיבת חיפוש כללית */}
       <input
         type="text"
         className={`${styles.grow} ${styles.searchInput}`}
-        placeholder="חפש לפי כתובת, שם בניין או שם עובד… 🔎"
+        placeholder=" חפש לפי כתובת, משתמש שפתח                      🔎 "
         value={filters.building}
         onChange={(e) => setFilters({ ...filters, building: e.target.value })}
+        aria-label="חיפוש לפי כתובת, סוג תקלה או משתמש שפתח"
       />
 
-      {/* select – אין חובה למחלקה נוספת; הכללים של .filtersBar תופסים */}
+      {/* סוג תקלה */}
       <select
         value={filters.service_type}
         onChange={(e) =>
@@ -47,6 +47,7 @@ export default function ServiceCallsPage() {
         <option value="אחר">אחר</option>
       </select>
 
+      {/* סטטוס */}
       <select
         value={filters.status}
         onChange={(e) => setFilters({ ...filters, status: e.target.value })}

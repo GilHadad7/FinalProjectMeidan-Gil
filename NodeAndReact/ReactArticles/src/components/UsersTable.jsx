@@ -14,7 +14,6 @@ const roleHe = (en) => {
 
 // --- זיהוי קידומת ופורמט ישראלי עם מקף
 const TWO_DIGIT_AREA = new Set(["02", "03", "04", "08", "09"]); // קווי
-
 const detectPrefixLen = (digits) => {
   if (!digits || digits[0] !== "0" || digits.length < 2) return 3;
   const two = digits.slice(0, 2);
@@ -22,7 +21,6 @@ const detectPrefixLen = (digits) => {
   if (digits[1] === "5" || digits[1] === "7") return 3; // 05x, 07x
   return 3;
 };
-
 const formatILPhone10 = (raw) => {
   const only = (raw || "").replace(/\D/g, "");
   if (!only) return "";
@@ -41,20 +39,44 @@ export default function UsersTable({
   setEditForm,
   onDelete,
   onEditSave,
+  buildings = [], // { building_id, name, full_address }
 }) {
   const handleEditChange = (e) => {
     setEditForm({ ...editForm, [e.target.name]: e.target.value });
   };
 
+  const buildingLabel = (b) => b.name || b.full_address || `בניין #${b.building_id}`;
+
+  // מיון בניינים לפי שם להצגה נעימה ב-select
+  const sortedBuildings = [...buildings].sort((a, b) =>
+    (a?.name || "").localeCompare(b?.name || "", "he", { numeric: true })
+  );
+
   return (
     <BaseTable
-      headers={["שם", "תעודת זהות", "תפקיד", "טלפון", "מייל", "פעולות"]}
+      headers={[
+        "שם",
+        "תעודת זהות",
+        "תפקיד",
+        "שם בניין",
+        "טלפון",
+        "מייל",
+        "פעולות",
+      ]}
       className={classes.usersTable}
     >
       {users.map((user) => {
         const isEditing = editId === user.user_id;
+
         const idOk = (editForm?.id_number || "").length === 9;
         const phoneOk = (editForm?.phone || "").length === 10;
+
+        // מה התפקיד כרגע בטופס (אם שינו את ה-select של התפקיד בזמן עריכה)
+        const roleNow = (editForm?.role || user.role) || "";
+
+        // דייר חייב בניין; עובד/מנהל לא
+        const buildingRequired = roleNow === "tenant";
+        const buildingOk = !buildingRequired || Boolean(editForm?.building_id);
 
         return isEditing ? (
           <tr key={user.user_id}>
@@ -102,13 +124,68 @@ export default function UsersTable({
               <select
                 className={classes.input}
                 name="role"
-                value={editForm.role || ""}
+                value={roleNow}
                 onChange={handleEditChange}
               >
                 <option value="manager">מנהל</option>
                 <option value="worker">עובד</option>
                 <option value="tenant">דייר</option>
               </select>
+            </td>
+
+            {/* שם בניין */}
+            <td>
+              {roleNow === "tenant" ? (
+                // לדיירים – select רגיל
+                (sortedBuildings.length > 0 ? (
+                  <select
+                    className={classes.input}
+                    name="building_id"
+                    value={editForm.building_id ?? ""}
+                    onChange={(e) =>
+                      setEditForm({
+                        ...editForm,
+                        building_id: e.target.value ? Number(e.target.value) : null,
+                      })
+                    }
+                    required={true}
+                  >
+                    <option value="">בחר בניין…</option>
+                    {sortedBuildings.map((b) => (
+                      <option key={b.building_id} value={b.building_id}>
+                        {buildingLabel(b)}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    className={classes.input}
+                    type="number"
+                    name="building_id"
+                    placeholder="חובה לדייר"
+                    value={editForm.building_id ?? ""}
+                    onChange={(e) =>
+                      setEditForm({
+                        ...editForm,
+                        building_id: e.target.value ? Number(e.target.value) : null,
+                      })
+                    }
+                    required
+                  />
+                ))
+              ) : (
+                // לעובדים/מנהלים – מציגים את רשימת הבניינים הקיימת (קריאה בלבד)
+                <div style={{ padding: "8px 12px", background: "#fff8e6", borderRadius: 12 }}>
+                  {user.worker_buildings_names ||
+                   user.worker_buildings_full_addresses ||
+                   "—"}
+                </div>
+              )}
+              {buildingRequired && !buildingOk && (
+                <div className={classes.errorText} role="alert" aria-live="polite">
+                  דייר חייב להיות משויך לבניין
+                </div>
+              )}
             </td>
 
             {/* טלפון – בדיוק 10 ספרות + הודעת שגיאה */}
@@ -120,7 +197,7 @@ export default function UsersTable({
                   value={formatILPhone10(editForm.phone || "")}
                   onChange={(e) => {
                     const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
-                    setEditForm({ ...editForm, phone: digits }); // שומר ספרות בלבד
+                    setEditForm({ ...editForm, phone: digits });
                   }}
                   type="text"
                   inputMode="numeric"
@@ -151,8 +228,12 @@ export default function UsersTable({
               <div className={classes.actions}>
                 <button
                   onClick={() => onEditSave(user.user_id)}
-                  disabled={!idOk || !phoneOk}
-                  title={!idOk || !phoneOk ? "ת״ז חייבת 9 ספרות וטלפון 10 ספרות" : "שמור"}
+                  disabled={!idOk || !phoneOk || !buildingOk}
+                  title={
+                    !idOk || !phoneOk || !buildingOk
+                      ? "ת״ז 9 ספרות, טלפון 10 ספרות, ודייר חייב בניין"
+                      : "שמור"
+                  }
                 >
                   💾
                 </button>
@@ -165,6 +246,14 @@ export default function UsersTable({
             <td>{user.name}</td>
             <td>{user.id_number}</td>
             <td>{roleHe(user.role)}</td>
+
+            {/* תצוגה: דייר → בניין ישיר; עובד → רשימת בניינים מה-assigned_workers */}
+            <td>
+              {user.role === "worker"
+                ? (user.worker_buildings_names || user.worker_buildings_full_addresses || "—")
+                : (user.building_name || user.building_full_address || "—")}
+            </td>
+
             <td dir="ltr" style={{ textAlign: "center" }}>
               {formatILPhone10(user.phone)}
             </td>

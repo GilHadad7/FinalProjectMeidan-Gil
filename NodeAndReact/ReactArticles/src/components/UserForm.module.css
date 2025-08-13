@@ -75,26 +75,28 @@
     box-shadow: 0 0 0 2px #bfae9e;
 }
 .toggleBtn {
-    position: absolute;
-    left: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: #f2ece4;
-    border: none;
-    border-radius: 50%;
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 1.1rem;
-    color: #7a6c5d;
-    z-index: 2;
-    transition: background 0.2s, box-shadow 0.2s;
-    box-shadow: 0 1px 4px #0001;
-    padding: 0;
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  /* היה: transform: translateY(-50%); */
+  transform: translateY(calc(-50% - 2px)); /* מרים טיפה למעלה */
+  background: #f2ece4;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.1rem;
+  color: #7a6c5d;
+  z-index: 2;
+  transition: background 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 4px #0001;
+  padding: 0;
 }
+
 .toggleBtn:hover {
     background: #e4dbcf;
     box-shadow: 0 2px 8px #0002;

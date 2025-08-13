@@ -13,34 +13,61 @@ export default function AssignmentOfTasksPage() {
   useEffect(() => {
     fetch("http://localhost:3000/api/tasks")
       .then((res) => res.json())
-      .then((data) => setTasks(data))
+      .then((data) => setTasks(Array.isArray(data) ? data : []))
       .catch((err) => console.error("Error loading tasks:", err));
   }, [refreshFlag]);
 
   const triggerRefresh = () => setRefreshFlag((prev) => !prev);
 
-  // 🔎 סינון בצד העמוד (הטבלה מקבלת רק את מה שמסונן)
+  // ---- helpers ----
+  const norm = (v) =>
+    String(v ?? "")
+      .normalize("NFKD")
+      .replace(/[\u200E\u200F\u202A-\u202E]/g, "") // סימני RTL נסתרים
+      .toLowerCase()
+      .trim();
+
+  // 🔎 סינון בצד העמוד (חיפוש עובד גם לפי כתובת/שם בניין)
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const q = norm(search);
     if (!q) return tasks;
 
-    // ננסה לכסות את העמודות הנפוצות שלך:
-    return tasks.filter((t) =>
-      [
-        t.building_address,   // כתובת בניין
-        t.description,        // תיאור משימה
-        t.frequency,          // תדירות (שבועי/חודשי/...)
-        t.type,               // סוג משימה (ניקיון/חשמל/...)
-        t.next_date,          // תאריך הבא
-        t.weekday,            // יום
-        t.time,               // שעה
-        String(t.id),         // מספר משימה
+    // חיתוך למילים => כל המילים חייבות להופיע (AND)
+    const tokens = q.split(/\s+/).filter(Boolean);
+
+    return tasks.filter((t) => {
+      // נסה לכסות שמות שדה נפוצים אצלך עבור כתובת/שם בניין
+      const buildingText = [
+        t.building_address,
+        t.full_address,
+        t.building_full_address,
+        t.address,
+        t.street,
+        t.city,
+        t.building_name,
+        t.name,
+        t.building?.full_address,
+        t.building?.name,
       ]
         .filter(Boolean)
-        .join(" ")
-        .toLowerCase()
-        .includes(q)
-    );
+        .join(" ");
+
+      const allText = [
+        buildingText,           // ← כתובת/שם בניין
+        t.description,          // תיאור משימה
+        t.frequency,            // תדירות
+        t.type,                 // סוג
+        t.weekday,              // יום
+        t.time,                 // שעה
+        t.next_date,            // תאריך הבא (כמו שבא מהשרת)
+        String(t.id),
+      ]
+        .filter(Boolean)
+        .join(" ");
+
+      const hay = norm(allText);
+      return tokens.every((tok) => hay.includes(tok));
+    });
   }, [tasks, search]);
 
   return (
@@ -50,7 +77,6 @@ export default function AssignmentOfTasksPage() {
       </div>
 
       <div className={classes.tableSection}>
-        {/* 🔎 שורת חיפוש אחידה כמו בשאר הדפים */}
         <FiltersBar>
           <SearchInput
             value={search}

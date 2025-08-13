@@ -16,21 +16,39 @@ const roleEn = (he) =>
   he === "מנהל" ? "manager" :
   he === "דייר" ? "tenant" : he;
 
-const norm = (v) => (v ?? "").toString().trim().toLowerCase();
+// נרמול טקסט (מסיר תווי RTL נסתרים ומוריד לאותיות קטנות)
+const norm = (v) =>
+  String(v ?? "")
+    .normalize("NFKD")
+    .replace(/[\u200E\u200F\u202A-\u202E]/g, "")
+    .toLowerCase()
+    .trim();
 
 export default function UserManagementPage() {
   const [users, setUsers] = useState([]);
+  const [buildings, setBuildings] = useState([]);         // ⬅️ רשימת בניינים
+  const [buildingFilter, setBuildingFilter] = useState(""); // ⬅️ פילטר לפי בניין
   const [search, setSearch] = useState("");
   const [editId, setEditId] = useState(null);
   const [editForm, setEditForm] = useState({});
 
+  // טען משתמשים
   useEffect(() => {
     fetch("http://localhost:3000/api/users")
       .then(res => res.json())
-      .then(data => setUsers(data))
+      .then(data => setUsers(Array.isArray(data) ? data : []))
       .catch(err => console.error("Error loading users:", err));
   }, []);
 
+  // טען בניינים (לסלקט + שיוך בעריכה)
+  useEffect(() => {
+    fetch("http://localhost:3000/api/buildings")
+      .then(r => r.json())
+      .then(data => setBuildings(Array.isArray(data) ? data : []))
+      .catch(() => setBuildings([]));
+  }, []);
+
+  // הוספה
   const handleAdd = async (newUser) => {
     const res = await fetch("http://localhost:3000/api/users", {
       method: "POST",
@@ -38,17 +56,20 @@ export default function UserManagementPage() {
       body: JSON.stringify(newUser),
     });
     if (res.ok) {
-      const added = await res.json();
-      setUsers(prev => [...prev, added]);
+      // נטען מחדש כדי לקבל גם building_name/Full_address מה-JOIN
+      const refreshed = await fetch("http://localhost:3000/api/users").then(r => r.json());
+      setUsers(Array.isArray(refreshed) ? refreshed : []);
     }
   };
 
+  // מחיקה
   const handleDelete = async (id) => {
     if (!window.confirm("למחוק את המשתמש?")) return;
     const res = await fetch(`http://localhost:3000/api/users/${id}`, { method: "DELETE" });
     if (res.ok) setUsers(prev => prev.filter(u => u.user_id !== id));
   };
 
+  // שמירה
   const handleEditSave = async (id) => {
     // ולידציה לטלפון
     if (!/^[0-9]{7,10}$/.test(editForm.phone)) {
@@ -70,37 +91,53 @@ export default function UserManagementPage() {
     if (res.ok) {
       const updatedUsers = await fetch("http://localhost:3000/api/users").then(r => r.json());
       setEditId(null);
-      setUsers(updatedUsers);
+      setUsers(Array.isArray(updatedUsers) ? updatedUsers : []);
     } else {
       alert("שגיאה בעדכון המשתמש");
     }
   };
 
-  // 🔎 סינון כולל תמיכה בחיפוש בעברית/אנגלית לתפקיד (עובד/מנהל/דייר ↔ worker/manager/tenant)
+  // 🔎 סינון עם תמיכה בתפקיד בעברית/אנגלית + סינון לפי בניין + חיפוש לפי שם/כתובת בניין
   const filtered = useMemo(() => {
+    let list = Array.isArray(users) ? users : [];
+
+    // סינון לפי בניין
+    if (buildingFilter === "__none") {
+      list = list.filter((u) => !u.building_id);
+    } else if (buildingFilter) {
+      const bid = Number(buildingFilter);
+      list = list.filter((u) => Number(u.building_id) === bid);
+    }
+
+    // טקסט חיפוש
     const q = norm(search);
-    if (!q) return users;
+    if (!q) return list;
 
-    // אם חיפשו בעברית, נמפה גם לאנגלית כדי לתפוס ערך role מקורי
+    // אם חיפשו בעברית תפקיד – נמפה לאנגלית כדי לתפוס role
     const qRoleEn = norm(roleEn(search));
-    const queries = new Set([q, qRoleEn].filter(Boolean));
+    const tokens = [...new Set([q, qRoleEn].filter(Boolean))]
+      .join(" ")
+      .split(/\s+/)
+      .filter(Boolean);
 
-    return users.filter((u) => {
-      const haystack = [
-        u.name,
-        u.email,
-        u.phone,
-        u.id_number,
-        u.role,          // באנגלית
-        roleHe(u.role),  // בעברית
-      ].map(norm);
-
-      for (const query of queries) {
-        if (haystack.some((h) => h.includes(query))) return true;
-      }
-      return false;
+    return list.filter((u) => {
+      const hay = norm(
+        [
+          u.name,
+          u.email,
+          u.phone,
+          u.id_number,
+          u.role,                 // באנגלית
+          roleHe(u.role),         // בעברית
+          u.building_name,        // ⬅️ שם בניין
+          u.building_full_address // ⬅️ כתובת בניין
+        ]
+          .filter(Boolean)
+          .join(" ")
+      );
+      return tokens.every((t) => hay.includes(t));
     });
-  }, [users, search]);
+  }, [users, search, buildingFilter]);
 
   return (
     <div className={classes.pageWrapper}>
@@ -109,18 +146,41 @@ export default function UserManagementPage() {
       </div>
 
       <div className={classes.rightPanel}>
-        {/* ✅ תיבת חיפוש בעיצוב האחיד */}
-        <FiltersBar>
-          <SearchInput
-            value={search}
-            onChange={setSearch}
-            placeholder="חפש לפי שם, ת.ז., תפקיד, טלפון או מייל…"
-            width={520}
-          />
-        </FiltersBar>
+      <FiltersBar>
+  <SearchInput
+    value={search}
+    onChange={setSearch}
+    placeholder="חפש לפי שם, ת.ז., תפקיד, טלפון, מייל או שם בניין…"
+    width={520}
+  />
+
+  {/* סלקט מעוצב כ'פיל' */}
+  <div className={classes.searchSelectWrap}>
+    <select
+      className={classes.searchSelect}
+      value={buildingFilter}
+      onChange={(e) => setBuildingFilter(e.target.value)}
+      aria-label="סינון לפי בניין"
+    >
+      <option value="">כל הבניינים</option>
+      <option value="__none">ללא בניין</option>
+      {buildings
+        .slice()
+        .sort((a, b) => (a?.name || "").localeCompare(b?.name || "", "he", { numeric: true }))
+        .map((b) => (
+          <option key={b.building_id} value={b.building_id}>
+            {b.name || b.full_address || `בניין #${b.building_id}`}
+          </option>
+        ))}
+    </select>
+  </div>
+</FiltersBar>
+
+
 
         <UsersTable
           users={filtered}
+          buildings={buildings}     // ⬅️ כדי שה־select בעמודה "שם בניין" יעבוד בעריכה
           editId={editId}
           setEditId={setEditId}
           editForm={editForm}
