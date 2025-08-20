@@ -2,6 +2,17 @@ import React from "react";
 import classes from "./UsersTable.module.css";
 import BaseTable from "./ui/BaseTable";
 
+// ----- רוחבי עמודות ברירת מחדל (אותו סדר כמו headers) -----
+const DEFAULT_COL_WIDTHS = [
+  "13%", // שם
+  "11%", // תעודת זהות
+  "10%", // תפקיד
+  "20%", // שם בניין
+  "13%", // טלפון
+  "22%", // מייל
+  "12%",  // פעולות
+];
+
 // --- תפקיד בעברית
 const roleHe = (en) => {
   switch (en) {
@@ -40,6 +51,9 @@ export default function UsersTable({
   onDelete,
   onEditSave,
   buildings = [], // { building_id, name, full_address }
+
+  // 👇 חדש: מאפשר להעביר רוחבים מבחוץ; אם לא הועבר – משתמשים בברירת מחדל
+  colWidths = DEFAULT_COL_WIDTHS,
 }) {
   const handleEditChange = (e) => {
     setEditForm({ ...editForm, [e.target.name]: e.target.value });
@@ -64,6 +78,7 @@ export default function UsersTable({
         "פעולות",
       ]}
       className={classes.usersTable}
+      colWidths={colWidths}   // 👈 זה כל מה שנדרש כדי לשלוט ברוחבים
     >
       {users.map((user) => {
         const isEditing = editId === user.user_id;
@@ -174,8 +189,7 @@ export default function UsersTable({
                   />
                 ))
               ) : (
-                // לעובדים/מנהלים – מציגים את רשימת הבניינים הקיימת (קריאה בלבד)
-                <div style={{ padding: "8px 12px", background: "#fff8e6", borderRadius: 12 }}>
+                <div className={classes.readonlyCell}>
                   {user.worker_buildings_names ||
                    user.worker_buildings_full_addresses ||
                    "—"}

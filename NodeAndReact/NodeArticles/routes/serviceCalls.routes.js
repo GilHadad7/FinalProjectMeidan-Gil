@@ -1,4 +1,3 @@
-// routes/serviceCalls.routes.js
 const express = require("express");
 const router = express.Router();
 const db = require("../db");
@@ -14,24 +13,92 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+/** helper: שמירת חודש לדוח הבניינים (UPSERT) */
+function recalcBuildingsMonth(month, cb = () => {}) {
+  if (!month || !/^\d{4}-\d{2}$/.test(month)) {
+    month = new Date().toISOString().slice(0, 7);
+  }
+  const sql = `
+  INSERT INTO building_finance (building_id, month, total_paid, balance_due, maintenance)
+  SELECT
+    b.building_id,
+    ? AS month,
+    COALESCE(tp.total_paid, 0) AS total_paid,
+    COALESCE(bd.balance_due, 0) AS balance_due,
+    COALESCE(mp.maint_from_payments, 0) + COALESCE(ms.maint_from_calls, 0) AS maintenance
+  FROM buildings b
+  LEFT JOIN (
+    SELECT building_id, SUM(amount) AS total_paid
+    FROM payments
+    WHERE status = 'שולם' AND DATE_FORMAT(payment_date, '%Y-%m') = ?
+    GROUP BY building_id
+  ) tp ON tp.building_id = b.building_id
+  LEFT JOIN (
+    SELECT building_id, SUM(amount) AS balance_due
+    FROM payments
+    WHERE status IN ('חוב','ממתין') AND DATE_FORMAT(payment_date, '%Y-%m') = ?
+    GROUP BY building_id
+  ) bd ON bd.building_id = b.building_id
+  LEFT JOIN (
+    SELECT building_id, SUM(amount) AS maint_from_payments
+    FROM payments
+    WHERE status = 'שולם'
+      AND category IN ('תחזוקת בניין','ניקיון','שירות מעלית','אבטחה')
+      AND DATE_FORMAT(payment_date, '%Y-%m') = ?
+    GROUP BY building_id
+  ) mp ON mp.building_id = b.building_id
+  LEFT JOIN (
+    SELECT building_id, SUM(COALESCE(cost,0)) AS maint_from_calls
+    FROM servicecalls
+    WHERE status IN ('Closed','סגור')
+      AND DATE_FORMAT(created_at, '%Y-%m') = ?
+    GROUP BY building_id
+  ) ms ON ms.building_id = b.building_id
+  ON DUPLICATE KEY UPDATE
+    total_paid = VALUES(total_paid),
+    balance_due = VALUES(balance_due),
+    maintenance = VALUES(maintenance);
+  `;
+  db.query(sql, [month, month, month, month, month], (err) => {
+    if (err) console.error("recalcBuildingsMonth failed:", err);
+    cb(err || null);
+  });
+}
+
+function ymFrom(v) {
+  if (!v) return new Date().toISOString().slice(0, 7);
+  const d = new Date(v);
+  return isNaN(d) ? String(v).slice(0, 7) : d.toISOString().slice(0, 7);
+}
+
 /**
  * ⭕ GET /api/service-calls
- * מביא את כל הקריאות, כולל עמודת cost
+ * מחזיר קריאות שירות. תומך בסינון לפי month=YYYY-MM.
+ * מבטל Join כפולים ל-users (שגרמו להכפלות) ומצרף כתובת בניין בלבד.
  */
 router.get("/", (req, res) => {
+  const { month } = req.query || {};
+  const params = [];
+  let where = "";
+
+  if (month && /^\d{4}-\d{2}$/.test(month)) {
+    where = "WHERE DATE_FORMAT(sc.created_at, '%Y-%m') = ?";
+    params.push(month);
+  }
+
   const sql = `
-    SELECT 
+    SELECT
       sc.*,
       b.full_address AS building_address,
-      u.name AS created_by_name,
-      u2.name AS updated_by_name
+      sc.created_by AS created_by_name,
+      sc.closed_by  AS updated_by_name
     FROM servicecalls sc
     LEFT JOIN buildings b ON sc.building_id = b.building_id
-    LEFT JOIN users u ON sc.created_by = u.name
-    LEFT JOIN users u2 ON sc.closed_by = u2.name
+    ${where}
     ORDER BY sc.call_id DESC
   `;
-  db.query(sql, (err, results) => {
+
+  db.query(sql, params, (err, results) => {
     if (err) {
       console.error("Error fetching service calls:", err);
       return res.status(500).json({ message: "Database error" });
@@ -62,27 +129,13 @@ router.put("/:id", upload.single("image"), (req, res) => {
   const fields = [];
   const values = [];
 
-  if (typeof status !== "undefined") {
-    fields.push("status = ?");
-    values.push(status);
-  }
-  if (typeof description !== "undefined") {
-    fields.push("description = ?");
-    values.push(description);
-  }
-  if (typeof location_in_building !== "undefined") {
-    fields.push("location_in_building = ?");
-    values.push(location_in_building);
-  }
-  if (typeof service_type !== "undefined") {
-    fields.push("service_type = ?");
-    values.push(service_type);
-  }
-  if (typeof image_url !== "undefined") {
-    fields.push("image_url = ?");
-    values.push(image_url);
-  }
-  // טיפול בעמודת cost
+  if (typeof status !== "undefined") { fields.push("status = ?"); values.push(status); }
+  if (typeof description !== "undefined") { fields.push("description = ?"); values.push(description); }
+  if (typeof location_in_building !== "undefined") { fields.push("location_in_building = ?"); values.push(location_in_building); }
+  if (typeof service_type !== "undefined") { fields.push("service_type = ?"); values.push(service_type); }
+  if (typeof image_url !== "undefined") { fields.push("image_url = ?"); values.push(image_url); }
+
+  // cost
   if (typeof cost !== "undefined") {
     if (cost === "") {
       fields.push("cost = NULL");
@@ -92,7 +145,7 @@ router.put("/:id", upload.single("image"), (req, res) => {
     }
   }
 
-  // טיפול ב־closed_by
+  // closed_by
   if (status === "Closed" && closed_by) {
     fields.push("closed_by = ?");
     values.push(closed_by);
@@ -116,12 +169,15 @@ router.put("/:id", upload.single("image"), (req, res) => {
       console.error("שגיאה בעדכון:", err);
       return res.status(500).json({ message: "שגיאה במסד" });
     }
-    // לשלוף ולשלוח חזרה את השורה המעודכנת
+    // לשלוף, להשיב, ואז לרענן חודש
     db.query("SELECT * FROM servicecalls WHERE call_id = ?", [id], (err2, rows) => {
       if (err2 || !rows.length) {
         return res.status(500).json({ message: "שגיאה בשליפה" });
       }
-      res.json(rows[0]);
+      const row = rows[0];
+      res.json(row); // משיבים ללקוח מיד
+      const ym = ymFrom(row.closed_at || row.created_at || new Date());
+      recalcBuildingsMonth(ym);
     });
   });
 });
@@ -158,7 +214,6 @@ router.post("/", upload.single("image"), (req, res) => {
     ? `http://localhost:8801/uploads/${req.file.filename}`
     : null;
 
-  // נתוני העמודות והערכים
   const cols = [
     "building_id",
     "description",
@@ -195,6 +250,9 @@ router.post("/", upload.single("image"), (req, res) => {
       return res.status(500).json({ message: "Database error" });
     }
     res.status(201).json({ message: "Service call created", id: result.insertId });
+    // רענון חודש נוכחי (או לפי created_at של הרשומה – בהיעדר, נשתמש בחודש הנוכחי)
+    const ym = new Date().toISOString().slice(0, 7);
+    recalcBuildingsMonth(ym);
   });
 });
 

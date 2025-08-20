@@ -1,10 +1,11 @@
+// src/components/MyRoutes.jsx
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute/ProtectedRoute";
 import Layout from "./Layout/Layout";
 import Login from "./Login/Login";
 
-// Pages
+// Pages (manager/worker/shared)
 import AdminPage from "../pages/AdminPage";
 import WorkerPage from "../pages/WorkerPage";
 import TenantPage from "../pages/TenantPage";
@@ -17,6 +18,12 @@ import AssignmentOfTasksPage from "../pages/AssignmentOfTasksPage";
 import UserManagementPage from "../pages/UserManagementPage";
 import DetailsOfBuildingsPage from "../pages/DetailsOfBuildingsPage";
 import PaymentsPage from "../pages/PaymentsPage";
+
+// Tenant-only pages (new)
+import ServiceCallsTenantPage from "../pages/tenant/ServiceCallsTenantPage";
+import ScheduleTenantPage from "../pages/tenant/ScheduleTenantPage";
+import PaymentsTenantPage from "../pages/tenant/PaymentsTenantPage";
+import ReportsTenantPage from "../pages/tenant/ReportsTenantPage";
 
 function MyRoutes() {
   return (
@@ -71,9 +78,11 @@ function MyRoutes() {
         }
       >
         <Route index element={<TenantPage />} />
-        <Route path="service-calls" element={<ServiceCallsPage />} />
-        <Route path="payments" element={<PaymentsPage />} />
-        <Route path="reports" element={<ReportsPage />} />
+        {/* דייר: עמודים ייעודיים */}
+        <Route path="service-calls" element={<ServiceCallsTenantPage />} />
+        <Route path="schedule" element={<ScheduleTenantPage />} />
+        <Route path="payments" element={<PaymentsTenantPage />} />
+        <Route path="reports" element={<ReportsTenantPage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
 

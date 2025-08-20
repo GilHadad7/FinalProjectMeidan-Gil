@@ -1,0 +1,56 @@
+.wrap { padding: 16px; }
+.title { text-align: center; margin: 0 0 16px; }
+
+.grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 1000px) { .grid { grid-template-columns: 1fr; } }
+
+.tableCard, .formCard {
+  background: #fff;
+  border: 1px solid #e9e2d5;
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  direction: rtl;
+}
+.table th, .table td {
+  border-bottom: 1px solid #eee;
+  padding: 8px 10px;
+  text-align: right;
+}
+.table th { background: #faf7f1; }
+
+.muted { color: #777; }
+
+.form { display: grid; gap: 10px; direction: rtl; }
+.form label { display: grid; gap: 6px; font-weight: 600; }
+.form input, .form select, .form textarea {
+  border: 1px solid #d8cdbb;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font: inherit;
+}
+.form button {
+  justify-self: start;
+  padding: 10px 14px;
+  background: #cbb79b;
+  border: 1px solid #b8a487;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.form button:disabled { opacity: .6; cursor: default; }
+/* כותרת הטבלה: מיושרת לימין, מיושבת בדיוק עם תא התאריך */
+.tableTitle {
+  direction: rtl;
+  text-align: right;
+  margin: 0 0 8px;
+  /* כדי ליישר לקו של התאריך (לתאים יש padding-inline 10px) */
+  padding-inline-end: 10px; /* מימין ב־RTL */
+}

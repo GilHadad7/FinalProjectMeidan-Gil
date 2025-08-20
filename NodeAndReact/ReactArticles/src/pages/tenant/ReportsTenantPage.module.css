@@ -1,0 +1,29 @@
+.container { padding: 16px; direction: rtl; }
+.title { margin: 0 0 12px 0; }
+
+.grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.card {
+  border: 1px solid #eee;
+  border-radius: 12px;
+  background: #fff;
+  padding: 16px;
+}
+
+.cardTitle { margin: 0 0 6px 0; }
+.muted { color: #666; margin: 0 0 12px 0; }
+
+.btn {
+  background: #cbb79b;
+  border: 1px solid #b8a487;
+  border-radius: 10px;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+.btn:hover { background: #c2ab8e; }
+
+.note { margin-top: 12px; color: #777; font-size: 13px; }

@@ -1,0 +1,66 @@
+.ScheduleWrapper {
+    padding: 2rem;
+    direction: rtl;
+    font-family: sans-serif;
+  }
+  
+  .Title {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+  }
+  
+  .Table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed; /* חשוב כדי שה-width שתגדיר יתחשב */
+  }
+  
+  .Table th,
+  .Table td {
+    border: 1px solid #ddd;
+    padding: 0.75rem;
+    text-align: center;
+  }
+  
+  .Table th {
+    background-color: #f5f5f5;
+  }
+  
+  /* ===== הגדרות רוחב לכל עמודה ===== */
+  
+  /* עמודה 1 – תאריך */
+  .Col1 {
+    width: 80px;        /* שים כאן את הרוחב הרצוי */
+    min-width: 100px;    /* אופציונלי */
+    overflow-wrap: break-word;
+  }
+  
+  /* עמודה 2 – בניין */
+  .Col2 {
+    width: 250px;
+    min-width: 200px;
+    overflow-wrap: break-word;
+  }
+  
+  /* עמודה 3 – סוג */
+  .Col3 {
+    width: 100px;
+    min-width: 80px;
+    overflow-wrap: break-word;
+  }
+  
+  /* עמודה 4 – תיאור */
+  .Col4 {
+    width: 300px;
+    min-width: 150px;
+    overflow-wrap: break-word;
+  }
+  
+  /* עמודה 5 – סוג מקור */
+  .Col5 {
+    width: 130px;
+    min-width: 100px;
+    overflow-wrap: break-word;
+  }
+  

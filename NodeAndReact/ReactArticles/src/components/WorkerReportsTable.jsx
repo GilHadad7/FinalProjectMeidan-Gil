@@ -1,6 +1,75 @@
 import React, { useMemo } from "react";
 import classes from "./WorkerReportsTable.module.css";
 
+/* ---------- Role mapping (code <-> Hebrew) ---------- */
+// Add/adjust aliases here to match your DB values (codes or alternative labels)
+const ROLE_CODE_TO_HE = {
+  manager: "מנהל",
+  cleaner: "מנקה",
+  super: "אב בית",
+
+  // Optional aliases if they appear in your DB:
+  janitor: "אב בית",
+  supervisor: "אב בית",
+  "head manager": "מנהל",
+};
+
+// Reverse map Hebrew -> FIRST matching code (for filtering by exact Hebrew label)
+const ROLE_HE_TO_CODE = Object.fromEntries(
+  Object.entries(ROLE_CODE_TO_HE).map(([code, he]) => [he, code])
+);
+
+// Normalize Hebrew by removing all spaces (also NBSP) for robust matching
+function heNormalize(s) {
+  return String(s || "")
+    .replace(/[\u00A0\s]+/g, "") // remove normal spaces & non-breaking spaces
+    .trim();
+}
+
+// Convert any input (Hebrew or English code) to an internal "code" if known
+function normalizeRoleToCode(val) {
+  if (!val) return "";
+  const raw = String(val).trim();
+
+  // Exact Hebrew label -> code (e.g., "מנהל" -> "manager")
+  if (ROLE_HE_TO_CODE[raw]) return ROLE_HE_TO_CODE[raw];
+
+  // Lowercase English code -> code (e.g., "Manager" -> "manager")
+  const lower = raw.toLowerCase();
+  if (ROLE_CODE_TO_HE[lower]) return lower;
+
+  // Unknown stays as-is (used later for partial Hebrew matching)
+  return raw;
+}
+
+// Convert DB/Code to Hebrew label for display
+function roleToHeb(val) {
+  if (!val) return "";
+  const lower = String(val).toLowerCase().trim();
+  return ROLE_CODE_TO_HE[lower] || String(val); // if already Hebrew/unknown -> show as-is
+}
+
+// Flexible matcher: match by code OR by (normalized) Hebrew includes
+function roleMatches(position, filterRole) {
+  if (!filterRole) return true;
+
+  const posCode = normalizeRoleToCode(position);
+  const fltCode = normalizeRoleToCode(filterRole);
+
+  // If both normalized to known codes, compare codes first (fast path)
+  if (posCode && fltCode && ROLE_CODE_TO_HE[posCode] && ROLE_CODE_TO_HE[fltCode]) {
+    if (posCode === fltCode) return true;
+  }
+
+  // Otherwise, compare Hebrew labels as normalized substrings.
+  // This handles cases like "מנהל" vs "מנהל ראשי" and spacing/NBSP issues.
+  const posHeb = heNormalize(roleToHeb(position));
+  const fltHeb = heNormalize(ROLE_CODE_TO_HE[fltCode] || String(filterRole));
+
+  return posHeb.includes(fltHeb);
+}
+
+/* ---------- Date helpers ---------- */
 // תאריך בסגנון 22.8.2025
 const formatHeDate = (value) => {
   if (!value) return "";
@@ -34,13 +103,13 @@ export default function WorkerReportsTable({
   reports,
   onTogglePaid,
   onUploadPDF,
-  filterMonth = "",   // ← חדש: חודש בפורמט YYYY-MM
-  filterRole = ""     // ← חדש: תפקיד
+  filterMonth = "",   // YYYY-MM
+  filterRole = ""     // Can be Hebrew ("אב בית"/"מנהל"/"מנקה") or code ("super"/"manager"/"cleaner")
 }) {
 
   const visibleReports = useMemo(() => {
     return reports.filter(r =>
-      (!filterRole || r.position === filterRole) &&
+      roleMatches(r.position, filterRole) &&
       isInMonth(r.month, filterMonth)
     );
   }, [reports, filterMonth, filterRole]);
@@ -61,7 +130,8 @@ export default function WorkerReportsTable({
         {visibleReports.map((report) => (
           <tr key={report.report_id}>
             <td>{report.employee_name}</td>
-            <td>{report.position}</td>
+            {/* Display role in Hebrew */}
+            <td>{roleToHeb(report.position)}</td>
             <td>{formatHeDate(report.month)}</td>
             <td>₪{Number(report.salary).toLocaleString("he-IL")}</td>
             <td>

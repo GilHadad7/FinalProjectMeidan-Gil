@@ -80,7 +80,7 @@
   padding: 10px 14px;        /* ריווח נעים כמו בשאר המערכת */
   border-radius: 10px;
   border: 1px solid #bca98c;
-  background: #fffbe8;
+  background: #ffffff;
   font: inherit;             /* ירש Heebo וגדלים */
   box-sizing: border-box;
 }
@@ -111,4 +111,18 @@
 .input[aria-invalid="true"] {
   border-color: #c85c5c;
   box-shadow: 0 0 0 2px rgba(200, 92, 92, 0.12);
+}
+/* תא תצוגה לקריאה בלבד במצב עריכה לעובד/מנהל */
+.readonlyCell {
+  padding: 10px 14px;
+  background: #fff;                 /* לבן */
+  border: 1px solid #bca98c;        /* כמו ה-input */
+  border-radius: 10px;
+  box-sizing: border-box;
+  display: inline-block;
+}
+
+/* לוודא שגם select במצב עריכה לבן */
+.usersTable select.input {
+  background: #fff;
 }

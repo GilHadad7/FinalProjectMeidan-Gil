@@ -21,9 +21,12 @@ const paymentsRoutes = require("./routes/payments.routes"); // ✅ נוספה ה
 const remindersRoutes = require("./routes/reminders.js");
 // ליד שאר ה-require למעלה
 const tenantsRouter = require("./routes/tenants");   // NEW
-
+const managerRoutes = require("./routes/manager.routes");
 require("./routes/reportScheduler"); // ← שורה שמפעילה את הסקריפט בעת עליית השרת
 
+//דייר
+
+const tenantServiceCallsRoutes = require('./routes/tenant.serviceCalls.routes');
 
 
 app.use(cors()); // ← חייב להיות לפני הראוטים שלך
@@ -41,6 +44,11 @@ app.use("/api/payments", paymentsRoutes);
 app.use("/api/reminders", remindersRoutes);
 // באזור ה-Routes (אחרי app.use(express.json()))
 app.use("/api", tenantsRouter);                      // NEW → מאפשר GET /api/tenants?building_id=...
+app.use("/api/manager", managerRoutes);
+
+
+//דייר
+app.use('/api/tenant/service-calls', tenantServiceCallsRoutes)
 
 
 

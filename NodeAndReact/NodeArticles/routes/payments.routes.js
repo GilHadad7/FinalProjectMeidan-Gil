@@ -2,6 +2,58 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db");
 
+// helper: רענון חודש בטבלת building_finance
+function recalcBuildingsMonth(month, cb = () => {}) {
+  if (!month || !/^\d{4}-\d{2}$/.test(month)) {
+    month = new Date().toISOString().slice(0, 7);
+  }
+  const sql = `
+  INSERT INTO building_finance (building_id, month, total_paid, balance_due, maintenance)
+  SELECT
+    b.building_id,
+    ? AS month,
+    COALESCE(tp.total_paid, 0) AS total_paid,
+    COALESCE(bd.balance_due, 0) AS balance_due,
+    COALESCE(mp.maint_from_payments, 0) + COALESCE(ms.maint_from_calls, 0) AS maintenance
+  FROM buildings b
+  LEFT JOIN (
+    SELECT building_id, SUM(amount) AS total_paid
+    FROM payments
+    WHERE status='שולם' AND DATE_FORMAT(payment_date, '%Y-%m') = ?
+    GROUP BY building_id
+  ) tp ON tp.building_id = b.building_id
+  LEFT JOIN (
+    SELECT building_id, SUM(amount) AS balance_due
+    FROM payments
+    WHERE status IN ('חוב','ממתין') AND DATE_FORMAT(payment_date, '%Y-%m') = ?
+    GROUP BY building_id
+  ) bd ON bd.building_id = b.building_id
+  LEFT JOIN (
+    SELECT building_id, SUM(amount) AS maint_from_payments
+    FROM payments
+    WHERE status='שולם'
+      AND category IN ('תחזוקת בניין','ניקיון','שירות מעלית','אבטחה')
+      AND DATE_FORMAT(payment_date, '%Y-%m') = ?
+    GROUP BY building_id
+  ) mp ON mp.building_id = b.building_id
+  LEFT JOIN (
+    SELECT building_id, SUM(COALESCE(cost,0)) AS maint_from_calls
+    FROM servicecalls
+    WHERE status IN ('Closed','סגור')
+      AND DATE_FORMAT(created_at, '%Y-%m') = ?
+    GROUP BY building_id
+  ) ms ON ms.building_id = b.building_id
+  ON DUPLICATE KEY UPDATE
+    total_paid = VALUES(total_paid),
+    balance_due = VALUES(balance_due),
+    maintenance = VALUES(maintenance);
+  `;
+  db.query(sql, [month, month, month, month, month], (err) => {
+    if (err) console.error("recalcBuildingsMonth (payments) failed:", err);
+    cb(err || null);
+  });
+}
+
 // GET: Fetch all payments with tenant_name and building_name via JOIN
 router.get("/", (req, res) => {
   const query = `
@@ -24,7 +76,7 @@ router.get("/", (req, res) => {
 
   db.query(query, (err, results) => {
     if (err) {
-      console.error("\u274C Error fetching payments:", err);
+      console.error("❌ Error fetching payments:", err);
       return res.status(500).json({ error: err.message });
     }
     res.json(results);
@@ -54,7 +106,7 @@ router.post("/", (req, res) => {
     [tenant_id, building_id, payment_date, category, description, amount, status],
     (err, result) => {
       if (err) {
-        console.error("\u274C Error adding payment:", err);
+        console.error("❌ Error adding payment:", err);
         return res.status(500).json({ error: err.message });
       }
 
@@ -78,10 +130,15 @@ router.post("/", (req, res) => {
 
       db.query(selectQuery, [result.insertId], (err2, rows) => {
         if (err2) {
-          console.error("\u274C Error fetching new payment:", err2);
+          console.error("❌ Error fetching new payment:", err2);
           return res.status(500).json({ error: err2.message });
         }
         res.status(201).json(rows[0]);
+        // רענון חודש של התשלום
+        const ym = (payment_date && /^\d{4}-\d{2}-\d{2}$/.test(payment_date))
+          ? payment_date.slice(0, 7)
+          : new Date().toISOString().slice(0, 7);
+        recalcBuildingsMonth(ym);
       });
     }
   );
@@ -101,9 +158,9 @@ router.patch("/:id", (req, res) => {
 
   const updateQuery = `UPDATE payments SET ${setClause} WHERE payment_id = ?`;
 
-  db.query(updateQuery, values, (err, result) => {
+  db.query(updateQuery, values, (err) => {
     if (err) {
-      console.error("\u274C Error updating payment:", err);
+      console.error("❌ Error updating payment:", err);
       return res.status(500).json({ error: err.message });
     }
 
@@ -129,7 +186,13 @@ router.patch("/:id", (req, res) => {
       if (err2) {
         return res.status(500).json({ error: err2.message });
       }
-      res.json(rows[0]);
+      const row = rows[0];
+      res.json(row);
+      // רענון חודש של התשלום המעודכן
+      const ym = row && row.payment_date
+        ? new Date(row.payment_date).toISOString().slice(0, 7)
+        : new Date().toISOString().slice(0, 7);
+      recalcBuildingsMonth(ym);
     });
   });
 });
@@ -139,9 +202,9 @@ router.delete("/:id", (req, res) => {
   const { id } = req.params;
 
   const deleteQuery = `DELETE FROM payments WHERE payment_id = ?`;
-  db.query(deleteQuery, [id], (err, result) => {
+  db.query(deleteQuery, [id], (err) => {
     if (err) {
-      console.error("\u274C Error deleting payment:", err);
+      console.error("❌ Error deleting payment:", err);
       return res.status(500).json({ error: err.message });
     }
     res.json({ message: "Payment deleted successfully" });

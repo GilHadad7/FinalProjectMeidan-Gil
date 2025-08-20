@@ -16,52 +16,11 @@ const HEB_MONTHS = [
 ];
 const pad2 = (n) => String(n).padStart(2, "0");
 const monthLabelHe = (ym) => {
-  const [y,m] = ym.split("-");
-  return `${HEB_MONTHS[parseInt(m,10)-1]} ${y}`;
+  const [y, m] = ym.split("-");
+  return `${HEB_MONTHS[parseInt(m, 10) - 1]} ${y}`;
 };
 const monthsForYear = (year) =>
-  Array.from({length:12},(_,i)=>`${year}-${pad2(i+1)}`);
-
-// קטגוריות שנחשבות “הוצאות תחזוקה” מתוך תשלומים
-const MAINTENANCE_CATS = new Set(["תחזוקת בניין","ניקיון","שירות מעלית","אבטחה"]);
-
-// אגרגציית תשלומים -> בסיס לסיכומים פר בניין
-function aggregatePaymentsByBuilding(list) {
-  const map = new Map();
-
-  list.forEach((p) => {
-    const bId   = p.building_id ?? p.buildingId ?? p.building?.id;
-    const bName = p.building_name ?? p.buildingName ?? p.building?.name ?? "";
-    const addr  = p.building_address ?? p.address ?? p.building?.address ?? "";
-    if (!bId && !bName) return;
-    const key = bId ?? bName;
-
-    if (!map.has(key)) {
-      map.set(key, {
-        building_id: bId,
-        building_name: bName,
-        address: addr,
-        total_paid: 0,
-        balance_due: 0,
-        maintenance: 0,
-      });
-    }
-
-    const rec = map.get(key);
-    const amount = Number(p.amount) || 0;
-    const status = (p.status || "").trim();
-
-    if (status === "שולם") rec.total_paid += amount;
-    if (status === "חוב" || status === "ממתין") rec.balance_due += amount;
-
-    const cat = (p.category || "").trim();
-    if (status === "שולם" && MAINTENANCE_CATS.has(cat)) {
-      rec.maintenance += amount;
-    }
-  });
-
-  return map;
-}
+  Array.from({ length: 12 }, (_, i) => `${year}-${pad2(i + 1)}`);
 
 export default function ReportsPage() {
   const [workerReports, setWorkerReports] = useState([]);
@@ -70,17 +29,11 @@ export default function ReportsPage() {
     () => new Date().toISOString().slice(0, 7)
   );
   const selectedYear = selectedMonth.slice(0, 4);
-  
 
   const [selectedBuilding, setSelectedBuilding] = useState("");
 
   const [buildingsSummary, setBuildingsSummary] = useState([]);
   const [loadingBuildings, setLoadingBuildings] = useState(false);
-
-  // אינדקסים להשלמת שם/כתובת
-  const [buildingsById, setBuildingsById] = useState({});
-  const [buildingsByName, setBuildingsByName] = useState({});
-  const [buildingsByAddress, setBuildingsByAddress] = useState({});
 
   // ✅ סטייט לסינון דוח עובדים (מגיע מה-Summary ונשלח לטבלה)
   const [wrFilters, setWrFilters] = useState({ month: "", role: "" });
@@ -93,130 +46,31 @@ export default function ReportsPage() {
       .catch(console.error);
   }, []);
 
-  // טען פעם אחת את הבניינים ובנה אינדקסים
-  useEffect(() => {
-    fetch("http://localhost:3000/api/buildings")
-      .then((res) => res.json())
-      .then((list) => {
-        const byId = {};
-        const byName = {};
-        const byAddress = {};
-        list.forEach((b) => {
-          byId[String(b.building_id)] = b;
-          const nm = (b.name || b.building_name || "").toLowerCase();
-          if (nm) byName[nm] = b;
-
-          const addr =
-            (b.full_address ||
-              b.address ||
-              [b.street, b.house_number, b.city].filter(Boolean).join(" ")
-            || "").toLowerCase();
-          if (addr) byAddress[addr] = b;
-        });
-        setBuildingsById(byId);
-        setBuildingsByName(byName);
-        setBuildingsByAddress(byAddress);
-      })
-      .catch(console.error);
-  }, []);
-
-  // דוח בניינים – תשלומים + קריאות שירות לחודש הנבחר
+  // דוח לפי בניינים – שמירה ל-DB ואז שליפה מה-DB
   useEffect(() => {
     setLoadingBuildings(true);
-
-    const fetchPayments = fetch(`http://localhost:3000/api/payments?month=${selectedMonth}`)
-      .then((r) => r.json())
-      .then((rows) => (rows || []).filter((p) => {
-        const ym = (p.payment_date || p.date || "").slice(0, 7);
-        return ym === selectedMonth;
-      }))
-      .catch(() => []);
-
-    const fetchCalls = fetch(`http://localhost:3000/api/service-calls?month=${selectedMonth}`)
-      .then((r) => r.json())
-      .then((rows) => (rows || []).filter((c) => {
-        const ym = (c.created_at || "").slice(0, 7);
-        return ym === selectedMonth;
-      }))
-      .catch(() => []);
-
-    Promise.all([fetchPayments, fetchCalls])
-      .then(([payments, calls]) => {
-        const map = aggregatePaymentsByBuilding(payments);
-
-        calls.forEach((c) => {
-          const statusOk = (c.status || "").toLowerCase() === "closed";
-          if (!statusOk) return;
-
-          const cost = Number(c.cost);
-          if (!isFinite(cost) || cost <= 0) return;
-
-          const bId = c.building_id ?? c.buildingId;
-          const addr = (c.building_address || c.address || "").toLowerCase();
-          const bName = c.building_name || c.buildingName || "";
-
-          let b = undefined;
-          if (bId != null) b = buildingsById[String(bId)];
-          if (!b && addr)   b = buildingsByAddress[addr];
-          if (!b && bName)  b = buildingsByName[(bName || "").toLowerCase()];
-
-          const key = (b?.building_id ?? bId ?? bName) || addr;
-          if (!key) return;
-
-          if (!map.has(key)) {
-            map.set(key, {
-              building_id: b?.building_id ?? bId ?? null,
-              building_name: b?.name || b?.building_name || bName || "",
-              address:
-                b?.full_address ||
-                b?.address ||
-                (addr || "") ||
-                [b?.street, b?.house_number, b?.city].filter(Boolean).join(" "),
-              total_paid: 0,
-              balance_due: 0,
-              maintenance: 0,
-            });
-          }
-
-          const rec = map.get(key);
-          rec.maintenance += cost;
-
-          if (!rec.building_name) {
-            rec.building_name = b?.name || b?.building_name || bName || rec.building_name;
-          }
-          if (!rec.address) {
-            rec.address =
-              b?.full_address ||
-              b?.address ||
-              (addr || "") ||
-              [b?.street, b?.house_number, b?.city].filter(Boolean).join(" ");
-          }
+    (async () => {
+      try {
+        // 1) רענון/שמירה לחודש הנבחר
+        await fetch("http://localhost:3000/api/reports/buildings/recalc", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ month: selectedMonth }),
         });
 
-        const enriched = Array.from(map.values()).map((r) => {
-          const b =
-            (r.building_id != null && buildingsById[String(r.building_id)]) ||
-            (r.building_name && buildingsByName[r.building_name.toLowerCase()]) ||
-            (r.address && buildingsByAddress[r.address.toLowerCase()]) ||
-            undefined;
-
-          const joinAddr = [b?.street, b?.house_number, b?.city].filter(Boolean).join(" ");
-
-          return {
-            ...r,
-            building_name: r.building_name || b?.name || b?.building_name || "",
-            address: r.address || b?.full_address || b?.address || joinAddr,
-          };
-        });
-
-        enriched.sort((a,b) =>
-          (a.building_name || "").localeCompare(b.building_name || "","he")
+        // 2) שליפה מהטבלה השמורה
+        const res = await fetch(
+          `http://localhost:3000/api/reports/buildings?month=${selectedMonth}`
         );
-
-        setBuildingsSummary(enriched);
-      })
-      .finally(() => setLoadingBuildings(false));
-  }, [selectedMonth, buildingsById, buildingsByName, buildingsByAddress]);
+        const rows = await res.json();
+        setBuildingsSummary(rows);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoadingBuildings(false);
+      }
+    })();
+  }, [selectedMonth]);
 
   const filteredBuildings = useMemo(() => {
     return selectedBuilding
@@ -271,13 +125,10 @@ export default function ReportsPage() {
 
         {/* דוחות עובדים */}
         <TabPanel>
-          {/* ✅ מחברים: ה-Summary מעדכן את הסטייט המרכזי */}
           <WorkerReportsSummary
             reports={workerReports}
             onFiltersChange={setWrFilters}
           />
-
-          {/* ✅ והטבלה מקבלת את הסינון ומציגה רק את השורות הרלוונטיות */}
           <WorkerReportsTable
             reports={workerReports}
             filterMonth={wrFilters.month}
@@ -299,7 +150,9 @@ export default function ReportsPage() {
                 className={classes.selectMonth}
               >
                 {monthsForYear(selectedYear).map((m) => (
-                  <option key={m} value={m}>{monthLabelHe(m)}</option>
+                  <option key={m} value={m}>
+                    {monthLabelHe(m)}
+                  </option>
                 ))}
               </select>
             </div>
@@ -313,7 +166,9 @@ export default function ReportsPage() {
               >
                 <option value="">הצג הכול</option>
                 {buildingNames.map((name) => (
-                  <option key={name} value={name}>{name}</option>
+                  <option key={name} value={name}>
+                    {name}
+                  </option>
                 ))}
               </select>
             </div>
