@@ -1,11 +1,132 @@
-.container { padding: 16px; direction: rtl; }
-.title { margin: 0 0 8px 0; }
-.summary { display: flex; gap: 24px; margin-bottom: 12px; }
-.loading { color: #777; }
-.empty { color: #666; }
+/* ——— כללי קטנים ——— */
+.summaryCards { display:flex; gap:12px; margin:0 0 8px; }
+.card { background:#f7efe5; border:1px solid #e4d9c9; padding:8px 12px; border-radius:10px; }
 
-.tableWrap { overflow: auto; border: 1px solid #eee; border-radius: 8px; background: #fff; }
-.table { width: 100%; border-collapse: collapse; }
-.table th, .table td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; }
-.table thead th { background: #fafafa; text-align: right; }
-.table tbody tr:hover { background: #fcfcfc; }
+/* ——— סרגל סינון בשורה אחת, לא דוחף את הטופס מימין ——— */
+.filtersRow{
+  display:flex;
+  flex-wrap:nowrap;
+  align-items:center;
+  gap:12px;
+  margin:8px 0 12px;
+  direction:rtl;
+
+  width:100%;
+  min-width:0;
+  overflow-x:auto;
+  padding-bottom:2px;
+  scrollbar-width:thin;
+}
+.filtersRow::-webkit-scrollbar{ height:6px; }
+.filtersRow::-webkit-scrollbar-thumb{ background:#e0d5c6; border-radius:8px; }
+
+/* קבוצות בתוך הסרגל */
+.rowLine{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex:0 0 auto;
+  min-width:0;
+}
+
+/* ——— תיבות חיפוש קומפקטיות ——— */
+.search{
+  flex:0 0 240px;            /* רוחב קבוע נעים */
+  max-width:240px;
+  min-width:0;
+}
+/* כל עטיפה פנימית תיקח 100% רוחב */
+.search > *{ width:100% !important; max-width:100% !important; }
+.search > * > *{ width:100% !important; max-width:100% !important; }
+
+/* איפוס ה"גלולה" של קומפוננטת SearchInput (מונע תיבה בתוך תיבה) */
+.search :global(label[class*="SearchInput_box"]),
+.search :global(div[class*="SearchInput_box"]) {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+/* אופציונלי: מיישר גם את מחזיק האייקון אם יש */
+.search :global([class*="SearchInput_icon"]) {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* ה-label מכיל את ה-input – נשאיר אותו גלוי ורחב */
+.search :global(label){
+  display:block;
+  width:100%;
+}
+
+/* עיצוב ה-input עצמו (גם אם הוא בתוך label/עטיפה פנימית) */
+.search :global(label > input),
+.search :global(div[class*="SearchInput_box"] > input),
+.search :global(input){
+  width:100%;
+  height:34px;
+  font-size:.95rem;
+  border:1px solid #e4d9c9;
+  background:#f6efe6;
+  border-radius:12px;
+  padding-inline:12px;        /* אם תרצה מקום לאייקון: 12px 34px */
+  outline:none;
+  box-sizing:border-box;
+}
+
+/* ביטול אייקונים מובנים של search ב-WebKit */
+:global(input[type="search"]::-webkit-search-cancel-button),
+:global(input[type="search"]::-webkit-search-decoration){ -webkit-appearance:none; }
+:global(input[type="search"]){ -webkit-appearance:none; appearance:none; }
+
+/* ——— סטטוס ——— */
+.statusSelect{
+  flex:0 0 120px;
+  height:34px;
+  font-size:.95rem;
+  padding:0 12px;
+  border-radius:12px;
+  border:1px solid #e4d9c9;
+  background:#f6efe6;
+  color:#4f4438;
+  outline:none;
+  box-sizing:border-box;
+}
+
+/* ——— קפסולות תאריך ——— */
+.dateFilterWrapper{
+  flex:0 0 200px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:4px 8px;
+  border:1px solid #e4d9c9;
+  border-radius:12px;
+  background:#f6efe6;
+  color:#4f4438;
+  box-sizing:border-box;
+}
+.dateFilterWrapper > label{
+  font-size:.85rem;
+  color:#6c5b4c;
+  white-space:nowrap;
+}
+.dateFilterWrapper input[type="date"]{
+  border:none;
+  background:transparent;
+  outline:none;
+  height:24px;
+  font:inherit;
+  color:#4f4438;
+}
+
+/* התאמות במסכים צרים – לא שוברים, רק מצרים מעט כדי שייכנס יפה בגלילה */
+@media (max-width: 780px){
+  .search{ flex-basis:220px; max-width:220px; }
+  .dateFilterWrapper{ flex-basis:190px; }
+}
+
+/* אם יש לך התאמות מרווח למעלה בעמוד הזה */
+.tightTop { margin-top: 4px; }

@@ -1,8 +1,6 @@
-// src/components/tenant/ServiceCallsTableTenant.jsx
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import classes from "./ServiceCallsTableTenant.module.css";
 
-// תרגום סטטוסים לתצוגה
 function translateStatus(status) {
   const t = String(status || "").trim().toLowerCase();
   if (t === "closed" || t === "סגור") return "סגור";
@@ -15,81 +13,205 @@ function translateStatus(status) {
 function fmtDateTime(d) {
   try {
     const dt = new Date(d);
-    return `${dt.toLocaleDateString("he-IL")}‏ ${dt.toLocaleTimeString("he-IL")}`;
+    const dateStr = dt.toLocaleDateString("he-IL");
+    const timeStr = dt.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
+    return (
+      <span className={classes.dateWrap}>
+        <span className={classes.dateLine}>{dateStr}</span>
+        <br />
+        <span className={classes.timeLine}>{timeStr}</span>
+      </span>
+    );
   } catch {
     return "—";
   }
 }
 
-/**
- * props:
- * - rows: Array<{ call_id, created_at, created_by_name?, created_by?, building_address?, building_name?, building_id?, service_type?, status?, updated_by_name?, description?, location_in_building?, cost?, image_url? }>
- * - loading?: boolean
- * - emptyText?: string
- * - allowEdit?: boolean (ברירת מחדל false)
- * - onDelete?: (call_id) => void  (לא חובה; ישמש אם allowEdit=true)
- * - onSave?: (call_id, payload|FormData) => Promise<void>  (לא חובה; אם תרצה בעתיד)
- */
+function getBuildingId() {
+  try {
+    const s = JSON.parse(sessionStorage.getItem("user") || "{}");
+    if (s?.building_id) return Number(s.building_id);
+    if (s?.tenant?.building_id) return Number(s.tenant.building_id);
+  } catch {}
+  const qs = new URLSearchParams(window.location.search);
+  const q = qs.get("building_id") || qs.get("buildingId");
+  return q ? Number(q) : null;
+}
+
+const API_BASE =
+  (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.VITE_API_BASE) ||
+  (typeof process !== "undefined" && process.env && process.env.REACT_APP_API_BASE) ||
+  "http://localhost:8801";
+
+const norm = (s) => String(s || "").trim().toLowerCase();
+function useCurrentUser() {
+  return useMemo(() => {
+    try {
+      return JSON.parse(sessionStorage.getItem("user") || "{}");
+    } catch {
+      return {};
+    }
+  }, []);
+}
+function useIsOwner(currentUser) {
+  return useCallback(
+    (call) => {
+      const uName = norm(currentUser?.name);
+      const uEmail = norm(currentUser?.email);
+      const byName = norm(call?.created_by_name || call?.created_by);
+      const byEmail = norm(call?.created_by_email || "");
+      if (uName && byName && uName === byName) return true;
+      if (uEmail && byEmail && uEmail === byEmail) return true;
+      return false;
+    },
+    [currentUser]
+  );
+}
+
 export default function ServiceCallsTableTenant({
   rows = [],
   loading = false,
   emptyText = "אין קריאות",
-  allowEdit = false,
+  allowEdit = true,
   onDelete,
-  onSave,
+  // ריענון מבחוץ כאשר rows מגיעים בפרופס
+  onAfterSave,
+  onAfterDelete,
 }) {
   const safeRows = useMemo(() => (Array.isArray(rows) ? rows : []), [rows]);
 
-  // מצבי עריכה (בשימוש רק אם allowEdit=true)
+  const rowsProvided = safeRows.length > 0;
+  const [selfRows, setSelfRows] = useState([]);
+  const [selfLoading, setSelfLoading] = useState(false);
+
+  const isLoading = rowsProvided ? loading : selfLoading;
+  const displayRows = rowsProvided ? safeRows : selfRows;
+
+  const currentUser = useCurrentUser();
+  const isOwner = useIsOwner(currentUser);
+
+  const refresh = useCallback(async () => {
+    if (rowsProvided) return; // כשמגיע rows מבחוץ, רענון יתבצע דרך onAfterSave/onAfterDelete בדף ההורה
+    const buildingId = getBuildingId();
+    if (!buildingId) {
+      setSelfRows([]);
+      return;
+    }
+    setSelfLoading(true);
+    try {
+      const url = `${API_BASE}/api/service-calls/by-building?building_id=${encodeURIComponent(
+        buildingId
+      )}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      setSelfRows(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error("שגיאה בטעינת קריאות שירות לדייר:", e);
+      setSelfRows([]);
+    } finally {
+      setSelfLoading(false);
+    }
+  }, [rowsProvided]);
+
+  useEffect(() => {
+    if (!rowsProvided) refresh();
+  }, [rowsProvided, refresh]);
+
+  // מצב עריכה — רק השדות שציינת
   const [editingId, setEditingId] = useState(null);
   const [edited, setEdited] = useState({
-    status: "",
     description: "",
     service_type: "",
     location_in_building: "",
-    cost: "",
     image: null,
     preview: null,
   });
+  const [saving, setSaving] = useState(false);
 
   const startEdit = (call) => {
+    if (!allowEdit || !isOwner(call)) return;
     setEditingId(call.call_id);
     setEdited({
-      status: call.status || "",
       description: call.description || "",
       service_type: call.service_type || "",
       location_in_building: call.location_in_building || "",
-      cost: call.cost != null ? String(call.cost) : "",
       image: null,
       preview: call.image_url || null,
     });
   };
 
   const cancelEdit = () => {
+    if (saving) return;
     setEditingId(null);
     setEdited({
-      status: "",
       description: "",
       service_type: "",
       location_in_building: "",
-      cost: "",
       image: null,
       preview: null,
     });
   };
 
+  // שומר רק: service_type, description, location_in_building, image
   const saveEdit = async (call_id) => {
-    if (!onSave) return cancelEdit();
-    const formData = new FormData();
-    formData.append("status", edited.status);
-    formData.append("description", edited.description);
-    formData.append("service_type", edited.service_type);
-    formData.append("location_in_building", edited.location_in_building);
-    if (edited.cost !== "") formData.append("cost", edited.cost);
-    if (edited.image) formData.append("image", edited.image);
-    await onSave(call_id, formData);
-    cancelEdit();
+    const fd = new FormData();
+    fd.append("service_type", edited.service_type);
+    fd.append("description", edited.description);
+    fd.append("location_in_building", edited.location_in_building);
+    if (edited.image) fd.append("image", edited.image);
+
+    try {
+      setSaving(true);
+      const res = await fetch(`${API_BASE}/api/service-calls/${call_id}`, {
+        method: "PUT",
+        body: fd,
+      });
+      if (!res.ok) {
+        const t = await res.text().catch(() => "");
+        console.error("PUT failed:", res.status, t);
+        alert("שמירה נכשלה");
+        return;
+      }
+
+      if (rowsProvided) {
+        onAfterSave?.();
+      } else {
+        await refresh();
+      }
+      cancelEdit();
+    } catch (e) {
+      console.error("שמירת קריאה נכשלה:", e);
+      alert("שמירה נכשלה");
+    } finally {
+      setSaving(false);
+    }
   };
+
+  const handleDelete = useCallback(
+    async (call_id, call) => {
+      if (!isOwner(call)) return;
+      try {
+        const res = await fetch(`${API_BASE}/api/service-calls/${call_id}`, { method: "DELETE" });
+        if (!res.ok) {
+          const t = await res.text().catch(() => "");
+          console.error("DELETE failed:", res.status, t);
+          alert("מחיקה נכשלה");
+          return;
+        }
+        if (rowsProvided) {
+          onAfterDelete?.();
+        } else {
+          await refresh();
+        }
+      } catch (e) {
+        console.error("מחיקת קריאה נכשלה:", e);
+        alert("מחיקה נכשלה");
+      }
+    },
+    [refresh, isOwner, rowsProvided, onAfterDelete]
+  );
+
+  const COLSPAN = 10;
 
   return (
     <div className={classes.wrapper}>
@@ -104,32 +226,30 @@ export default function ServiceCallsTableTenant({
             <th>בוצע על ידי</th>
             <th>תיאור</th>
             <th>מיקום</th>
-            <th>עלות (₪)</th>
             <th>תמונה</th>
-            {allowEdit && <th>פעולות</th>}
+            <th>פעולות</th>
           </tr>
         </thead>
 
         <tbody>
-          {loading ? (
+          {isLoading ? (
             <tr>
-              <td colSpan={allowEdit ? 11 : 10} className={classes.empty}>
-                טוען…
-              </td>
+              <td colSpan={COLSPAN} className={classes.empty}>טוען…</td>
             </tr>
-          ) : safeRows.length === 0 ? (
+          ) : displayRows.length === 0 ? (
             <tr>
-              <td colSpan={allowEdit ? 11 : 10} className={classes.empty}>
-                {emptyText}
-              </td>
+              <td colSpan={COLSPAN} className={classes.empty}>{emptyText}</td>
             </tr>
           ) : (
-            safeRows.map((call, idx) =>
-              editingId === call.call_id && allowEdit ? (
+            displayRows.map((call, idx) =>
+              editingId === call.call_id && allowEdit && isOwner(call) ? (
                 <tr key={call?.call_id ?? idx} className={classes.editRow}>
+                  {/* לקריאה בלבד */}
                   <td>{fmtDateTime(call?.created_at)}</td>
                   <td>{call?.created_by_name || call?.created_by || "—"}</td>
                   <td>{call?.building_address || call?.building_name || call?.building_id || "—"}</td>
+
+                  {/* עריכה: סוג תקלה */}
                   <td>
                     <select
                       value={edited.service_type}
@@ -145,25 +265,30 @@ export default function ServiceCallsTableTenant({
                       <option value="אחר">אחר</option>
                     </select>
                   </td>
+
+                  {/* סטטוס – לקריאה בלבד */}
                   <td>
-                    <select
-                      value={edited.status}
-                      onChange={(e) => setEdited((p) => ({ ...p, status: e.target.value }))}
-                      className={classes.editInput}
-                    >
-                      <option value="Open">פתוח</option>
-                      <option value="Closed">סגור</option>
-                    </select>
+                    <span className={call?.status === "Closed" ? classes.closedText : ""}>
+                      {translateStatus(call?.status)}
+                    </span>
                   </td>
+
+                  {/* בוצע ע״י – לקריאה בלבד */}
                   <td>{call?.updated_by_name || "—"}</td>
+
+                  {/* עריכה: תיאור */}
                   <td>
                     <textarea
                       rows={3}
                       value={edited.description}
                       onChange={(e) => setEdited((p) => ({ ...p, description: e.target.value }))}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onKeyDown={(e) => e.stopPropagation()}
                       className={classes.editInput}
                     />
                   </td>
+
+                  {/* עריכה: מיקום */}
                   <td>
                     <input
                       type="text"
@@ -171,27 +296,22 @@ export default function ServiceCallsTableTenant({
                       onChange={(e) =>
                         setEdited((p) => ({ ...p, location_in_building: e.target.value }))
                       }
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onKeyDown={(e) => e.stopPropagation()}
                       className={classes.editInput}
                     />
                   </td>
-                  <td>
-                    <input
-                      type="number"
-                      step="1"
-                      value={edited.cost}
-                      onChange={(e) => setEdited((p) => ({ ...p, cost: e.target.value }))}
-                      className={classes.editInput}
-                      placeholder="0"
-                    />
-                  </td>
-                  <td>
+
+                  {/* עריכה: תמונה */}
+                  <td className={classes.imageCell}>
                     {edited.preview && (
-                      <img
-                        src={edited.preview}
-                        alt="תמונה"
-                        className={classes.previewImg}
+                      <div
+                        className={classes.thumbBox}
                         onClick={() => window.open(edited.preview, "_blank")}
-                      />
+                        title="פתח תמונה"
+                      >
+                        <img src={edited.preview} alt="תמונה" className={classes.thumbImg} />
+                      </div>
                     )}
                     <input
                       type="file"
@@ -208,9 +328,25 @@ export default function ServiceCallsTableTenant({
                       }}
                     />
                   </td>
+
+                  {/* פעולות */}
                   <td className={classes.actionsEditModeCell}>
-                    <button className={`${classes.actionBtnEditMode} ${classes.saveBtn}`} onClick={() => saveEdit(call.call_id)} title="שמור">💾</button>
-                    <button className={`${classes.actionBtnEditMode} ${classes.cancelBtn}`} onClick={cancelEdit} title="ביטול">❌</button>
+                    <button
+                      className={`${classes.actionBtnEditMode} ${classes.saveBtn}`}
+                      onClick={() => saveEdit(call.call_id)}
+                      title="שמור"
+                      disabled={saving}
+                    >
+                      💾
+                    </button>
+                    <button
+                      className={`${classes.actionBtnEditMode} ${classes.cancelBtn}`}
+                      onClick={cancelEdit}
+                      title="ביטול"
+                      disabled={saving}
+                    >
+                      ❌
+                    </button>
                   </td>
                 </tr>
               ) : (
@@ -227,33 +363,39 @@ export default function ServiceCallsTableTenant({
                   <td>{call?.updated_by_name || "—"}</td>
                   <td>{call?.description || "—"}</td>
                   <td>{call?.location_in_building || "—"}</td>
-                  <td>
-                    {!isNaN(parseFloat(call?.cost)) ? Number(call.cost).toFixed(2) : "—"}
-                  </td>
-                  <td>
+                  <td className={classes.imageCell}>
                     {call?.image_url && (
-                      <img
-                        src={call.image_url}
-                        alt="תמונה"
-                        className={classes.previewImg}
+                      <div
+                        className={classes.thumbBox}
                         onClick={() => window.open(call.image_url, "_blank")}
-                      />
+                        title="פתח תמונה"
+                      >
+                        <img src={call.image_url} alt="תמונה" className={classes.thumbImg} />
+                      </div>
                     )}
                   </td>
-                  {allowEdit && (
-                    <td className={classes.actionsCell}>
-                      <div className={classes.actionsGroup}>
-                        <button className={classes.actionBtn} onClick={() => startEdit(call)} title="ערוך">✏️</button>
-                        <button
-                          className={classes.actionBtn}
-                          onClick={() => onDelete && onDelete(call.call_id)}
-                          title="מחק"
-                        >
-                          🗑️
-                        </button>
-                      </div>
-                    </td>
-                  )}
+                  <td className={classes.actionsCell}>
+                    <div className={classes.actionsGroup}>
+                      {allowEdit && isOwner(call) && (
+                        <>
+                          <button
+                            className={classes.actionBtn}
+                            onClick={() => startEdit(call)}
+                            title="ערוך"
+                          >
+                            ✏️
+                          </button>
+                          <button
+                            className={classes.actionBtn}
+                            onClick={() => handleDelete(call.call_id, call)}
+                            title="מחק"
+                          >
+                            🗑️
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </td>
                 </tr>
               )
             ))

@@ -1,37 +1,86 @@
-.wrap { padding: 16px; }
-.title { text-align: center; margin: 0 0 16px; }
+/* עטיפה כללית */
+.wrap { 
+  padding: 16px; 
+}
+.title { 
+  text-align: center; 
+  margin: 0 0 16px; 
+}
 
+/* שתי עמודות: טבלה (שמאל) + טופס (ימין) */
 .grid {
   display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 16px;
+  /* הטופס ברוחב קבוע, הטבלה מקבלת את כל השאר */
+  grid-template-columns: minmax(0, 1fr) 340px; /* ← שנה כאן אם תרצה טופס צר/רחב יותר */
+  gap: 20px; /* רווח נוח בין הטבלה לטופס */
+  align-items: start;
 }
-@media (max-width: 1000px) { .grid { grid-template-columns: 1fr; } }
 
-.tableCard, .formCard {
+/* במסכים צרים – הטופס ירד מתחת לטבלה */
+@media (max-width: 1000px) { 
+  .grid { grid-template-columns: 1fr; } 
+}
+
+/* אפשר להגדיל עוד את שטח הטבלה במסכים רחבים מאוד */
+@media (min-width: 1400px) {
+  .grid { grid-template-columns: minmax(0, 1fr) 320px; }
+}
+
+/* קלפים */
+.tableCard, 
+.formCard {
   background: #fff;
   border: 1px solid #e9e2d5;
   border-radius: 10px;
   padding: 16px;
 }
 
+/* חשוב למנוע גלילת־רוחב: מאפשר לטבלה להצטמצם בלי לפרוץ */
+.tableCard { 
+  min-width: 0; 
+}
+
+/* מגבלות על רוחב הטופס (שיהיה עקבי עם ה־grid למעלה) */
+.formCard {
+  max-width: 340px;  /* אותו ערך כמו בעמודה ב־grid */
+  width: 100%;
+  position: sticky;  /* אופציונלי ונחמד: הטופס “נדבק” למעלה בזמן גלילה */
+  top: 12px;
+}
+
+/* טבלה */
 .table {
   width: 100%;
   border-collapse: collapse;
   direction: rtl;
 }
-.table th, .table td {
+.table th, 
+.table td {
   border-bottom: 1px solid #eee;
   padding: 8px 10px;
   text-align: right;
 }
-.table th { background: #faf7f1; }
+.table th { 
+  background: #faf7f1; 
+}
 
+/* טקסט משני */
 .muted { color: #777; }
 
-.form { display: grid; gap: 10px; direction: rtl; }
-.form label { display: grid; gap: 6px; font-weight: 600; }
-.form input, .form select, .form textarea {
+/* טופס */
+.form { 
+  display: grid; 
+  gap: 10px; 
+  direction: rtl; 
+}
+.form label { 
+  display: grid; 
+  gap: 6px; 
+  font-weight: 600; 
+}
+.form input, 
+.form select, 
+.form textarea {
   border: 1px solid #d8cdbb;
   border-radius: 8px;
   padding: 8px 10px;
@@ -45,12 +94,95 @@
   border-radius: 8px;
   cursor: pointer;
 }
-.form button:disabled { opacity: .6; cursor: default; }
-/* כותרת הטבלה: מיושרת לימין, מיושבת בדיוק עם תא התאריך */
+.form button:disabled { 
+  opacity: .6; 
+  cursor: default; 
+}
+
+/* כותרת הטבלה: מיושרת לימין, מיושבת לקו התאריך */
 .tableTitle {
   direction: rtl;
   text-align: right;
   margin: 0 0 8px;
-  /* כדי ליישר לקו של התאריך (לתאים יש padding-inline 10px) */
-  padding-inline-end: 10px; /* מימין ב־RTL */
+  padding-inline-end: 10px; /* התאמה לריווח תאי הטבלה */
+}
+/* סרגל סינון מעל הטבלה */
+.filtersBar {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  align-items: end;
+  margin: 6px 0 12px;
+}
+
+@media (max-width: 900px) {
+  .filtersBar {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 600px) {
+  .filtersBar {
+    grid-template-columns: 1fr;
+  }
+}
+
+.filterField {
+  display: grid;
+  gap: 6px;
+  direction: rtl;
+}
+.filterField > span {
+  font-weight: 600;
+  color: #6b5b4a;
+}
+.filterField select {
+  border: 1px solid #d8cdbb;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font: inherit;
+  background: #fff;
+}
+
+/* אזור כפתור "נקה" וספירת תוצאות */
+.filtersActions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-start;
+}
+.clearBtn {
+  padding: 8px 12px;
+  background: #e6d9c7;
+  border: 1px solid #ccb89a;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.clearBtn:hover { background: #dccab3; }
+
+.resultCount {
+  color: #7a6c5d;
+  font-size: 0.95rem;
+}
+/* סרגל חיפוש יחיד – מיושר לימין מעל הטבלה */
+.searchBar {
+  display: flex;
+  justify-content: flex-end; /* RTL: מימין */
+  margin: 6px 0 12px;
+}
+
+/* קלט חיפוש: RTL + placeholder מיושר לימין */
+.searchInput {
+  width: min(340px, 100%);
+  border: 1px solid #d8cdbb;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font: inherit;
+  background: #fff;
+  direction: rtl;
+  text-align: right;       /* מיושׂר לימין גם כשהמשתמש מקליד */
+}
+.searchInput::placeholder {
+  direction: rtl;
+  text-align: right;       /* מיושׂר לימין ב־placeholder */
+  color: #9c8f7c;          /* אופציונלי: צבע עדין */
 }

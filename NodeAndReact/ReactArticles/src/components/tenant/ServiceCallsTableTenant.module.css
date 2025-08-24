@@ -1,14 +1,7 @@
-/* ServiceCallsTable.module.css */
-
-/* Container */
-.tableContainer {
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
-  padding: 16px;
-  overflow-x: auto;
-  direction: rtl;
-  min-width: 0;
+/* מעטפת */
+.wrapper {
+  width: 100%;
+  overflow-x: hidden;   /* למנוע גלילת-רוחב שמזיזה את העמוד */
 }
 
 /* טבלת בסיס */
@@ -20,11 +13,11 @@
   font-family: "Heebo", "Segoe UI", sans-serif;
   font-size: 1.2rem;
   color: #4a3a2a;
-  table-layout: fixed;
-  direction: rtl;              /* ← הופך ויזואלית את סדר העמודות */
+  table-layout: fixed;  /* חשוב כדי לעמוד באחוזים */
+  direction: rtl;
 }
 
-/* כותרות ותאים – ניתן שבירת שורה בכל התא */
+/* כותרות ותאים */
 .table th,
 .table td {
   padding: 14px 10px;
@@ -39,7 +32,6 @@
   font-weight: 500;
 }
 
-/* שורת כותרת */
 .table th {
   background: #e4dbcf;
   color: #7a6c5d;
@@ -48,131 +40,128 @@
   border-radius: 10px 10px 0 0;
 }
 
-/* אפקט הובר */
+/* הובר */
 .table tr {
   box-shadow: 0 2px 6px #00000008;
   transition: background 0.2s ease;
 }
-.table tr:hover {
-  background: #f3f0ed;
-}
+.table tr:hover { background: #f3f0ed; }
 
-/* רוחב עמודות (לפי הסדר בדום) */
+/* חלוקת רוחבים – 10 עמודות בסך 100% */
 .table th:nth-child(1),
-.table td:nth-child(1) { width: 100px; white-space: nowrap; }   /* תאריך */
+.table td:nth-child(1) { width: 9%;  white-space: nowrap; }  /* תאריך */
 .table th:nth-child(2),
-.table td:nth-child(2) { width: 100px; }                        /* משתמש שפתח */
+.table td:nth-child(2) { width: 10%; }                       /* משתמש */
 .table th:nth-child(3),
-.table td:nth-child(3) { width: 120px; }                        /* כתובת */
+.table td:nth-child(3) { width: 16%; }                       /* כתובת */
 .table th:nth-child(4),
-.table td:nth-child(4) { width: 100px; }                        /* סוג תקלה */
+.table td:nth-child(4) { width: 10%; }                       /* סוג תקלה */
 .table th:nth-child(5),
-.table td:nth-child(5) { width: 100px; min-width: 6ch; }        /* סטטוס */
+.table td:nth-child(5) { width: 8%;  }                       /* סטטוס */
 .table th:nth-child(6),
-.table td:nth-child(6) { width: 80px; }                         /* בוצע ע"י */
+.table td:nth-child(6) { width: 10%; }                       /* בוצע ע"י */
 .table th:nth-child(7),
-.table td:nth-child(7) { width: 140px; }                        /* תיאור */
+.table td:nth-child(7) { width: 14%; }                       /* תיאור */
 .table th:nth-child(8),
-.table td:nth-child(8) { width: 120px; }                        /* מיקום */
+.table td:nth-child(8) { width: 11%; }                       /* מיקום */
 .table th:nth-child(9),
-.table td:nth-child(9),
-.editRow td:nth-child(9) { width: 90px; text-align: center; }   /* עלות */
+.table td:nth-child(9) { width: 10%;  }                       /* תמונה */
 .table th:nth-child(10),
-.table td:nth-child(10) { width: 120px; }                       /* תמונה */
-.table th:nth-child(11),
-.table td:nth-child(11) { width: 100px; }                       /* פעולות */
+.table td:nth-child(10){ width: 10%;  }                       /* פעולות */
 
-/* סטייל לשורה סגורה */
-.closedRow td,
+/* תאריך בפורמט "תאריך \n שעה" */
+.dateWrap { display: inline-block; line-height: 1.2; }
+.dateLine { display: inline-block; }
+.timeLine { display: inline-block; font-size: .95em; color: #856b57; }
+
+/* טקסט קריאות סגורות */
 .closedText { color: red; font-weight: bold; }
 
-/* תמונת תצוגה מקדימה */
-.previewImg {
-  width: 100px; height: 100px; object-fit: cover; border-radius: 10px;
-  cursor: pointer; border: 1.5px solid #c7d0db; background-color: #f9f9f9;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09); margin-bottom: 6px;
+/* תא התמונה – מונע גלישה */
+.imageCell { white-space: nowrap; text-align: center; }
+.thumbBox {
+  width: 80px;      /* ↓ קטן יותר כדי לא לדחוף עמודות */
+  height: 60px;
+  overflow: hidden;
+  border-radius: 8px;
+  display: inline-block;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+  background: #f5f2ee;
+  cursor: pointer;
 }
-
-/* שורת עריכה */
-.editRow td { white-space: normal; word-break: break-word; }
-
-/* קלטים בעריכה */
-.editRow td input,
-.editRow td select,
-.editRow td textarea,
-.editInput {
-  width: 100%; box-sizing: border-box; padding: 10px 14px; font-size: 1.1rem;
-  border: 1px solid #ccc; border-radius: 10px; background: #fdf7f2;
-  font-family: inherit; white-space: normal; margin: 0;
-}
-
-/* גובה מינימלי ל־textarea */
-.editRow td textarea { min-height: 90px; line-height: 1.4; resize: none; }
-
-/* קלט קובץ */
-.editRow input[type="file"] { margin-top: 6px; font-size: 0.9rem; }
-
-/* כפתורי פעולה – מצב קריאה */
-.actionGroup {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
+.thumbImg {
+  width: 100%;
   height: 100%;
+  object-fit: cover;
+  display: block;
 }
-/* העטיפה האנונימית שבתא הפעולות (מצב קריאה) */
-.table td:nth-child(11) > div {
+
+/* תא פעולות (מצב קריאה) */
+.actionsCell { white-space: nowrap; /* לא min-width כדי לא ליצור overflow */ }
+.actionsGroup {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 12px;
 }
-/* Fallback אם אין div */
-.table td:nth-child(11) .actionBtn + .actionBtn { margin-top: 12px; }
-
 .actionBtn {
   background: #d2bba0; border: none; padding: 6px 12px; border-radius: 8px;
   cursor: pointer; font-size: 18px; transition: background 0.2s;
 }
 .actionBtn:hover { background: #bfae9e; }
 
-/* רווחים בעמודת "פעולות" במצב עריכה */
-.table tr.editRow td:nth-child(11) {
-  padding-top: 16px;
-  padding-bottom: 16px;
-}
-.table tr.editRow td:nth-child(11) > div {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-}
-.table tr.editRow td:nth-child(11) .actionBtn + .actionBtn,
-.table tr.editRow td:nth-child(11) button + button {
-  margin-top: 14px;
+/* מצב עריכה */
+.editRow td { white-space: normal; word-break: break-word; }
+
+.editRow td input,
+.editRow td select,
+.editRow td textarea,
+.editInput {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  font-size: 1.1rem;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background: #fdf7f2;
+  font-family: inherit;
+  white-space: normal;
+  margin: 0;
 }
 
-/* ביטול רקע/צל/ריפוד של מעטפת חיצונית (אם קיימת) */
-:global([class^="FormWithTableLayout_tableArea"]) {
-  background: transparent !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-  border-radius: 0 !important;
-}
+.editRow td textarea { min-height: 90px; line-height: 1.4; resize: none; }
+.editRow input[type="file"] { margin-top: 6px; font-size: 0.9rem; }
 
-/* טיפוגרפיה אחידה */
-.table {
-  font-family: "Heebo", "Segoe UI", sans-serif;
+/* פעולות – מצב עריכה */
+.actionsEditModeCell { white-space: nowrap; }
+.actionBtnEditMode {
+  background: #d2bba0;
+  border: none;
+  padding: 8px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 18px;
+  transition: background 0.2s;
+  display: inline-block;
+  margin: 4px 0;
 }
+.actionBtnEditMode:hover { background: #bfae9e; }
 
-/* עזרים אופציונליים */
-.ltr {            /* למספרים/מחירים אם תרצה: className={classes.ltr} */
-  direction: ltr;
-  text-align: left;
-}
-.imgCell {        /* למרכוז תא התמונה אם תרצה: className={classes.imgCell} */
+
+/* תא ריק / מצב טעינה */
+.empty {
   text-align: center;
+  color: #8b7966;
+  padding: 28px 0;
+  background: #fff;
+  border-radius: 12px;
 }
+
+/* רספונסיביות קלה – מצמצם פונט ומרווחים במסכים צרים */
+@media (max-width: 1200px) {
+  .table { font-size: 1.05rem; }
+  .table th, .table td { padding: 10px 8px; }
+  .thumbBox { width: 72px; height: 54px; }
+}
+

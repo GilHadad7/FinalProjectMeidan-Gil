@@ -76,7 +76,7 @@
 /* עמודה 1 – שם בניין */
 .table th:nth-child(1),
 .table td:nth-child(1) {
-  width: 100px;
+  width: 80px;
 }
 
 /* עמודה 2 – כתובת */

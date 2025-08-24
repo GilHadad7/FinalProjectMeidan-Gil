@@ -1,84 +1,207 @@
-import React, { useEffect, useMemo, useState } from "react";
-import classes from "./PaymentsTenantPage.module.css";
-
-
-const formatNIS = (v) => `₪ ${Number(v || 0).toLocaleString("he-IL")}`;
+import React, { useState, useEffect, useCallback } from 'react';
+import AddPaymentTenant from '../../components/tenant/AddPaymentTenant';
+import PaymentsTableTenant from '../../components/tenant/PaymentsTableTenant';
+import FormWithTableLayout from '../../components/ui/FormWithTableLayout';
+import SearchInput from '../../components/ui/SearchInput';
+import classes from './PaymentsTenantPage.module.css';
 
 export default function PaymentsTenantPage() {
-  const [rows, setRows] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [payments, setPayments] = useState([]);
+  const [filteredPayments, setFilteredPayments] = useState([]);
+  const [buildingsList] = useState([]);
 
-  const totals = useMemo(() => {
-    let paid = 0, debt = 0;
-    for (const r of rows || []) {
-      paid += Number(r.amount_paid || 0);
-      debt += Number(r.open_debt || 0);
-    }
-    return { paid, debt };
-  }, [rows]);
+  const [filters, setFilters] = useState({
+    tenant: '',
+    building: '',
+    status: '',
+    fromDate: '',
+    toDate: '',
+  });
 
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        setLoading(true);
-
-        // נסה קודם אנדפוינט ייעודי לדייר
-        let res = await fetch("http://localhost:3000/api/tenant/payments?limit=50", { credentials: "include" });
-
-        // נפילה רכה (fallback): אם אין, ננסה משהו כללי שלא יפיל את הדף
-        if (!res.ok) res = await fetch("http://localhost:3000/api/payments?scope=tenant&limit=50", { credentials: "include" });
-
-        const data = res.ok ? await res.json() : [];
-        if (!cancelled) setRows(Array.isArray(data) ? data : []);
-      } catch {
-        if (!cancelled) setRows([]);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => { cancelled = true; };
+    fetchPayments();
   }, []);
 
+  const fetchPayments = () => {
+    fetch('http://localhost:8801/api/payments')
+      .then((res) => res.json())
+      .then((data) => setPayments(Array.isArray(data) ? data : []))
+      .catch((err) => {
+        console.error('Error fetching payments:', err);
+        setPayments([]);
+      });
+  };
+
+  // הופך סטרינגים להשוואה/חיפוש סלחנית (בלי רווחים/כיווניות/רישיות)
+  const cleanString = (str) =>
+    String(str ?? '')
+      .normalize('NFKD')
+      .replace(/[\u200E\u200F\u202A-\u202E]/g, '')
+      .replace(/\s+/g, '')
+      .trim()
+      .toLowerCase();
+
+  // קולט גם event וגם string – מגן מקריסות של קומפוננטות חיצוניות
+  const getVal = (v) =>
+    v && typeof v === 'object' && 'target' in v ? v.target.value : (v ?? '');
+
+  const applyFilters = useCallback(() => {
+    let result = payments;
+
+    if (filters.tenant) {
+      const q = cleanString(filters.tenant);
+      result = result.filter((p) => cleanString(p?.tenant_name).includes(q));
+    }
+
+    if (filters.building) {
+      const q = cleanString(filters.building);
+      result = result.filter((p) => cleanString(p?.building_name).includes(q));
+    }
+
+    if (filters.status) {
+      const q = cleanString(filters.status);
+      result = result.filter((p) => cleanString(p?.status) === q);
+    }
+
+    if (filters.fromDate) {
+      const from = new Date(filters.fromDate).setHours(0, 0, 0, 0);
+      result = result.filter(
+        (p) => new Date(p.payment_date).setHours(0, 0, 0, 0) >= from
+      );
+    }
+
+    if (filters.toDate) {
+      const to = new Date(filters.toDate).setHours(0, 0, 0, 0);
+      result = result.filter(
+        (p) => new Date(p.payment_date).setHours(0, 0, 0, 0) <= to
+      );
+    }
+
+    // מיון לפי קרבה להיום
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    result = [...result].sort((a, b) => {
+      const da = Math.abs(new Date(a.payment_date).setHours(0,0,0,0) - today);
+      const db = Math.abs(new Date(b.payment_date).setHours(0,0,0,0) - today);
+      return da - db;
+    });
+
+    setFilteredPayments(result);
+  }, [payments, filters]);
+
+  useEffect(() => { applyFilters(); }, [filters, payments, applyFilters]);
+
+  const handleDelete = (paymentId) => {
+    if (!window.confirm('האם אתה בטוח שברצונך למחוק את התשלום?')) return;
+    fetch(`http://localhost:8801/api/payments/${paymentId}`, { method: 'DELETE' })
+      .then((res) => res.json())
+      .then(() => fetchPayments())
+      .catch((err) => console.error('Error deleting payment:', err));
+  };
+
+  const handleEdit = (updatedPayment) => {
+    fetch(`http://localhost:8801/api/payments/${updatedPayment.payment_id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedPayment),
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const err = await res.json();
+          console.error('❌ שגיאה מהשרת:', err);
+          alert('שגיאה בשמירת התשלום');
+          return;
+        }
+        await res.json();
+        fetchPayments();
+      })
+      .catch((err) => {
+        console.error('❌ שגיאת חיבור לשרת:', err);
+        alert('בעיה בחיבור לשרת');
+      });
+  };
+
+  const totalPaid = filteredPayments.reduce(
+    (s, p) => s + (p.status === 'שולם' ? Number(p.amount) : 0), 0
+  );
+  const openDebts = filteredPayments.reduce(
+    (s, p) => s + (p.status !== 'שולם' ? Number(p.amount) : 0), 0
+  );
+  const debtTenants = filteredPayments.filter(p => p.status !== 'שולם').map(p => p.tenant_name);
+
   return (
-    <div className={classes.container}>
-      <h2 className={classes.title}>תשלומים (דייר)</h2>
-
-      <div className={classes.summary}>
-        <div>סה״כ שולם: <strong>{formatNIS(totals.paid)}</strong></div>
-        <div>חוב פתוח: <strong>{formatNIS(totals.debt)}</strong></div>
-      </div>
-
-      {loading ? (
-        <div className={classes.loading}>טוען תשלומים…</div>
-      ) : rows.length === 0 ? (
-        <div className={classes.empty}>אין תשלומים להצגה.</div>
-      ) : (
-        <div className={classes.tableWrap}>
-          <table className={classes.table}>
-            <thead>
-              <tr>
-                <th>תאריך</th>
-                <th>סכום</th>
-                <th>אמצעי</th>
-                <th>סטטוס</th>
-                <th>הערות</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r, i) => (
-                <tr key={i}>
-                  <td>{(r.date || r.created_at || "").toString().slice(0, 10)}</td>
-                  <td>{formatNIS(r.amount_paid || r.amount)}</td>
-                  <td>{r.method || r.payment_method || "-"}</td>
-                  <td>{r.status || "-"}</td>
-                  <td>{r.note || r.description || ""}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+    <FormWithTableLayout
+      title="הוספת תשלומים"
+      formComponent={<AddPaymentTenant buildingsList={buildingsList} onAdd={fetchPayments} />}
+      summaryComponent={
+        <div className={classes.summaryCards}>
+          <div className={classes.card}>💰 סה״כ גבייה: <b>{totalPaid.toLocaleString()} ₪</b></div>
+          <div className={classes.card}>❌ חובות פתוחים: <b>{openDebts.toLocaleString()} ₪</b></div>
+          <div className={classes.card}>🧍‍♂️ דיירים חייבים: <b>{debtTenants.length}</b></div>
         </div>
-      )}
-    </div>
+      }
+      tableComponent={
+        <>
+          <div className={classes.filtersRow}>
+            <div className={classes.rowLine}>
+              <div className={classes.search}>
+                <SearchInput
+                  placeholder="חפש לפי דייר"
+                  value={filters.tenant}
+                  onChange={(v) => setFilters((f) => ({ ...f, tenant: getVal(v) }))}
+                />
+              </div>
+
+              <div className={classes.search}>
+                <SearchInput
+                  placeholder="חפש לפי בניין"
+                  value={filters.building}
+                  onChange={(v) => setFilters((f) => ({ ...f, building: getVal(v) }))}
+                />
+              </div>
+
+              <select
+                className={classes.statusSelect}
+                value={filters.status}
+                onChange={(e) => setFilters((f) => ({ ...f, status: e.target.value }))}
+              >
+                <option value="">סטטוס</option>
+                <option value="שולם">שולם</option>
+                <option value="ממתין">ממתין</option>
+                <option value="חוב">חוב</option>
+              </select>
+            </div>
+
+            <div className={classes.rowLine}>
+              <div className={classes.dateFilterWrapper}>
+                <label>מתאריך</label>
+                <input
+                  type="date"
+                  value={filters.fromDate}
+                  onChange={(e) => setFilters((f) => ({ ...f, fromDate: e.target.value }))}
+                />
+              </div>
+
+              <div className={classes.dateFilterWrapper}>
+                <label>עד תאריך</label>
+                <input
+                  type="date"
+                  value={filters.toDate}
+                  onChange={(e) => setFilters((f) => ({ ...f, toDate: e.target.value }))}
+                />
+              </div>
+            </div>
+          </div>
+
+          <PaymentsTableTenant
+            payments={filteredPayments}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
+        </>
+      }
+      plainTableArea
+      compact
+      wrapperClassName={classes.tightTop}
+    />
   );
 }

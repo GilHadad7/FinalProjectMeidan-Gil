@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from "react";
-import classes from "./PaymentsTable.module.css";
-import BaseTable from "../components/ui/BaseTable";
+import classes from "./PaymentsTableTenant.module.css";
+import BaseTable from "../../components/ui/BaseTable";
 
-export default function PaymentsTable({ payments, onEdit, onDelete }) {
+export default function PaymentsTableTenant({ payments, onEdit, onDelete }) {
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({});
 

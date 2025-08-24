@@ -75,6 +75,7 @@ function ymFrom(v) {
  * ⭕ GET /api/service-calls
  * מחזיר קריאות שירות. תומך בסינון לפי month=YYYY-MM.
  * מבטל Join כפולים ל-users (שגרמו להכפלות) ומצרף כתובת בניין בלבד.
+ * ⚠️ בשימוש ממשק מנהל – לא נוגעים בזה.
  */
 router.get("/", (req, res) => {
   const { month } = req.query || {};
@@ -101,6 +102,47 @@ router.get("/", (req, res) => {
   db.query(sql, params, (err, results) => {
     if (err) {
       console.error("Error fetching service calls:", err);
+      return res.status(500).json({ message: "Database error" });
+    }
+    res.json(results);
+  });
+});
+
+/**
+ * 👤 GET /api/service-calls/by-building
+ * מחזיר את כל הקריאות עבור בניין מסוים (לדיירים).
+ * תומך גם בסינון לפי month=YYYY-MM (לא חובה).
+ * ✅ לא משפיע על הממשק של המנהל (ראוט נפרד).
+ */
+router.get("/by-building", (req, res) => {
+  const { building_id, month } = req.query || {};
+  if (!building_id) {
+    return res.status(400).json({ message: "missing building_id" });
+  }
+
+  const params = [Number(building_id)];
+  let where = "WHERE sc.building_id = ?";
+
+  if (month && /^\d{4}-\d{2}$/.test(month)) {
+    where += " AND DATE_FORMAT(sc.created_at, '%Y-%m') = ?";
+    params.push(month);
+  }
+
+  const sql = `
+    SELECT
+      sc.*,
+      b.full_address AS building_address,
+      sc.created_by AS created_by_name,
+      sc.closed_by  AS updated_by_name
+    FROM servicecalls sc
+    LEFT JOIN buildings b ON sc.building_id = b.building_id
+    ${where}
+    ORDER BY sc.created_at DESC
+  `;
+
+  db.query(sql, params, (err, results) => {
+    if (err) {
+      console.error("Error fetching service calls by building:", err);
       return res.status(500).json({ message: "Database error" });
     }
     res.json(results);

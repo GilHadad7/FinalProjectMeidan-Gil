@@ -23,9 +23,28 @@ export default function BuildingsTable({ buildings, onDelete, searchTerm = "" })
       .then((data) => setWorkers(data));
   }, []);
 
+  // ----------- עזרי טלפון: ספרות בלבד + פורמט עם מקף -----------
+  const onlyDigits10 = (v = "") => String(v).replace(/\D/g, "").slice(0, 10);
+
+  // 050/052/054 -> xxx-xxxxxxx | 04 -> xx-xxxxxxx | ברירת מחדל: xxx-xxxxxxx
+  const formatPhone = (raw = "") => {
+    const d = onlyDigits10(raw);
+    if (!d) return "";
+    const mob3 = ["050", "052", "054", "055", "056", "057", "058", "059"];
+    const land2 = ["04", "03","02","01","07","08","09"];
+    if (mob3.some((p) => d.startsWith(p))) {
+      return d.length <= 3 ? d : `${d.slice(0, 3)}-${d.slice(3)}`;
+    }
+    if (land2.some((p) => d.startsWith(p))) {
+      return d.length <= 2 ? d : `${d.slice(0, 2)}-${d.slice(2)}`;
+    }
+    return d.length <= 3 ? d : `${d.slice(0, 3)}-${d.slice(3)}`;
+  };
+
   const handleEdit = (idx, building) => {
     setEditIdx(idx);
-    setEditForm({ ...building });
+    // נשמור בטופס ספרות בלבד (ללא מקף) – התצוגה תפורמט
+    setEditForm({ ...building, phone: onlyDigits10(building.phone) });
   };
 
   const handleEditChange = (e) => {
@@ -44,7 +63,13 @@ export default function BuildingsTable({ buildings, onDelete, searchTerm = "" })
   };
 
   const handleEditSave = async (idx) => {
-    // Validate that all worker IDs exist
+    // אימות: טלפון חייב 10 ספרות — בלי פופ־אפ; פשוט לא נשמור כשלא תקין
+    const phoneDigits = onlyDigits10(editForm.phone);
+    if (phoneDigits.length !== 10) {
+      return; // Abort save silently; ההערה האדומה כבר מוצגת מתחת לשדה
+    }
+
+    // Validate that all worker IDs exist (אפשר להשאיר את ה-alert הזה כרגיל)
     const entered = editForm.assigned_workers
       ? editForm.assigned_workers.split(",").map((i) => i.trim()).filter(Boolean)
       : [];
@@ -54,7 +79,12 @@ export default function BuildingsTable({ buildings, onDelete, searchTerm = "" })
     }
 
     const id = buildings[idx].building_id;
-    const updatedBuilding = { ...editForm, maintenance_type: "Full" };
+    const updatedBuilding = {
+      ...editForm,
+      phone: phoneDigits,           // שולחים לשרת ספרות בלבד
+      maintenance_type: "Full"
+    };
+
     const res = await fetch(`http://localhost:3000/api/buildings/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -134,20 +164,31 @@ export default function BuildingsTable({ buildings, onDelete, searchTerm = "" })
                   className={classes.inputFull}
                 />
               </td>
+
+              {/* טלפון – פורמט עם מקף + הודעת שגיאה אם פחות מ-10 ספרות */}
               <td>
-                <input
-                  name="phone"
-                  value={editForm.phone}
-                  maxLength={10}
-                  onChange={(e) =>
-                    setEditForm({
-                      ...editForm,
-                      phone: e.target.value.replace(/\D/g, "")
-                    })
-                  }
-                  className={classes.inputFull}
-                />
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  <input
+                    name="phone"
+                    dir="ltr"
+                    inputMode="numeric"
+                    value={formatPhone(editForm.phone)}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        phone: onlyDigits10(e.target.value)
+                      }))
+                    }
+                    className={classes.inputFull}
+                  />
+                  {editForm.phone && editForm.phone.length > 0 && editForm.phone.length < 10 && (
+                    <small style={{ color: "#de4b4b", fontSize: 10, lineHeight: 1.1, marginTop: 2 }}>
+                      מס׳ טלפון חייב 10 ספרות
+                    </small>
+                  )}
+                </div>
               </td>
+
               <td className={classes.selectCell}>
                 <Select
                   isMulti
@@ -202,7 +243,8 @@ export default function BuildingsTable({ buildings, onDelete, searchTerm = "" })
               <td>{b.apartments}</td>
               <td>{b.floors}</td>
               <td>{b.committee}</td>
-              <td>{b.phone}</td>
+              {/* הצגה בפורמט יפה עם מקף */}
+              <td>{formatPhone(b.phone)}</td>
               <td>
                 {b.assigned_workers
                   ? b.assigned_workers
