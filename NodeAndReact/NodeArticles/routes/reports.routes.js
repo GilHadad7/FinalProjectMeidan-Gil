@@ -1,4 +1,4 @@
-// 📁 routes/reports.routes.js – קובץ ראוטים מאוחד לדוחות (ללא await)
+// 📁 routes/reports.routes.js – קובץ ראוטים מאוחד לדוחות
 const express = require("express");
 const router = express.Router();
 const db = require("../db");
@@ -52,8 +52,7 @@ router.patch("/workers/:id/toggle", (req, res) => {
   });
 });
 
-// ✅ GET /api/reports/buildings?month=YYYY-MM  (למשל 2025-08)
-// מחזיר את מה שנשמר בטבלה (ללא הוספת קריאות מחדש)
+// ✅ GET /api/reports/buildings?month=YYYY-MM
 router.get("/buildings", (req, res) => {
   const month = (req.query.month || new Date().toISOString().slice(0, 7)).slice(0, 7);
 
@@ -82,28 +81,21 @@ router.get("/buildings", (req, res) => {
 });
 
 // ✅ POST /api/reports/buildings/recalc { month: "YYYY-MM" }
-// מוחק את כל שורות החודש ואז מייצר אותן מחדש – מונע כפילויות
-// + מוסיף WHERE שמונע הכנסת שורות ריקות (כשאין פעילות בחודש)
+// משתמש ב־UPSERT כדי למנוע כפילויות
 router.post("/buildings/recalc", (req, res) => {
   const month = (req.body.month || "").slice(0, 7);
   if (!/^\d{4}-\d{2}$/.test(month)) {
     return res.status(400).json({ error: "month (YYYY-MM) is required" });
   }
 
-  const deleteSql = "DELETE FROM building_finance WHERE month = ?";
-
   const insertSql = `
   INSERT INTO building_finance (building_id, month, total_paid, balance_due, maintenance)
   SELECT
     b.building_id,
     ? AS month,
-
     COALESCE(tp.total_paid, 0)  AS total_paid,
     COALESCE(bd.balance_due, 0) AS balance_due,
-
-    /* 🔧 תחזוקה = רק עלויות מקריאות שירות סגורות בחודש */
     COALESCE(ms.maint_from_calls, 0) AS maintenance
-
   FROM buildings b
   LEFT JOIN (
     SELECT building_id, SUM(amount) AS total_paid
@@ -112,7 +104,6 @@ router.post("/buildings/recalc", (req, res) => {
       AND DATE_FORMAT(payment_date, '%Y-%m') = ?
     GROUP BY building_id
   ) tp ON tp.building_id = b.building_id
-
   LEFT JOIN (
     SELECT building_id, SUM(amount) AS balance_due
     FROM payments
@@ -120,7 +111,6 @@ router.post("/buildings/recalc", (req, res) => {
       AND DATE_FORMAT(payment_date, '%Y-%m') = ?
     GROUP BY building_id
   ) bd ON bd.building_id = b.building_id
-
   LEFT JOIN (
     SELECT building_id, SUM(COALESCE(cost,0)) AS maint_from_calls
     FROM servicecalls
@@ -128,28 +118,21 @@ router.post("/buildings/recalc", (req, res) => {
       AND DATE_FORMAT(created_at, '%Y-%m') = ?
     GROUP BY building_id
   ) ms ON ms.building_id = b.building_id
-
-  /* נכניס רק אם יש פעילות כלשהי בחודש */
   WHERE ( COALESCE(tp.total_paid,0)
         + COALESCE(bd.balance_due,0)
         + COALESCE(ms.maint_from_calls,0) ) > 0
-`;
+  ON DUPLICATE KEY UPDATE
+    total_paid = VALUES(total_paid),
+    balance_due = VALUES(balance_due),
+    maintenance = VALUES(maintenance);
+  `;
 
-
-  // מוחקים ואז מכניסים – אין מצב לכפילויות, ולא נוצרת שורה אם אין פעילות
-  db.query(deleteSql, [month], (delErr) => {
-    if (delErr) {
-      console.error("❌ delete month rows failed:", delErr);
+  db.query(insertSql, [month, month, month, month], (err, result) => {
+    if (err) {
+      console.error("❌ insert month rows failed:", err);
       return res.status(500).json({ error: "Database error" });
     }
-
-    db.query(insertSql, [month, month, month, month, month], (insErr, result) => {
-      if (insErr) {
-        console.error("❌ insert month rows failed:", insErr);
-        return res.status(500).json({ error: "Database error" });
-      }
-      res.json({ ok: true, inserted: result.affectedRows, month });
-    });
+    res.json({ ok: true, inserted: result.affectedRows, month });
   });
 });
 

@@ -36,7 +36,7 @@ export default function ServiceCallsPage() {
         placeholder=" חפש לפי כתובת, משתמש שפתח                      🔎 "
         value={filters.building}
         onChange={(e) => setFilters({ ...filters, building: e.target.value })}
-        aria-label="חיפוש לפי כתובת, סוג תקלה או משתמש שפתח"
+        aria-label="🔎 חיפוש לפי כתובת, סוג תקלה או משתמש שפתח" 
       />
       <select
         value={filters.service_type}

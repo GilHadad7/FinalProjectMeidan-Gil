@@ -17,6 +17,7 @@
     box-shadow: none;          /* היה צל */
     border: 0;                 /* היה 1px solid */
     color: #4a3a2a;
+    font-family: "Heebo", "Segoe UI", sans-serif;
   }
   
   .row > *{
