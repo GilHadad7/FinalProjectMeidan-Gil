@@ -35,9 +35,7 @@
   max-width:240px;
   min-width:0;
 }
-/* כל עטיפה פנימית תיקח 100% רוחב */
-.search > *{ width:100% !important; max-width:100% !important; }
-.search > * > *{ width:100% !important; max-width:100% !important; }
+
 
 /* איפוס ה"גלולה" של קומפוננטת SearchInput (מונע תיבה בתוך תיבה) */
 .search :global(label[class*="SearchInput_box"]),

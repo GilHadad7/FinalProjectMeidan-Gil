@@ -8,7 +8,6 @@ import classes from './PaymentsTenantPage.module.css';
 export default function PaymentsTenantPage() {
   const [payments, setPayments] = useState([]);
   const [filteredPayments, setFilteredPayments] = useState([]);
-  const [buildingsList] = useState([]);
 
   const [filters, setFilters] = useState({
     tenant: '',
@@ -18,21 +17,34 @@ export default function PaymentsTenantPage() {
     toDate: '',
   });
 
+  // 📌 שליפת הדייר והבניין שלו מה-sessionStorage
+  const user = (() => {
+    try { return JSON.parse(sessionStorage.getItem('user')) || null; } catch { return null; }
+  })();
+  const tenantBuildingId = user?.building_id ?? user?.buildingId ?? null;
+
   useEffect(() => {
     fetchPayments();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tenantBuildingId]);
 
   const fetchPayments = () => {
-    fetch('http://localhost:8801/api/payments')
+    const base = 'http://localhost:8801/api/tenant/payments';
+    const url =
+      tenantBuildingId != null
+        ? `${base}?building_id=${encodeURIComponent(tenantBuildingId)}`
+        : base;
+
+    // ⬅️ בלי credentials כדי למנוע CORS עם '*'
+    fetch(url)
       .then((res) => res.json())
       .then((data) => setPayments(Array.isArray(data) ? data : []))
       .catch((err) => {
-        console.error('Error fetching payments:', err);
+        console.error('Error fetching tenant payments:', err);
         setPayments([]);
       });
   };
 
-  // הופך סטרינגים להשוואה/חיפוש סלחנית (בלי רווחים/כיווניות/רישיות)
   const cleanString = (str) =>
     String(str ?? '')
       .normalize('NFKD')
@@ -41,7 +53,6 @@ export default function PaymentsTenantPage() {
       .trim()
       .toLowerCase();
 
-  // קולט גם event וגם string – מגן מקריסות של קומפוננטות חיצוניות
   const getVal = (v) =>
     v && typeof v === 'object' && 'target' in v ? v.target.value : (v ?? '');
 
@@ -77,7 +88,6 @@ export default function PaymentsTenantPage() {
       );
     }
 
-    // מיון לפי קרבה להיום
     const today = new Date(); today.setHours(0, 0, 0, 0);
     result = [...result].sort((a, b) => {
       const da = Math.abs(new Date(a.payment_date).setHours(0,0,0,0) - today);
@@ -92,14 +102,17 @@ export default function PaymentsTenantPage() {
 
   const handleDelete = (paymentId) => {
     if (!window.confirm('האם אתה בטוח שברצונך למחוק את התשלום?')) return;
-    fetch(`http://localhost:8801/api/payments/${paymentId}`, { method: 'DELETE' })
+
+    // ⬅️ בלי credentials
+    fetch(`http://localhost:8801/api/tenant/payments/${paymentId}`, { method: 'DELETE' })
       .then((res) => res.json())
       .then(() => fetchPayments())
       .catch((err) => console.error('Error deleting payment:', err));
   };
 
   const handleEdit = (updatedPayment) => {
-    fetch(`http://localhost:8801/api/payments/${updatedPayment.payment_id}`, {
+    // ⬅️ בלי credentials
+    fetch(`http://localhost:8801/api/tenant/payments/${updatedPayment.payment_id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updatedPayment),
@@ -131,7 +144,7 @@ export default function PaymentsTenantPage() {
   return (
     <FormWithTableLayout
       title="הוספת תשלומים"
-      formComponent={<AddPaymentTenant buildingsList={buildingsList} onAdd={fetchPayments} />}
+      formComponent={<AddPaymentTenant onAdd={fetchPayments} />}
       summaryComponent={
         <div className={classes.summaryCards}>
           <div className={classes.card}>💰 סה״כ גבייה: <b>{totalPaid.toLocaleString()} ₪</b></div>

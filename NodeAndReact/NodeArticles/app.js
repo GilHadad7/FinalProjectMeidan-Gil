@@ -25,7 +25,6 @@ const managerRoutes = require("./routes/manager.routes");
 require("./routes/reportScheduler"); // ← שורה שמפעילה את הסקריפט בעת עליית השרת
 
 //דייר
-
 const tenantServiceCallsRoutes = require('./routes/tenant.serviceCalls.routes');
 
 
@@ -49,6 +48,8 @@ app.use("/api/manager", managerRoutes);
 
 //דייר
 app.use('/api/tenant/service-calls', tenantServiceCallsRoutes)
+app.use("/api/tenant/payments", require("./routes/tenant.payments.routes"));
+app.use("/api/tenant/reports", require("./routes/tenant.reports.routes"));
 
 
 

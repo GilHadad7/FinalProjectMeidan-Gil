@@ -1,3 +1,4 @@
+// src/pages/tenant/ScheduleTenantPage.jsx
 import React, { useState, useEffect } from "react";
 import classes from "./ScheduleTenantPage.module.css";
 import BaseTable from "../../components/ui/BaseTable";
@@ -5,14 +6,14 @@ import BaseTable from "../../components/ui/BaseTable";
 export default function ScheduleTenantPage() {
   const [tasks, setTasks] = useState([]);
   const [sourceFilter, setSourceFilter] = useState({ routine: false, service: false });
-  // הוספנו מפתח "אחר" ל־routineFilters
+
   const [routineFilters, setRoutineFilters] = useState({
     ניקיון: false,
     תחזוקה: false,
     הדברה: false,
     ביקורות: false,
     "טיפול במעבדי מים": false,
-    אחר: false, 
+    אחר: false,
   });
   const [serviceFilters, setServiceFilters] = useState({
     חשמל: false,
@@ -25,22 +26,39 @@ export default function ScheduleTenantPage() {
   const [hidePast, setHidePast] = useState(true);
   const [dateFilters, setDateFilters] = useState({ fromDate: "", toDate: "" });
 
+  // מי הדייר שמחובר (נשתמש ב־building_id לפולבאק בזמן פיתוח)
+  const tenant = (() => {
+    try { return JSON.parse(sessionStorage.getItem("user")) || null; } catch { return null; }
+  })();
+  const tenantBuildingId = tenant?.building_id ?? tenant?.buildingId ?? null;
+
   useEffect(() => {
-    fetch("http://localhost:3000/api/schedule")
+    // כתובת ה־API של דיירים
+    const base = "http://localhost:3000/api/schedule/tenant";
+    const url =
+      tenantBuildingId != null
+        ? `${base}?building_id=${encodeURIComponent(tenantBuildingId)}`
+        : base;
+
+    fetch(url, { credentials: "include" })
       .then((res) => res.json())
       .then((data) => {
-        const expanded = data.flatMap((task) =>
+        let rows = Array.isArray(data) ? data : [];
+
+        // יצירת מופעים עתידיים למשימות קבועות (אם יש frequency)
+        const expanded = rows.flatMap((task) =>
           task.origin_type === "routine" && task.frequency
             ? generateRecurringTasks(task)
             : [task]
         );
+
         const sorted = expanded.sort(
           (a, b) => new Date(a.scheduled_datetime) - new Date(b.scheduled_datetime)
         );
         setTasks(sorted);
       })
-      .catch((err) => console.error("❌ שגיאה בטעינה:", err));
-  }, []);
+      .catch((err) => console.error("❌ שגיאה בטעינת לוח הדייר:", err));
+  }, [tenantBuildingId]);
 
   const filteredTasks = tasks.filter((task) => {
     const scheduled = new Date(task.scheduled_datetime);
@@ -71,13 +89,11 @@ export default function ScheduleTenantPage() {
     if (!isAnySource && !isAnyRoutine && !isAnyService) return true;
     if (isAnySource && !sourceFilter[task.origin_type]) return false;
 
-    // טיפול בסינון משימות קבועות עם "אחר"
     if (task.origin_type === "routine" && isAnyRoutine) {
       const explicit = Object.keys(routineFilters).filter((t) => t !== "אחר");
       if (explicit.includes(task.type)) {
         if (!routineFilters[task.type]) return false;
       } else {
-        // כל סוג שלא נמצא ב־explicit נחשב "אחר"
         if (!routineFilters["אחר"]) return false;
       }
     }
@@ -136,7 +152,6 @@ export default function ScheduleTenantPage() {
 
   return (
     <div className={classes.SchedulePage}>
-
       <div className={classes.FiltersRow}>
         <div className={classes.Filters}>
           <label>
@@ -245,7 +260,7 @@ export default function ScheduleTenantPage() {
           <tr
             key={idx}
             className={
-              task.origin_type === "service" && task.status?.trim() === "Closed"
+              task.origin_type === "service" && (task.status || "").trim() === "Closed"
                 ? classes.ClosedRow
                 : ""
             }
@@ -253,18 +268,14 @@ export default function ScheduleTenantPage() {
             <td>{getWeekdayName(task.scheduled_datetime)}</td>
             <td>
               {formatDate(task.scheduled_datetime)}
-              {task.origin_type === "routine" && task.frequency
-                ? ` (${task.frequency})`
-                : ""}
+              {task.origin_type === "routine" && task.frequency ? ` (${task.frequency})` : ""}
             </td>
             <td>{formatTime(task.scheduled_datetime)}</td>
             <td>{task.building_address || task.building || "-"}</td>
             <td>{task.type || "-"}</td>
             <td>{task.description || "-"}</td>
             <td>{task.worker || "-"}</td>
-            <td>
-              {task.origin_type === "routine" ? "משימה קבועה" : "קריאת שירות"}
-            </td>
+            <td>{task.origin_type === "routine" ? "משימה קבועה" : "קריאת שירות"}</td>
           </tr>
         ))}
       </BaseTable>

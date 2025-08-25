@@ -1,4 +1,3 @@
-// src/components/AddPaymentTenant.jsx
 import React, { useEffect, useState } from "react";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -7,18 +6,19 @@ import { he } from "date-fns/locale";
 import FormCard from "../ui/FormCard";
 import form from "../ui/FormKit.module.css";
 
-
 registerLocale("he", he);
 
 export default function AddPaymentTenant({ onAdd }) {
+  // 🔐 המשתמש המחובר (גיבוי לשם/שדות שונים)
+  const user = (() => { try { return JSON.parse(sessionStorage.getItem("user")) || null; } catch { return null; } })();
+  const loggedTenantId   = user?.user_id ?? user?.id ?? null;
+  const loggedTenantName = user?.name ?? "";
+  const tenantBuildingId = user?.building_id ?? user?.buildingId ?? null;
+
   const [buildings, setBuildings] = useState([]);
-  const [tenants, setTenants] = useState([]);
-  const [loadingTenants, setLoadingTenants] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const [paymentForm, setPaymentForm] = useState({
-    building_id: "",
-    tenant_id: "",
     payment_date: null,
     category: "",
     customCategory: "",
@@ -27,39 +27,22 @@ export default function AddPaymentTenant({ onAdd }) {
     status: "שולם",
   });
 
-  // טען בניינים – ממויין לפי שם בניין
+  // טען רשימת בניינים רק כדי להציג את שם הבניין (הטופס נעול לבניין של הדייר)
   useEffect(() => {
     fetch("http://localhost:8801/api/buildings")
       .then((res) => res.json())
       .then((data) => {
         const list = Array.isArray(data) ? data : [];
-        list.sort((a, b) =>
+        const filtered = tenantBuildingId != null
+          ? list.filter(b => String(b.building_id) === String(tenantBuildingId))
+          : list;
+        filtered.sort((a, b) =>
           (a.name || "").localeCompare(b.name || "", "he", { numeric: true })
         );
-        setBuildings(list);
+        setBuildings(filtered);
       })
       .catch(console.error);
-  }, []);
-
-  // בכל שינוי בניין: הבאת דיירים של אותו בניין בלבד
-  useEffect(() => {
-    const bid = paymentForm.building_id;
-    if (!bid) {
-      setTenants([]);
-      setPaymentForm((prev) => ({ ...prev, tenant_id: "" }));
-      return;
-    }
-
-    setLoadingTenants(true);
-    fetch(`http://localhost:8801/api/tenants?building_id=${bid}`)
-      .then((res) => res.json())
-      .then((data) => setTenants(Array.isArray(data) ? data : []))
-      .catch(() => setTenants([]))
-      .finally(() => {
-        setLoadingTenants(false);
-        setPaymentForm((prev) => ({ ...prev, tenant_id: "" }));
-      });
-  }, [paymentForm.building_id]);
+  }, [tenantBuildingId]);
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -83,27 +66,21 @@ export default function AddPaymentTenant({ onAdd }) {
     e.preventDefault();
     if (submitting) return;
 
-    const {
-      building_id,
-      tenant_id,
-      payment_date,
-      category,
-      customCategory,
-      description,
-      amount,
-      status,
-    } = paymentForm;
-
-    if (!building_id) return alert("אנא בחר/י בניין");
-    if (!tenant_id) return alert("אנא בחר/י דייר");
+    // ולידציות בסיסיות
+    if (tenantBuildingId == null || loggedTenantId == null) {
+      alert("לא זוהו פרטי הדייר/הבניין. התחבר/י מחדש.");
+      return;
+    }
+    const { payment_date, category, customCategory, description, amount, status } = paymentForm;
     if (!payment_date) return alert("אנא בחר/י תאריך");
     const finalCategory = category === "אחר" ? (customCategory || "").trim() : category;
     if (!finalCategory) return alert("אנא בחר/י קטגוריה");
     if (!amount || Number(amount) <= 0) return alert("אנא הזן/י סכום תקין");
 
     const payload = {
-      building_id: Number(building_id),
-      tenant_id: Number(tenant_id),
+      // 🔒 ננעלים לדייר/בניין מהסשן – בלי בחירה ידנית
+      building_id: Number(tenantBuildingId),
+      tenant_id: Number(loggedTenantId),
       payment_date: formatDateToYMD(payment_date),
       category: finalCategory,
       description: (description || "").trim(),
@@ -113,20 +90,26 @@ export default function AddPaymentTenant({ onAdd }) {
 
     try {
       setSubmitting(true);
-      const res = await fetch("http://localhost:8801/api/payments", {
+      const res = await fetch("http://localhost:8801/api/tenant/payments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",                 // חשוב! לשליחת ה-cookie של הסשן
         body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
-        alert("שגיאה בהוספת תשלום");
+        // שגיאה ידידותית: נדפיס מה השרת באמת אמר
+        let msg = "שגיאה בהוספת תשלום";
+        try {
+          const data = await res.json();
+          if (data?.error || data?.message) msg = data.error || data.message;
+        } catch (_) {}
+        alert(msg);
         return;
       }
 
+      // איפוס הטופס
       setPaymentForm({
-        building_id: "",
-        tenant_id: "",
         payment_date: null,
         category: "",
         customCategory: "",
@@ -140,52 +123,33 @@ export default function AddPaymentTenant({ onAdd }) {
     }
   }
 
+  // מציגים בניין ודייר כמידע נעול (ללא בחירה)
+  const buildingLabel =
+    buildings[0]?.name || buildings[0]?.full_address || (tenantBuildingId ? `בניין #${tenantBuildingId}` : "");
+
   return (
     <FormCard>
-      {/* בניין — מציג לפי שם (name), עם כתובת כגיבוי/רמיזה */}
-      <select
-        className={form.select}
-        name="building_id"
-        value={paymentForm.building_id}
-        onChange={handleChange}
-      >
-        <option value="">בחר בניין</option>
-        {buildings.map((b) => (
-          <option key={b.building_id} value={b.building_id}>
-            {b.name || b.full_address || `בניין #${b.building_id}`}
-          </option>
-        ))}
-      </select>
+      {/* בניין (נעול) */}
+      <input
+        className={form.input}
+        value={buildingLabel}
+        readOnly
+        title="הבניין נקבע לפי הדייר שמחובר"
+      />
 
-      {/* דייר — רק דיירים של הבניין הנבחר */}
-      <select
-        className={form.select}
-        name="tenant_id"
-        value={paymentForm.tenant_id}
-        onChange={handleChange}
-        disabled={!paymentForm.building_id || loadingTenants}
-        title={!paymentForm.building_id ? "בחר/י קודם בניין" : undefined}
-      >
-        <option value="">
-          {loadingTenants ? "טוען דיירים…" : "בחר דייר"}
-        </option>
-        {tenants.map((t) => {
-          const id = t.tenant_id ?? t.user_id ?? t.id;
-          return (
-            <option key={id} value={id}>
-              {t.name || `דייר #${id}`}
-            </option>
-          );
-        })}
-      </select>
+      {/* דייר (נעול) */}
+      <input
+        className={form.input}
+        value={loggedTenantName || `דייר #${loggedTenantId ?? ""}`}
+        readOnly
+        title="הדייר נקבע לפי המשתמש שמחובר"
+      />
 
       {/* תאריך */}
       <div className={form.control}>
         <DatePicker
           selected={paymentForm.payment_date}
-          onChange={(date) =>
-            setPaymentForm((prev) => ({ ...prev, payment_date: date }))
-          }
+          onChange={(date) => setPaymentForm((prev) => ({ ...prev, payment_date: date }))}
           dateFormat="dd/MM/yyyy"
           locale="he"
           className={form.input}

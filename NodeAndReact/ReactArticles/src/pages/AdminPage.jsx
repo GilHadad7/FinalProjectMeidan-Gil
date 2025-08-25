@@ -4,17 +4,20 @@ import { useNavigate } from "react-router-dom";
 import classes from "./AdminPage.module.css";
 
 /* ================== קבועים ועזרים ================== */
-const API_BASE = "http://localhost:3000";   // API כפי שהיה
-const FILE_BASE = "http://localhost:8801";  // כאן יושבים קבצים /uploads וכד'
+const API_BASE = "http://localhost:3000";
+const FILE_BASE = "http://localhost:8801";
 
 const pad2 = (n) => String(n).padStart(2, "0");
 const toDateKey = (d) =>
   `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 const startOfMonth = (d) => new Date(d.getFullYear(), d.getMonth(), 1);
-const endOfMonth = (d) => new Date(d.getFullYear(), d.getMonth() + 1, 0);
-const addDays = (d, days) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + days);
+const endOfMonth   = (d) => new Date(d.getFullYear(), d.getMonth() + 1, 0);
+const addDays      = (d, days) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + days);
 
-// Parse ISO / "YYYY-MM-DD HH:MM:SS" / timestamp → Date (לוקאלי)
+const dayStart = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
+const dayEnd   = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
+
+// Parse ISO / "YYYY-MM-DD HH:MM:SS" / timestamp → Date
 const smartParseDate = (val) => {
   if (!val) return null;
   if (typeof val === "number") {
@@ -57,42 +60,31 @@ const formatHeDate = (yyyyMmDd) => {
 };
 
 /* ================== תמונה מן האירוע ================== */
-// נירמול URL: מוחלט נשאר; Base64 נשאר; יחסי → FILE_BASE; מחליף backslashes
 const normalizeUrl = (raw) => {
   if (!raw) return null;
   let s = String(raw).trim();
   if (!s) return null;
   try {
-    // אם נשלח JSON כמו ["..."]
     const j = JSON.parse(s);
     if (Array.isArray(j) && j[0]) s = String(j[0]);
   } catch {}
-  s = s.replace(/\\/g, "/"); // Windows paths
-
-  if (s.startsWith("data:")) return s;            // Base64
-  if (/^https?:\/\//i.test(s)) return s;          // URL מלא
-
-  // אם אין slash אבל יש סיומת תמונה – נניח שזה שם קובץ תחת /uploads
+  s = s.replace(/\\/g, "/");
+  if (s.startsWith("data:")) return s;
+  if (/^https?:\/\//i.test(s)) return s;
   if (!s.includes("/") && /\.(png|jpe?g|webp|gif|bmp|svg)$/i.test(s)) {
     return `${FILE_BASE}/uploads/${s}`;
   }
-
-  // נתיב יחסי/מוחלט לשרת הקבצים
   if (s.startsWith("/uploads") || s.startsWith("/images") || s.startsWith("/files")) {
     return `${FILE_BASE}${s}`;
   }
   if (/^(uploads|images|files)\//i.test(s)) {
     return `${FILE_BASE}/${s}`;
   }
-
-  // ברירת מחדל: יחסית ל-FILE_BASE
   try { return new URL(s, FILE_BASE).href; } catch { return null; }
 };
 
-// חיפוש רקורסיבי על האובייקט לשדה תמונה
 const findImageInObject = (obj, depth = 0) => {
   if (!obj || depth > 3) return null;
-
   if (typeof obj === "string") {
     const s = obj.trim();
     if (
@@ -102,7 +94,6 @@ const findImageInObject = (obj, depth = 0) => {
     ) return s;
     return null;
   }
-
   if (Array.isArray(obj)) {
     for (const v of obj) {
       const hit = findImageInObject(v, depth + 1);
@@ -110,12 +101,12 @@ const findImageInObject = (obj, depth = 0) => {
     }
     return null;
   }
-
   if (typeof obj === "object") {
     const preferredKeys = [
       "image_url","imageUrl","image","img","photo_url","photo",
       "picture","img_url","thumbnail_url","attachment_url",
-      "file_url","filePath","image_path","imagePath"
+      "file_url","filePath","image_path","imagePath",
+      "images","photos","attachments","files","media","media_urls","gallery"
     ];
     for (const k of preferredKeys) {
       if (k in obj) {
@@ -131,10 +122,8 @@ const findImageInObject = (obj, depth = 0) => {
   }
   return null;
 };
-
 const getImageUrl = (ev) => normalizeUrl(findImageInObject(ev) || "");
 
-// מחזיר URL חלופי על אותו נתיב עם החלפת פורט 3000↔8801 (למקרה של טעות דומיין)
 const swapPort = (url) => {
   try {
     const u = new URL(url);
@@ -144,13 +133,145 @@ const swapPort = (url) => {
   return null;
 };
 
+/* ================== רוטינות ושירות ================== */
+const isRoutine = (ev) => {
+  const t = String(ev?.origin_type || "").toLowerCase();
+  return t === "routine" || !!ev?.frequency;
+};
+const getServiceId = (obj) =>
+  obj?.id ?? obj?.call_id ?? obj?.service_id ?? obj?.ticket_id ?? obj?.request_id ?? null;
+
+// מזהה "קריאת שירות" (כולל type: 'servicecall')
+const isServiceEvent = (ev) => {
+  const src = String(ev?.origin_type || ev?.source || ev?.event_source || "").toLowerCase();
+  if (src.includes("service")) return true;
+  if (isRoutine(ev)) return false;
+  const t = String(
+    ev?.type || ev?.task_type || ev?.category || ev?.issue_type || ev?.problem_type || ""
+  ).trim().toLowerCase();
+  if (t === "servicecall" || t === "service_call") return true;
+  const serviceTypes = new Set(["חשמל","נזילה","תקלה טכנית","אינסטלציה","נזק","תקלה אישית","תקלה"]);
+  return serviceTypes.has(String(ev?.type || "").trim());
+};
+
+const ensureStartISO = (ev) => {
+  const s = smartParseDate(ev?.start);
+  if (s) return { ...ev, start: s.toISOString() };
+  if (ev?.date) {
+    const iso = `${ev.date}T${ev.time || "00:00:00"}`;
+    const d = smartParseDate(iso);
+    if (d) return { ...ev, start: d.toISOString() };
+  }
+  const sd = smartParseDate(ev?.scheduled_datetime);
+  if (sd) return { ...ev, start: sd.toISOString() };
+  return ev;
+};
+
+const expandRoutineInRange = (task, rangeStart, rangeEnd) => {
+  const base = ensureStartISO(task);
+  const start = smartParseDate(base.start) ||
+                (task.date ? smartParseDate(`${task.date}T${task.time || "00:00:00"}`) : null);
+  if (!start) return [];
+  const out = [];
+  let cur = new Date(start);
+  while (cur < rangeStart) {
+    if (task.frequency === "שבועי") cur.setDate(cur.getDate() + 7);
+    else if (task.frequency === "חודשי") cur.setMonth(cur.getMonth() + 1);
+    else if (task.frequency === "יומי")  cur.setDate(cur.getDate() + 1);
+    else break;
+  }
+  while (cur <= rangeEnd) {
+    out.push({ ...task, origin_type: "routine", start: cur.toISOString() });
+    if (task.frequency === "שבועי") cur.setDate(cur.getDate() + 7);
+    else if (task.frequency === "חודשי") cur.setMonth(cur.getMonth() + 1);
+    else if (task.frequency === "יומי")  cur.setDate(cur.getDate() + 1);
+    else break;
+  }
+  return out;
+};
+
+const expandEventsInRange = (events, rangeStart, rangeEnd) => {
+  const out = [];
+  for (const ev of Array.isArray(events) ? events : []) {
+    if (isRoutine(ev)) {
+      out.push(...expandRoutineInRange(ev, rangeStart, rangeEnd));
+    } else {
+      const norm = ensureStartISO(ev);
+      const d = smartParseDate(norm.start);
+      if (d && d >= rangeStart && d <= rangeEnd) out.push({ ...norm, start: d.toISOString() });
+    }
+  }
+  return out;
+};
+
+/* === רוטינות מ־/api/schedule לחודש === */
+const getScheduleBaseDate = (row) => {
+  if (row?.date) return row.date;
+  if (row?.scheduled_datetime) return String(row.scheduled_datetime).slice(0, 10);
+  return null;
+};
+const getScheduleBaseTime = (row) => {
+  if (row?.time) return row.time;
+  if (row?.scheduled_datetime) {
+    const d = smartParseDate(row.scheduled_datetime);
+    if (d) return `${pad2(d.getHours())}:${pad2(d.getMinutes())}:00`;
+  }
+  return "00:00:00";
+};
+
+const routinesFromScheduleInRange = (rows, rangeStart, rangeEnd) => {
+  const out = [];
+  for (const r of Array.isArray(rows) ? rows : []) {
+    const origin = String(r?.origin_type || "").toLowerCase();
+    const freq = r?.frequency;
+    if (origin !== "routine" || !freq) continue;
+
+    const baseDate = getScheduleBaseDate(r);
+    if (!baseDate) continue;
+    const timeStr = getScheduleBaseTime(r);
+
+    const occs = expandRoutineInRange(
+      { ...r, date: baseDate, time: timeStr, frequency: freq },
+      rangeStart,
+      rangeEnd
+    ).map((ev) => ({
+      ...ev,
+      origin_type: "routine",
+      title: r.title || r.description || "משימה קבועה",
+      type: r.type || r.category || "משימה",
+      building_name: r.building_name || r.building || r.building_address || "",
+      assignee: r.worker || r.assignee || "",
+      status: r.status || "",
+    }));
+    out.push(...occs);
+  }
+  return out;
+};
+
+/* === שליפת אינדקס קריאות שירות (לבניית מפה id→image_url) === */
+async function fetchServiceCallsIndex() {
+  const urls = [
+    `${API_BASE}/api/manager/service-calls`,
+    `${API_BASE}/api/service-calls`,
+    `${API_BASE}/api/servicecalls`,
+    `${API_BASE}/api/calls`,
+    `${API_BASE}/api/tickets`,
+  ];
+  for (const u of urls) {
+    try {
+      const r = await fetch(u, { credentials: "include" });
+      if (r.ok) return await r.json();
+    } catch {}
+  }
+  return [];
+}
+
 /* ================== הקומפוננטה ================== */
 export default function AdminPage() {
   const navigate = useNavigate();
 
   // ===== שם המנהל לכותרת =====
   const [userName, setUserName] = useState("");
-
   useEffect(() => {
     (async () => {
       try {
@@ -174,12 +295,19 @@ export default function AdminPage() {
 
   // ===== שמאל: התראות (אתמול+היום) =====
   const [urgent, setUrgent] = useState([]);
+  const [svcImageById, setSvcImageById] = useState({}); // { [id]: imageUrl }
   const [loadingUrgent, setLoadingUrgent] = useState(false);
+
+  // מודל לתצוגת תמונה
+  const [imgPreview, setImgPreview] = useState({ open: false, url: "", title: "" });
+
+  const makeKey = (ev) =>
+    `${ev.type || ev.title || "item"}-${ev.id || ev.service_id || "noid"}-${String(ev.start || "").slice(0,16)}`;
 
   useEffect(() => {
     const today = new Date();
     const yesterday = addDays(today, -1);
-    const tomorrow  = addDays(today, +1); // 'to' אקסקלוסיבי
+    const tomorrow  = addDays(today, +1);
 
     const from = toDateKey(yesterday);
     const to   = toDateKey(tomorrow);
@@ -187,13 +315,23 @@ export default function AdminPage() {
     (async () => {
       try {
         setLoadingUrgent(true);
-        const res = await fetch(`${API_BASE}/api/manager/agenda?from=${from}&to=${to}`);
-        const data = (await res.json()) || [];
+        const [agendaRes, scheduleRes] = await Promise.all([
+          fetch(`${API_BASE}/api/manager/agenda?from=${from}&to=${to}`),
+          fetch(`${API_BASE}/api/schedule`)
+        ]);
+
+        const agenda   = agendaRes.ok   ? await agendaRes.json()   : [];
+        const schedule = scheduleRes.ok ? await scheduleRes.json() : [];
+
+        const expandedAgenda = expandEventsInRange(agenda, dayStart(yesterday), dayEnd(today));
+        const routineOccs    = routinesFromScheduleInRange(schedule, dayStart(yesterday), dayEnd(today));
+
+        const combined = [...expandedAgenda, ...routineOccs];
 
         const yMD = toDateKey(yesterday);
         const tMD = toDateKey(today);
 
-        const filtered = data
+        const filtered = combined
           .filter((ev) => {
             const k = String(ev.start || "").slice(0, 10);
             return k === yMD || k === tMD;
@@ -205,9 +343,23 @@ export default function AdminPage() {
           });
 
         setUrgent(filtered);
+
+        // אינדקס קריאות שירות → מפה id→image_url
+        const svcList = await fetchServiceCallsIndex();
+        const map = {};
+        for (const row of Array.isArray(svcList) ? svcList : []) {
+          const id = getServiceId(row);
+          const raw =
+            row?.image_url ||
+            row?.imageUrl ||
+            findImageInObject(row);
+          if (id && raw) map[String(id)] = normalizeUrl(raw);
+        }
+        setSvcImageById(map);
       } catch (e) {
         console.error("urgent fetch failed:", e);
         setUrgent([]);
+        setSvcImageById({});
       } finally {
         setLoadingUrgent(false);
       }
@@ -222,15 +374,25 @@ export default function AdminPage() {
   useEffect(() => {
     const first = startOfMonth(monthDate);
     const last  = endOfMonth(monthDate);
+
     const from  = toDateKey(first);
     const to    = toDateKey(last);
 
     (async () => {
       try {
         setLoadingMonth(true);
-        const res = await fetch(`${API_BASE}/api/manager/agenda?from=${from}&to=${to}`);
-        const data = (await res.json()) || [];
-        setMonthEvents(data);
+        const [agendaRes, scheduleRes] = await Promise.all([
+          fetch(`${API_BASE}/api/manager/agenda?from=${from}&to=${to}`),
+          fetch(`${API_BASE}/api/schedule`)
+        ]);
+
+        const agenda   = agendaRes.ok   ? await agendaRes.json()   : [];
+        const schedule = scheduleRes.ok ? await scheduleRes.json() : [];
+
+        const expandedAgenda = expandEventsInRange(agenda, dayStart(first), dayEnd(last));
+        const routineOccs    = routinesFromScheduleInRange(schedule, dayStart(first), dayEnd(last));
+
+        setMonthEvents([...expandedAgenda, ...routineOccs]);
       } catch (e) {
         console.error("month events fetch failed:", e);
         setMonthEvents([]);
@@ -251,7 +413,7 @@ export default function AdminPage() {
     return map;
   }, [monthEvents]);
 
-  // בניית רשת הימים (RTL: א' בימין, ש' בשמאל)
+  // גריד הימים
   const daysGrid = useMemo(() => {
     const first = startOfMonth(monthDate);
     const last  = endOfMonth(monthDate);
@@ -274,12 +436,26 @@ export default function AdminPage() {
     [monthDate]
   );
 
-  // ===== מודל אירועי יום =====
-  const [openDay, setOpenDay] = useState(null); // "YYYY-MM-DD"
+  // ===== Modal אירועי יום =====
+  const [openDay, setOpenDay] = useState(null);
   const dayEvents = useMemo(
     () => (openDay ? eventsByDay.get(openDay) || [] : []),
     [openDay, eventsByDay]
   );
+
+  // יעד ניווט לשורה
+  const navigateFromEvent = (ev) => {
+    const dateKey = String(ev.start || "").slice(0,10);
+    if (isServiceEvent(ev)) {
+      const id = getServiceId(ev);
+      navigate(`/manager/service-calls?highlight=${encodeURIComponent(id ?? "")}`);
+    } else if (isRoutine(ev)) {
+      const rid = ev.routine_id || ev.task_id || ev.id || "";
+      navigate(`/manager/schedule?date=${dateKey}&highlight=${encodeURIComponent(rid)}`);
+    } else {
+      navigate(`/manager/schedule?date=${dateKey}`);
+    }
+  };
 
   return (
     <div className={classes.container}>
@@ -298,40 +474,53 @@ export default function AdminPage() {
             ) : (
               <ul className={classes.notifList}>
                 {urgent.map((ev) => {
-                  const primary = getImageUrl(ev);
-                  const fallback = primary ? swapPort(primary) : null;
+                  const key = makeKey(ev);
+
+                  const isService = isServiceEvent(ev);
+                  const idForImg  = getServiceId(ev);
+                  const fromEvent = getImageUrl(ev);
+                  const fromIndex = idForImg ? svcImageById[String(idForImg)] : null;
+
+                  const primary   = isService ? (fromEvent || fromIndex || null) : null;
+                  const fallback  = primary ? swapPort(primary) : null;
+                  const gridCols  = primary ? "48px 1fr" : "1fr";
 
                   return (
                     <li
-                      key={`${ev.type}-${ev.id}-${ev.start}`}
+                      key={key}
                       className={classes.notifItem}
-                      style={{ display: "grid", gridTemplateColumns: "48px 1fr", gap: 8, alignItems: "center" }}
+                      onClick={() => navigateFromEvent(ev)}
+                      role="button"
+                      title="פתיחת הפריט"
+                      style={{ display: "grid", gridTemplateColumns: gridCols, gap: 8, alignItems: "center", cursor: "pointer" }}
                     >
-                      {/* תמונה (אם קיימת) */}
-                      {primary ? (
+                      {primary && (
                         <img
                           src={primary}
                           alt=""
                           referrerPolicy="no-referrer"
+                          onClick={(e) => {
+                            e.stopPropagation(); // לא לנווט את השורה
+                            setImgPreview({ open: true, url: primary, title: ev.title || "" });
+                          }}
                           onError={(e) => {
                             if (fallback && e.currentTarget.dataset.tried !== "1") {
                               e.currentTarget.dataset.tried = "1";
                               e.currentTarget.src = fallback;
                             } else {
                               e.currentTarget.style.display = "none";
+                              const li = e.currentTarget.closest("li");
+                              if (li) li.style.gridTemplateColumns = "1fr";
                             }
                           }}
-                          style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 8 }}
+                          style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 8, cursor: "zoom-in" }}
                         />
-                      ) : (
-                        <div style={{ width: 48, height: 48, borderRadius: 8, background: "#eee" }} />
                       )}
 
                       {/* תוכן ההתראה */}
                       <div>
                         <div className={classes.notifTitle}>
                           {formatLocalHM(ev.start)} · {ev.title}
-                          {/* תווית היום/אתמול */}
                           {(() => {
                             const lbl = (() => {
                               const d = smartParseDate(ev.start);
@@ -457,6 +646,23 @@ export default function AdminPage() {
                   ))}
                 </ul>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== Modal: תצוגת תמונה (לחיצה על תמונה בהתראות) ===== */}
+      {imgPreview.open && (
+        <div className={classes.modalBackdrop} onClick={() => setImgPreview({ open:false, url:"", title:"" })}>
+          <div className={classes.modal} style={{maxWidth: "min(92vw, 900px)"}} onClick={(e) => e.stopPropagation()}>
+            <div className={classes.modalHeader}>
+              <h3 className={classes.modalTitle}>{imgPreview.title || "תמונה"}</h3>
+              <button className={classes.modalClose} onClick={() => setImgPreview({ open:false, url:"", title:"" })} aria-label="סגור">
+                ×
+              </button>
+            </div>
+            <div className={classes.modalBody} style={{display:"flex", justifyContent:"center"}}>
+              <img src={imgPreview.url} alt="" style={{maxWidth:"100%", maxHeight:"70vh", borderRadius:8}} />
             </div>
           </div>
         </div>
