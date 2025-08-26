@@ -58,6 +58,7 @@ router.get("/buildings", (req, res) => {
 
   const sql = `
     SELECT
+      b.building_id,                 -- מזהה לבניין (בשביל כפתור פירוט)
       b.name AS building_name,
       b.full_address AS address,
       f.total_paid,
@@ -81,7 +82,6 @@ router.get("/buildings", (req, res) => {
 });
 
 // ✅ POST /api/reports/buildings/recalc { month: "YYYY-MM" }
-// משתמש ב־UPSERT כדי למנוע כפילויות
 router.post("/buildings/recalc", (req, res) => {
   const month = (req.body.month || "").slice(0, 7);
   if (!/^\d{4}-\d{2}$/.test(month)) {
@@ -154,6 +154,105 @@ router.get("/monthly", (req, res) => {
       return res.status(500).json({ error: "Database error" });
     }
     res.json(results);
+  });
+});
+
+/* =======================
+   NEW: פירוט לפי בניין וחודש
+   ======================= */
+// GET /api/reports/building/:buildingId/details?month=YYYY-MM
+router.get("/building/:buildingId/details", (req, res) => {
+  const buildingId = Number(req.params.buildingId);
+  const month = (req.query.month || "").trim(); // "YYYY-MM"
+
+  if (!buildingId || !/^\d{4}-\d{2}$/.test(month)) {
+    return res
+      .status(400)
+      .json({ error: "missing/invalid buildingId or month (YYYY-MM)" });
+  }
+
+  const params = [buildingId, month];
+
+  // תשלומים ששולמו (payments)
+  const qPaid = `
+    SELECT p.payment_id, p.payment_date, p.amount, p.category, p.description,
+           u.user_id AS tenant_id, u.name AS tenant_name
+    FROM payments p
+    LEFT JOIN users u ON u.user_id = p.tenant_id
+    WHERE p.building_id = ?
+      AND DATE_FORMAT(p.payment_date, '%Y-%m') = ?
+      AND p.status = 'שולם'
+    ORDER BY p.payment_date DESC, p.payment_id DESC
+  `;
+
+  // חובות/ממתינים (payments)
+  const qDebt = `
+    SELECT p.payment_id, p.payment_date, p.amount, p.category, p.description, p.status,
+           u.user_id AS tenant_id, u.name AS tenant_name
+    FROM payments p
+    LEFT JOIN users u ON u.user_id = p.tenant_id
+    WHERE p.building_id = ?
+      AND DATE_FORMAT(p.payment_date, '%Y-%m') = ?
+      AND p.status IN ('חוב','ממתין')
+    ORDER BY p.payment_date DESC, p.payment_id DESC
+  `;
+
+  // תחזוקה מתוך קריאות שירות סגורות (servicecalls)
+  const qMaintFromCalls = `
+    SELECT
+      s.call_id,
+      s.created_at AS date,
+      COALESCE(s.cost, 0) AS amount,
+      s.service_type AS type,
+      s.description
+    FROM servicecalls s
+    WHERE s.building_id = ?
+      AND DATE_FORMAT(s.created_at, '%Y-%m') = ?
+      AND s.status IN ('Closed','סגור')
+    ORDER BY s.created_at DESC, s.call_id DESC
+  `;
+
+  const qBuilding = `
+    SELECT building_id, name, full_address AS address
+    FROM buildings
+    WHERE building_id = ?
+    LIMIT 1
+  `;
+
+  db.query(qBuilding, [buildingId], (eB, bRows) => {
+    if (eB) return res.status(500).json({ error: eB.message });
+    const building = bRows?.[0] || { building_id: buildingId, name: "", address: "" };
+
+    db.query(qPaid, params, (e1, paidRows) => {
+      if (e1) return res.status(500).json({ error: e1.message });
+
+      db.query(qDebt, params, (e2, debtRows) => {
+        if (e2) return res.status(500).json({ error: e2.message });
+
+        db.query(qMaintFromCalls, params, (e3, maintCallRows) => {
+          if (e3) return res.status(500).json({ error: e3.message });
+
+          const sum = (xs) => (xs || []).reduce((a, x) => a + Number(x.amount || 0), 0);
+
+          const totals = {
+            paid:        sum(paidRows),
+            debts:       sum(debtRows),
+            maintenance: sum(maintCallRows),
+          };
+
+          res.json({
+            building,
+            month,
+            totals,
+            paid: paidRows,
+            debts: debtRows,
+            maintenance: {
+              fromServiceCalls: maintCallRows,
+            },
+          });
+        });
+      });
+    });
   });
 });
 
