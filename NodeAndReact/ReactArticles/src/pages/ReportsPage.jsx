@@ -23,7 +23,11 @@ const monthsForYear = (year) =>
   Array.from({ length: 12 }, (_, i) => `${year}-${pad2(i + 1)}`);
 
 export default function ReportsPage() {
+  // 📊 נתוני פעילות עובדים לחודש הנבחר (מחליף את /api/reports/workers שלא קיים)
   const [workerReports, setWorkerReports] = useState([]);
+
+  // ✅ מונה לכמות השורות בטבלת דוח עובדים
+  const [wrCount, setWrCount] = useState(0);
 
   const [selectedMonth, setSelectedMonth] = useState(
     () => new Date().toISOString().slice(0, 7)
@@ -38,13 +42,21 @@ export default function ReportsPage() {
   // ✅ סטייט לסינון דוח עובדים (מגיע מה-Summary ונשלח לטבלה)
   const [wrFilters, setWrFilters] = useState({ month: "", role: "" });
 
-  // דוח עובדים
+  // === חדש: טעינת פעילות עובדים מה-API התקין ===
   useEffect(() => {
-    fetch("http://localhost:3000/api/reports/workers")
-      .then((res) => res.json())
-      .then((data) => setWorkerReports(data))
-      .catch(console.error);
-  }, []);
+    (async () => {
+      try {
+        const url = `http://localhost:3000/api/reports/workers/activity?month=${selectedMonth}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        setWorkerReports(Array.isArray(data) ? data : []);
+      } catch (e) {
+        console.error("Failed to load workers activity:", e);
+        setWorkerReports([]);
+      }
+    })();
+  }, [selectedMonth]);
 
   // דוח לפי בניינים – שמירה ל-DB ואז שליפה מה-DB
   useEffect(() => {
@@ -62,10 +74,11 @@ export default function ReportsPage() {
         const res = await fetch(
           `http://localhost:3000/api/reports/buildings?month=${selectedMonth}`
         );
-        const rows = await res.json();
-        setBuildingsSummary(rows);
+        const rows = await (res.ok ? res.json() : Promise.resolve([]));
+        setBuildingsSummary(Array.isArray(rows) ? rows : []);
       } catch (e) {
         console.error(e);
+        setBuildingsSummary([]);
       } finally {
         setLoadingBuildings(false);
       }
@@ -83,6 +96,7 @@ export default function ReportsPage() {
     [buildingsSummary]
   );
 
+  // נשארו כאן הפונקציות ההיסטוריות לשכר/שולם, למרות שהטבלה לא משתמשת בהן כעת.
   const handleEditSalary = async (reportId, newSalary) => {
     await fetch(`http://localhost:3000/api/reports/workers/${reportId}`, {
       method: "PUT",
@@ -120,6 +134,7 @@ export default function ReportsPage() {
 
         {/* סקירה כללית */}
         <TabPanel>
+          {/* מעבירים את פעילות העובדים לכרטיס הסקירה */}
           <OverviewReports workers={workerReports} buildings={buildingsSummary} />
         </TabPanel>
 
@@ -128,14 +143,16 @@ export default function ReportsPage() {
           <WorkerReportsSummary
             reports={workerReports}
             onFiltersChange={setWrFilters}
+            totalEmployees={wrCount}          /* ✅ מציג את הכמות האמיתית בכרטיס */
           />
           <WorkerReportsTable
             reports={workerReports}
-            filterMonth={wrFilters.month}
+            filterMonth={wrFilters.month || selectedMonth}
             filterRole={wrFilters.role}
             onEdit={handleEditSalary}
             onTogglePaid={handleTogglePaid}
             onUploadPDF={handleUploadPDF}
+            onCountChange={setWrCount}        /* ✅ הטבלה מעדכנת את הכרטיס למעלה */
           />
         </TabPanel>
 

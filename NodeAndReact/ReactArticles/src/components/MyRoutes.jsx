@@ -25,6 +25,11 @@ import ScheduleTenantPage from "../pages/tenant/ScheduleTenantPage";
 import PaymentsTenantPage from "../pages/tenant/PaymentsTenantPage";
 import ReportsTenantPage from "../pages/tenant/ReportsTenantPage";
 
+// Worker-only pages
+import ServiceCallsWorkerPage from "../pages/worker/ServiceCallsWorkerPage";
+import ScheduleWorkerPage      from "../pages/worker/ScheduleWorkerPage";
+import ReportsWorkerPage       from "../pages/worker/ReportsWorkerPage";
+
 function MyRoutes() {
   return (
     <Routes>
@@ -62,9 +67,9 @@ function MyRoutes() {
         }
       >
         <Route index element={<WorkerPage />} />
-        <Route path="service-calls" element={<ServiceCallsPage />} />
-        <Route path="schedule" element={<SchedulePage />} />
-        <Route path="reports" element={<ReportsPage />} />
+        <Route path="service-calls" element={<ServiceCallsWorkerPage />} />
+        <Route path="schedule" element={<ScheduleWorkerPage />} />
+        <Route path="reports" element={<ReportsWorkerPage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
 

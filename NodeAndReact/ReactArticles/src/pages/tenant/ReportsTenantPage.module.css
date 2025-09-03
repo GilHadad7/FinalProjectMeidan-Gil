@@ -1,29 +1,182 @@
-.container { padding: 16px; direction: rtl; }
-.title { margin: 0 0 12px 0; }
+/* ===== Theme ===== */
+:root {
+  --bg: #f8f4ee;
+  --card: #ffffff;
+  --line: #eadfce;
+  --ink: #3f3a34;
+  --muted: #7a6c5d;
+  --accent: #cbb79b;        /* ב׳ז כפתורים */
+  --accent-2: #b8a487;
+  --chip: #fbf9f5;
+}
 
-.grid {
+.container {
+  direction: rtl;
+  padding: 16px;
+  color: var(--ink);
+  background: transparent;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.title {
+  margin: 0 0 12px 0;
+  font-size: 22px;
+}
+
+/* ===== Cards (החלק העליון) ===== */
+.gridTop,
+.grid { /* שמרתי גם את .grid למקרה שתשתמש בזה בעוד מקום */
   display: grid;
   gap: 16px;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  align-items: stretch;
 }
 
 .card {
-  border: 1px solid #eee;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.02);
+}
+
+.cardTitle {
+  margin: 0 0 6px 0;
+  font-weight: 600;
+}
+
+.muted {
+  color: var(--muted);
+  margin: 0 0 12px 0;
+  font-size: 14px;
+}
+
+/* שורת צ׳קבוקס */
+.checkRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  background: var(--chip);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+/* בחירת חודש */
+.monthInput {
+  width: 100%;
+  background: var(--chip);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  outline: none;
+}
+.monthInput:focus {
+  border-color: var(--accent-2);
+  box-shadow: 0 0 0 2px rgba(200, 180, 150, 0.25);
+}
+
+/* כפתורים */
+.btn {
+  display: block;
+  width: 100%;
+  background: var(--accent);
+  border: 1px solid var(--accent-2);
+  color: #1f1a14;
   border-radius: 12px;
-  background: #fff;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform .03s ease, background .15s ease;
+}
+.btn:hover { background: #c2ab8e; }
+.btn:active { transform: translateY(1px); }
+
+/* ===== Blocks (טבלאות סיכום) ===== */
+.block {
+  margin-top: 18px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
   padding: 16px;
 }
 
-.cardTitle { margin: 0 0 6px 0; }
-.muted { color: #666; margin: 0 0 12px 0; }
-
-.btn {
-  background: #cbb79b;
-  border: 1px solid #b8a487;
-  border-radius: 10px;
-  padding: 10px 16px;
-  cursor: pointer;
+.blockTitle {
+  margin: 0 0 10px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed var(--line);
+  font-weight: 700;
 }
-.btn:hover { background: #c2ab8e; }
 
-.note { margin-top: 12px; color: #777; font-size: 13px; }
+/* תת-חלקים */
+.subBlock {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.subTitle {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+/* רשימות */
+.list {
+  list-style: none;
+  margin: 8px 0 0 0;
+  padding: 0;
+}
+.list li {
+  position: relative;
+  padding: 8px 10px 8px 0;
+  border-bottom: 1px solid #f1e8da;
+  line-height: 1.45;
+  font-size: 14px;
+}
+.list li:last-child { border-bottom: 0; }
+.list li::before {
+  content: "•";
+  color: var(--accent-2);
+  font-weight: 700;
+  margin-left: 8px;
+}
+
+/* “אין נתונים” */
+.empty {
+  color: var(--muted);
+  background: var(--chip);
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+  font-size: 14px;
+}
+/* הצגת כל ההיסטוריה – בשורה אחת, RTL תקין */
+.checkRow{
+  display: inline-flex;          /* שורה אחת */
+  align-items: center;           /* יישור אנכי */
+  gap: 8px;                      /* רווח בין התיבה לטקסט */
+  white-space: nowrap;           /* לא לשבור שורות */
+  flex-direction: row-reverse;   /* RTL: התיבה מימין, הטקסט לשמאלה */
+  cursor: pointer;
+  /* אופציונלי – אם אתה רוצה שהקפסולה תהיה קומפקטית: */
+  width: fit-content;
+}
+
+.checkRow input{
+  width: 18px;
+  height: 18px;
+  accent-color: #b8a487; /* צבע בהתאם לעיצוב שלך */
+}
+
+
+/* הערת תחתית (אם תשתמש) */
+.note { margin-top: 12px; color: var(--muted); font-size: 13px; }
+
+/* רספונסיביות קטנה */
+@media (max-width: 480px) {
+  .card, .block { padding: 12px; border-radius: 14px; }
+  .btn { padding: 9px 14px; }
+}

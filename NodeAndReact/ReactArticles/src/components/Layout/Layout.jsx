@@ -6,9 +6,12 @@ import classes from "./Layout.module.css";
 
 export default function Layout() {
   const location = useLocation();
-  const isTenant = location.pathname.startsWith("/tenant");
+  const pathname = location.pathname;
 
-  // בונים את רשימת הפריטים לפי ההקשר (דייר/מנהל)
+  const isTenant = pathname.startsWith("/tenant");
+  const isWorker = pathname.startsWith("/worker");
+
+  // בונים את רשימת הפריטים לפי ההקשר (דייר / עובד / מנהל)
   const navItems = useMemo(() => {
     if (isTenant) {
       return [
@@ -18,7 +21,17 @@ export default function Layout() {
         { to: "/tenant/reports",       label: "Reports" },
       ];
     }
-    // ברירת מחדל: תפריט מנהל מלא (כמו שהיה)
+
+    if (isWorker) {
+      // ⬅️ עובד: רק שלושת הדפים שביקשת
+      return [
+        { to: "/worker/service-calls", label: "Service calls" },
+        { to: "/worker/schedule",      label: "Schedule" },
+        { to: "/worker/reports",       label: "Reports" },
+      ];
+    }
+
+    // ברירת מחדל (מנהל) – תפריט מלא
     return [
       { to: "/manager/service-calls",  label: "קריאות שירות" },
       { to: "/manager/schedule",       label: "לוח זמנים" },
@@ -29,7 +42,7 @@ export default function Layout() {
       { to: "/manager/suppliers",      label: "ספקים חיצוניים" },
       { to: "/manager/reports",        label: "דוחות" },
     ];
-  }, [isTenant]);
+  }, [isTenant, isWorker]);
 
   return (
     <div className={classes.container}>
@@ -37,7 +50,7 @@ export default function Layout() {
 
       {/* סרגל הניווט העליון */}
       <div className={classes.headerWrapper}>
-        <div className={classes.logoArea}>{/* לוגו אם צריך */}</div>
+        <div className={classes.logoArea} />
         <nav className={classes.navbar}>
           {navItems.map((item) => (
             <NavLink

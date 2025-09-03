@@ -3,6 +3,14 @@ import React, { useEffect, useState } from "react";
 import FormCard from "./ui/FormCard";
 import form from "./ui/FormKit.module.css";
 
+const POSITION_OPTIONS = [
+  { value: "super", label: "אב בית" },
+  { value: "cleaner", label: "מנקה" },
+  // אפשר להרחיב בקלות:
+  // { value: "electrician", label: "חשמלאי" },
+  // { value: "plumber", label: "אינסטלטור" },
+];
+
 export default function UserForm({ onAdd }) {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -10,16 +18,16 @@ export default function UserForm({ onAdd }) {
     name: "",
     id_number: "",
     role: "",
+    position: "",     // ⬅️ חדש: משרה לעובד
     phone: "",
     email: "",
     password: "",
-    building_id: "", // ⬅️ חדש: יישלח רק אם role === "tenant"
+    building_id: "",  // ⬅️ לדייר
   });
 
-  const [buildings, setBuildings] = useState([]); // ⬅️ חדש: רשימת בניינים
+  const [buildings, setBuildings] = useState([]);
   const [validationError, setValidationError] = useState("");
 
-  // טעינת בניינים מהשרת
   useEffect(() => {
     fetch("http://localhost:3000/api/buildings")
       .then((r) => r.json())
@@ -27,12 +35,25 @@ export default function UserForm({ onAdd }) {
       .catch((e) => console.error("Error loading buildings:", e));
   }, []);
 
+  // כשמשנים תפקיד – ננקה שדות שלא רלוונטיים כדי למנוע בלבול
+  useEffect(() => {
+    setUserFormData((prev) => {
+      if (prev.role === "tenant") {
+        return { ...prev, position: "" };            // דייר לא צריך position
+      }
+      if (prev.role === "worker") {
+        return { ...prev, building_id: "" };         // עובד לא צריך building_id
+      }
+      // מנהל – לא צריך לא position ולא building_id
+      return { ...prev, position: "", building_id: "" };
+    });
+  }, [userFormData.role]); // נרוץ כשמשתנה התפקיד
+
   function handleInputChange(e) {
     const { name, value } = e.target;
     setUserFormData((prev) => ({ ...prev, [name]: value }));
   }
 
-  // ID: digits only, up to 9
   function handleIdChange(e) {
     const value = e.target.value;
     if (/^[0-9]*$/.test(value) && value.length <= 9) {
@@ -40,7 +61,6 @@ export default function UserForm({ onAdd }) {
     }
   }
 
-  // Phone: digits only, up to 10
   function handlePhoneChange(e) {
     const value = e.target.value;
     if (/^[0-9]*$/.test(value) && value.length <= 10) {
@@ -58,10 +78,9 @@ export default function UserForm({ onAdd }) {
       id_number: userFormData.id_number.trim(),
       phone: userFormData.phone.trim(),
       email: userFormData.email.trim(),
-      password: userFormData.password, // אל תטרים סיסמאות
     };
 
-    const { name, id_number, role, phone, email, password, building_id } = payload;
+    const { name, id_number, role, position, phone, email, password, building_id } = payload;
 
     if (!name || !id_number || !role || !phone || !email || !password) {
       setValidationError("יש למלא את כל השדות");
@@ -84,24 +103,28 @@ export default function UserForm({ onAdd }) {
       return;
     }
 
-    // אם זה דייר – חייב לבחור בניין
+    // חובת שדה לפי תפקיד
     if (role === "tenant" && !building_id) {
       setValidationError("דייר חייב להיות משויך לבניין. בחר בניין מהרשימה.");
       return;
     }
-
-    // אם זה לא דייר – לא שולחים building_id
-    if (payload.role !== "tenant") {
-      delete payload.building_id;
+    if (role === "worker" && !position) {
+      setValidationError("בחר משרה לעובד (למשל אב בית/מנקה).");
+      return;
     }
+
+    // הסרת שדות לא רלוונטיים לפי תפקיד
+    if (role !== "tenant") delete payload.building_id;
+    if (role !== "worker") delete payload.position;
 
     await onAdd(payload);
 
-    // ניקוי טופס
+    // ניקוי הטופס
     setUserFormData({
       name: "",
       id_number: "",
       role: "",
+      position: "",
       phone: "",
       email: "",
       password: "",
@@ -146,7 +169,24 @@ export default function UserForm({ onAdd }) {
         <option value="tenant">דייר</option>
       </select>
 
-      {/* ⬇️ שדה שיוך בניין – מוצג רק כשנבחר דייר */}
+      {/* בחירת משרה – מוצג רק כשנבחר עובד */}
+      {userFormData.role === "worker" && (
+        <select
+          className={form.select}
+          name="position"
+          value={userFormData.position}
+          onChange={handleInputChange}
+        >
+          <option value="">בחר משרה…</option>
+          {POSITION_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      )}
+
+      {/* שיוך בניין – רק לדייר */}
       {userFormData.role === "tenant" && (
         <select
           className={form.select}

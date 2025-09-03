@@ -164,14 +164,6 @@ export default function PaymentsTenantPage() {
                 />
               </div>
 
-              <div className={classes.search}>
-                <SearchInput
-                  placeholder="חפש לפי בניין"
-                  value={filters.building}
-                  onChange={(v) => setFilters((f) => ({ ...f, building: getVal(v) }))}
-                />
-              </div>
-
               <select
                 className={classes.statusSelect}
                 value={filters.status}

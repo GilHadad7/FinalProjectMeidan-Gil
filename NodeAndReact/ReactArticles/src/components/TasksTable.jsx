@@ -42,6 +42,16 @@ function hmToParts(hm = "") {
   return { h, m };
 }
 
+/* ===== bump לשבת -> ראשון (רק בחודשי) ===== */
+function bumpIfSaturdayForMonthly(date, frequency) {
+  const d = date instanceof Date ? new Date(date) : new Date(date || "");
+  if (Number.isNaN(d.getTime())) return null;
+  if (String(frequency).trim() === "חודשי" && d.getDay() === 6) {
+    d.setDate(d.getDate() + 1); // ראשון
+  }
+  return d;
+}
+
 export default function TasksTable({ tasks, search, onRefresh }) {
   const [editIdx, setEditIdx] = useState(null);
   const [editForm, setEditForm] = useState({});
@@ -105,7 +115,10 @@ export default function TasksTable({ tasks, search, onRefresh }) {
       const hhmm = timeToHM(`${editForm.task_hour || ""}:${editForm.task_minute || ""}`);
       const { h, m } = hmToParts(hhmm); // לניקוי ואחידות
       const task_time = `${h}:${m}`;
-      const formattedDate = formatDateLocal(editForm.next_date);
+
+      // אם חודשי ונבחרה שבת — נזיז לראשון לפני שליחה
+      const adjustedDate = bumpIfSaturdayForMonthly(editForm.next_date, editForm.frequency) || editForm.next_date;
+      const formattedDate = formatDateLocal(adjustedDate);
 
       const res = await fetch(`http://localhost:3000/api/tasks/${taskId}`, {
         method: "PUT",
@@ -146,12 +159,16 @@ export default function TasksTable({ tasks, search, onRefresh }) {
       const today = new Date();
       let date = new Date(startDateStr);
       if (isNaN(date.getTime())) return null;
+
       while (date < today) {
         if (frequency === "יומי") date.setDate(date.getDate() + 1);
         else if (frequency === "שבועי") date.setDate(date.getDate() + 7);
         else if (frequency === "חודשי") date.setMonth(date.getMonth() + 1);
         else break;
       }
+
+      // אם חודשי ונפל על שבת -> ראשון
+      date = bumpIfSaturdayForMonthly(date, frequency) || date;
       return date;
     } catch {
       return null;
@@ -225,6 +242,10 @@ export default function TasksTable({ tasks, search, onRefresh }) {
                     className={classes.input}
                     calendarStartDay={0}
                     placeholderText="בחר תאריך"
+                    // לא לאפשר לבחור שבת כשחודשי
+                    filterDate={(d) =>
+                      editForm.frequency !== "חודשי" || d.getDay() !== 6
+                    }
                   />
                 </td>
                 <td>{getHebrewDay(editForm.next_date, editForm.frequency)}</td>

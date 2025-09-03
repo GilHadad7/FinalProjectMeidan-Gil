@@ -38,6 +38,13 @@ const formatLocalHM = (val) => {
   return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 };
 
+// אם התאריך נופל על שבת (JS: שבת=6) – דוחף לראשון
+const shiftIfSaturday = (date) => {
+  const d = new Date(date);
+  if (d.getDay() === 6) d.setDate(d.getDate() + 1);
+  return d;
+};
+
 // ===== תרגום סטטוסים לעברית =====
 const statusHe = (s) => {
   const t = String(s || "").trim().toLowerCase();
@@ -53,10 +60,12 @@ const heMonths = [
   "יולי","אוגוסט","ספטמבר","אוקטובר","נובמבר","דצמבר"
 ];
 const heWeekdays = ["א","ב","ג","ד","ה","ו","ש"];
+
 const formatHeDate = (yyyyMmDd) => {
-  const [y,m,d] = yyyyMmDd.split("-").map(Number);
-  const dt = new Date(y, m-1, d);
-  return `${heWeekdays[(dt.getDay()+6)%7]}׳ ${d} ${heMonths[m-1]} ${y}`;
+  const [y, m, d] = yyyyMmDd.split("-").map(Number);
+  const dt = new Date(y, m - 1, d);
+  // המיפוי של heWeekdays תואם ל-getDay ישירות (0=א', 6=שבת)
+  return `${heWeekdays[dt.getDay()]}׳ ${d} ${heMonths[m - 1]} ${y}`;
 };
 
 /* ================== תמונה מן האירוע ================== */
@@ -173,19 +182,30 @@ const expandRoutineInRange = (task, rangeStart, rangeEnd) => {
                 (task.date ? smartParseDate(`${task.date}T${task.time || "00:00:00"}`) : null);
   if (!start) return [];
   const out = [];
-  let cur = new Date(start);
+
+  // להביא את נקודת ההתחלה לראשון אם נפלה על שבת
+  let cur = shiftIfSaturday(new Date(start));
+
+  // גלגול אחורה עד שנכנסים לטווח
   while (cur < rangeStart) {
     if (task.frequency === "שבועי") cur.setDate(cur.getDate() + 7);
     else if (task.frequency === "חודשי") cur.setMonth(cur.getMonth() + 1);
     else if (task.frequency === "יומי")  cur.setDate(cur.getDate() + 1);
     else break;
+    cur = shiftIfSaturday(cur);
   }
+
+  // יצירת ההופעות בטווח, תוך הזזה אם נופל על שבת
   while (cur <= rangeEnd) {
-    out.push({ ...task, origin_type: "routine", start: cur.toISOString() });
+    const occ = shiftIfSaturday(cur);
+    out.push({ ...task, origin_type: "routine", start: occ.toISOString() });
+
     if (task.frequency === "שבועי") cur.setDate(cur.getDate() + 7);
     else if (task.frequency === "חודשי") cur.setMonth(cur.getMonth() + 1);
     else if (task.frequency === "יומי")  cur.setDate(cur.getDate() + 1);
     else break;
+
+    cur = shiftIfSaturday(cur);
   }
   return out;
 };
@@ -198,7 +218,11 @@ const expandEventsInRange = (events, rangeStart, rangeEnd) => {
     } else {
       const norm = ensureStartISO(ev);
       const d = smartParseDate(norm.start);
-      if (d && d >= rangeStart && d <= rangeEnd) out.push({ ...norm, start: d.toISOString() });
+      if (!d) continue;
+      const shifted = shiftIfSaturday(d); // סייפטי: גם אירוע רגיל ידחה אם בשבת
+      if (shifted >= rangeStart && shifted <= rangeEnd) {
+        out.push({ ...norm, start: shifted.toISOString() });
+      }
     }
   }
   return out;

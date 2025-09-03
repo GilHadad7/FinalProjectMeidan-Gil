@@ -4,7 +4,6 @@ import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { he } from "date-fns/locale";
 
-// UI kit אחיד
 import FormCard from "./ui/FormCard";
 import form from "./ui/FormKit.module.css";
 
@@ -51,7 +50,6 @@ export default function TaskForm({ onSuccess }) {
         ? taskFormData.custom_type.trim()
         : taskFormData.type;
 
-    // ולידציות בסיס
     if (!taskFormData.building_id) return alert("אנא בחר/י בניין");
     if (!finalType) return alert("אנא בחר/י או הזן/י סוג משימה");
     if (!taskFormData.task_name.trim()) return alert("אנא הזן/י תיאור משימה");
@@ -143,7 +141,6 @@ export default function TaskForm({ onSuccess }) {
         <option value="אחר">אחר…</option>
       </select>
 
-      {/* שדה חופשי כשנבחר "אחר" */}
       {taskFormData.type === "אחר" && (
         <input
           type="text"
@@ -184,7 +181,9 @@ export default function TaskForm({ onSuccess }) {
       <div className={form.control}>
         <DatePicker
           selected={taskFormData.next_date}
-          onChange={(date) => setTaskFormData((prev) => ({ ...prev, next_date: date }))}
+          onChange={(date) =>
+            setTaskFormData((prev) => ({ ...prev, next_date: date }))
+          }
           dateFormat="dd/MM/yyyy"
           locale="he"
           className={form.input}
@@ -193,22 +192,8 @@ export default function TaskForm({ onSuccess }) {
         />
       </div>
 
-      {/* שעה (דקות מימין, שעה משמאל) */}
-      <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-        <select
-          className={form.select}
-          name="task_minute"
-          value={taskFormData.task_minute}
-          onChange={handleInputChange}
-        >
-          <option value="">דקות</option>
-          {[0, 15, 30, 45].map((m) => (
-            <option key={m} value={String(m).padStart(2, "0")}>
-              {String(m).padStart(2, "0")}
-            </option>
-          ))}
-        </select>
-        <span>:</span>
+      {/* שעה — קודם שעה (משמאל) ואז דקות (מימין). כופים LTR כדי להציג 08 : 20 */}
+      <div style={{ display: "flex", gap: 12, alignItems: "center", direction: "ltr" }}>
         <select
           className={form.select}
           name="task_hour"
@@ -222,9 +207,22 @@ export default function TaskForm({ onSuccess }) {
             </option>
           ))}
         </select>
+        <span>:</span>
+        <select
+          className={form.select}
+          name="task_minute"
+          value={taskFormData.task_minute}
+          onChange={handleInputChange}
+        >
+          <option value="">דקות</option>
+          {[0, 15, 30, 45].map((m) => (
+            <option key={m} value={String(m).padStart(2, "0")}>
+              {String(m).padStart(2, "0")}
+            </option>
+          ))}
+        </select>
       </div>
 
-      {/* כפתור שליחה */}
       <button
         className={form.button}
         onClick={handleFormSubmit}

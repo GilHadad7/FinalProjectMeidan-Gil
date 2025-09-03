@@ -1,4 +1,3 @@
-// src/components/BuildingsFinanceTable.jsx
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import classes from "./BuildingsFinanceTable.module.css";
@@ -45,13 +44,21 @@ export default function BuildingsFinanceTable({ data }) {
       const buildingId = row.building_id;
       const month = (row.month || new Date().toISOString().slice(0, 7)).slice(0, 7);
 
-      const r = await fetch(
-        `${API_BASE}/api/reports/building/${buildingId}/details?month=${encodeURIComponent(
-          month
-        )}`
-      );
-      const json = await r.json();
-      if (!r.ok) throw new Error(json?.error || `HTTP ${r.status}`);
+      const url = `${API_BASE}/api/reports/building/${buildingId}/details?month=${encodeURIComponent(
+        month
+      )}`;
+
+      const r = await fetch(url);
+      const text = await r.text(); // קודם טקסט, כדי שנוכל להציג שגיאה גם אם זה HTML
+      if (!r.ok) {
+        throw new Error(`HTTP ${r.status} – ${text.slice(0, 200)}`);
+      }
+      let json;
+      try {
+        json = JSON.parse(text);
+      } catch {
+        throw new Error(`Unexpected non-JSON response: ${text.slice(0, 200)}`);
+      }
       setDetails(json);
     } catch (e) {
       setError(e.message || "Failed to load details");
@@ -76,7 +83,6 @@ export default function BuildingsFinanceTable({ data }) {
           {data.map((row, i) => (
             <tr key={i}>
               <td>
-                {/* שם בניין מימין, כפתור משמאל (פריסת flex עם RTL) */}
                 <div className={classes.buildingCell}>
                   <Link
                     className={classes.buildingLink}

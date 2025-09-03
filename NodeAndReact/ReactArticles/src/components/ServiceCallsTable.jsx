@@ -42,6 +42,15 @@ export default function ServiceCallsTable({
     }
   }
 
+  // ----- עזר: קריאת תאריך מהשדה created_at בפורמטים נפוצים -----
+  function getRowDate(row) {
+    const v = row?.created_at;
+    if (!v) return new Date(0);
+    const s = String(v).trim();
+    // תומך גם ב-"YYYY-MM-DD HH:MM:SS"
+    return new Date(s.includes(" ") ? s.replace(" ", "T") : s);
+  }
+
   useEffect(() => {
     const ac = new AbortController();
     fetch("http://localhost:3000/api/service-calls", { signal: ac.signal })
@@ -80,6 +89,24 @@ export default function ServiceCallsTable({
       return true;
     });
   }, [calls, filters]);
+
+  // ----- מיון: פתוחים קודם (קרוב להיום למעלה = חדש->ישן), אחר כך סגורים (חדש->ישן) -----
+  const sortedCalls = useMemo(() => {
+    const list = [...filteredCalls];
+    list.sort((a, b) => {
+      const aClosed = a.status === "Closed" || a.status === "סגור";
+      const bClosed = b.status === "Closed" || b.status === "סגור";
+      if (aClosed !== bClosed) {
+        // פתוחים (false) לפני סגורים (true)
+        return aClosed - bClosed;
+      }
+      const da = getRowDate(a);
+      const db = getRowDate(b);
+      // גם בפתוחים וגם בסגורים: חדש -> ישן
+      return db - da;
+    });
+    return list;
+  }, [filteredCalls]);
 
   // === הדגשה/גלילה לשורה: אפור בהיר (#f3f4f6), נמשכת 10 שניות, פעם אחת בלבד לכל highlightId ===
   useEffect(() => {
@@ -202,7 +229,7 @@ export default function ServiceCallsTable({
           </tr>
         </thead>
         <tbody>
-          {filteredCalls.map((call) =>
+          {sortedCalls.map((call) =>
             editingCallId === call.call_id ? (
               <tr key={call.call_id} data-row-id={String(call.call_id)} className={classes.editRow}>
                 <td>{new Date(call.created_at).toLocaleDateString("he-IL")}<br />{new Date(call.created_at).toLocaleTimeString("he-IL")}</td>
@@ -237,7 +264,12 @@ export default function ServiceCallsTable({
                 </td>
                 <td>
                   {previewUrls[call.call_id] && (
-                    <img src={previewUrls[call.call_id]} alt="תמונה" className={classes.previewImg} onClick={() => window.open(previewUrls[call.call_id], "_blank")} />
+                    <img
+                      src={previewUrls[call.call_id]}
+                      alt="תמונה"
+                      className={classes.previewImg}
+                      onClick={() => window.open(previewUrls[call.call_id], "_blank")}
+                    />
                   )}
                   <input
                     type="file"
@@ -257,8 +289,20 @@ export default function ServiceCallsTable({
                   />
                 </td>
                 <td className={classes.actionsEditModeCell}>
-                  <button className={`${classes.actionBtnEditMode} ${classes.saveBtn}`} onClick={() => handleSave(call.call_id)} title="שמור">💾</button>
-                  <button className={`${classes.actionBtnEditMode} ${classes.cancelBtn}`} onClick={() => setEditingCallId(null)} title="ביטול">❌</button>
+                  <button
+                    className={`${classes.actionBtnEditMode} ${classes.saveBtn}`}
+                    onClick={() => handleSave(call.call_id)}
+                    title="שמור"
+                  >
+                    💾
+                  </button>
+                  <button
+                    className={`${classes.actionBtnEditMode} ${classes.cancelBtn}`}
+                    onClick={() => setEditingCallId(null)}
+                    title="ביטול"
+                  >
+                    ❌
+                  </button>
                 </td>
               </tr>
             ) : (
@@ -278,13 +322,30 @@ export default function ServiceCallsTable({
                 <td>{!isNaN(parseFloat(call.cost)) ? parseFloat(call.cost).toFixed(2) : "—"}</td>
                 <td>
                   {call.image_url && (
-                    <img src={call.image_url} alt="תמונה" className={classes.previewImg} onClick={() => window.open(call.image_url, "_blank")} />
+                    <img
+                      src={call.image_url}
+                      alt="תמונה"
+                      className={classes.previewImg}
+                      onClick={() => window.open(call.image_url, "_blank")}
+                    />
                   )}
                 </td>
                 <td className={classes.actionsCell}>
                   <div className={classes.actionsGroup}>
-                    <button className={classes.actionBtn} onClick={() => handleEdit(call)} title="ערוך">✏️</button>
-                    <button className={classes.actionBtn} onClick={() => handleDelete(call.call_id)} title="מחק">🗑️</button>
+                    <button
+                      className={classes.actionBtn}
+                      onClick={() => handleEdit(call)}
+                      title="ערוך"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      className={classes.actionBtn}
+                      onClick={() => handleDelete(call.call_id)}
+                      title="מחק"
+                    >
+                      🗑️
+                    </button>
                   </div>
                 </td>
               </tr>

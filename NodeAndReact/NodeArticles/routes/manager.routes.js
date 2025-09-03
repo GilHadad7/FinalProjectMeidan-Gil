@@ -22,12 +22,18 @@ router.get("/agenda", (req, res) => {
       sc.building_id                          AS building_id,
       sc.status                               AS status,
       sc.created_by                           AS assignee,
-      sc.created_at                           AS start,
+
+      -- שבת -> ראשון להצגה
+      CASE
+        WHEN DAYOFWEEK(DATE(sc.created_at)) = 7 THEN DATE_ADD(sc.created_at, INTERVAL 1 DAY)
+        ELSE sc.created_at
+      END                                      AS start,
+
       NULL                                    AS \`end\`
     FROM servicecalls sc
     JOIN buildings b ON b.building_id = sc.building_id
     WHERE DATE(sc.created_at) BETWEEN ? AND ?
-    ORDER BY sc.created_at ASC
+    ORDER BY start ASC
   `;
 
   db.query(sql, [from, to], (err, rows) => {

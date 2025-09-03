@@ -207,3 +207,14 @@ header, footer {
   font-size: 14px;
   text-align: center;
 }
+@keyframes flash-target {
+  0%   { background-color: #fff3cd; }
+  70%  { background-color: #fff3cd; }
+  100% { background-color: transparent; }
+}
+:target {
+  animation: flash-target 2.6s ease-out forwards;
+  outline: 2px solid #f0ad4e;
+  outline-offset: -2px;
+  scroll-margin-block: 80px; /* אם יש Header קבוע */
+}

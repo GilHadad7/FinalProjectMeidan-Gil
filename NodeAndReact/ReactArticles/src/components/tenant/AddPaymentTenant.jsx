@@ -24,7 +24,7 @@ export default function AddPaymentTenant({ onAdd }) {
     customCategory: "",
     description: "",
     amount: "",
-    status: "שולם",
+    // אין סטטוס בטופס של דייר
   });
 
   // טען רשימת בניינים רק כדי להציג את שם הבניין (הטופס נעול לבניין של הדייר)
@@ -55,13 +55,6 @@ export default function AddPaymentTenant({ onAdd }) {
     return d.toISOString().split("T")[0];
   }
 
-  function cleanStatus(str) {
-    return (str || "")
-      .normalize("NFKD")
-      .replace(/[\u200E\u200F\u202A-\u202E"“”]/g, "")
-      .trim();
-  }
-
   async function handleSubmit(e) {
     e.preventDefault();
     if (submitting) return;
@@ -71,21 +64,20 @@ export default function AddPaymentTenant({ onAdd }) {
       alert("לא זוהו פרטי הדייר/הבניין. התחבר/י מחדש.");
       return;
     }
-    const { payment_date, category, customCategory, description, amount, status } = paymentForm;
+    const { payment_date, category, customCategory, description, amount } = paymentForm;
     if (!payment_date) return alert("אנא בחר/י תאריך");
     const finalCategory = category === "אחר" ? (customCategory || "").trim() : category;
     if (!finalCategory) return alert("אנא בחר/י קטגוריה");
     if (!amount || Number(amount) <= 0) return alert("אנא הזן/י סכום תקין");
 
+    // ⚠️ לא שולחים סטטוס — השרת יקבע "ממתין" אוטומטית
     const payload = {
-      // 🔒 ננעלים לדייר/בניין מהסשן – בלי בחירה ידנית
       building_id: Number(tenantBuildingId),
       tenant_id: Number(loggedTenantId),
       payment_date: formatDateToYMD(payment_date),
       category: finalCategory,
       description: (description || "").trim(),
       amount: Number(amount),
-      status: cleanStatus(status),
     };
 
     try {
@@ -93,12 +85,11 @@ export default function AddPaymentTenant({ onAdd }) {
       const res = await fetch("http://localhost:8801/api/tenant/payments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",                 // חשוב! לשליחת ה-cookie של הסשן
+        credentials: "include",
         body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
-        // שגיאה ידידותית: נדפיס מה השרת באמת אמר
         let msg = "שגיאה בהוספת תשלום";
         try {
           const data = await res.json();
@@ -115,7 +106,6 @@ export default function AddPaymentTenant({ onAdd }) {
         customCategory: "",
         description: "",
         amount: "",
-        status: "שולם",
       });
       onAdd?.();
     } finally {
@@ -209,17 +199,7 @@ export default function AddPaymentTenant({ onAdd }) {
         required
       />
 
-      {/* סטטוס */}
-      <select
-        className={form.select}
-        name="status"
-        value={paymentForm.status}
-        onChange={handleChange}
-      >
-        <option value="שולם">שולם</option>
-        <option value="ממתין">ממתין</option>
-        <option value="חוב">חוב</option>
-      </select>
+      {/* הוסר: שדה סטטוס */}
 
       <button
         className={form.button}

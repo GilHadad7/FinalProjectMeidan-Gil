@@ -24,6 +24,23 @@ const norm = (v) =>
     .toLowerCase()
     .trim();
 
+// סדר לוגי לתפקידים: מנהל (0) → עובד (1) → דייר (2) → אחר (3)
+const roleWeight = (r) => {
+  const x = String(r || "").toLowerCase();
+  if (x === "manager") return 0;
+  if (x === "worker")  return 1;
+  if (x === "tenant")  return 2;
+  return 3;
+};
+
+// אופציונלי: סדר עדין בתוך עובדים (למשל 'super' לפני אחרים). לא חובה.
+const positionWeight = (p) => {
+  const key = String(p || "").toLowerCase();
+  if (key === "super")   return 0;  // אב בית תחילה
+  if (key === "cleaner") return 1;  // מנקה
+  return 9;                         // כל השאר
+};
+
 export default function UserManagementPage() {
   const [users, setUsers] = useState([]);
   const [buildings, setBuildings] = useState([]);         // ⬅️ רשימת בניינים
@@ -56,7 +73,7 @@ export default function UserManagementPage() {
       body: JSON.stringify(newUser),
     });
     if (res.ok) {
-      // נטען מחדש כדי לקבל גם building_name/Full_address מה-JOIN
+      // נטען מחדש כדי לקבל גם עמודות ה־JOIN
       const refreshed = await fetch("http://localhost:3000/api/users").then(r => r.json());
       setUsers(Array.isArray(refreshed) ? refreshed : []);
     }
@@ -97,9 +114,10 @@ export default function UserManagementPage() {
     }
   };
 
-  // 🔎 סינון עם תמיכה בתפקיד בעברית/אנגלית + סינון לפי בניין + חיפוש לפי שם/כתובת בניין
+  // 🔎 סינון + ✅ מיון: מנהלים → עובדים → דיירים (בתוך הקבוצות לפי שם)
   const filtered = useMemo(() => {
-    let list = Array.isArray(users) ? users : [];
+    // תמיד לעבוד על העתק כדי לא למיין את state בטעות
+    let list = Array.isArray(users) ? users.slice() : [];
 
     // סינון לפי בניין
     if (buildingFilter === "__none") {
@@ -111,32 +129,49 @@ export default function UserManagementPage() {
 
     // טקסט חיפוש
     const q = norm(search);
-    if (!q) return list;
+    if (q) {
+      const qRoleEn = norm(roleEn(search));
+      const tokens = [...new Set([q, qRoleEn].filter(Boolean))]
+        .join(" ")
+        .split(/\s+/)
+        .filter(Boolean);
 
-    // אם חיפשו בעברית תפקיד – נמפה לאנגלית כדי לתפוס role
-    const qRoleEn = norm(roleEn(search));
-    const tokens = [...new Set([q, qRoleEn].filter(Boolean))]
-      .join(" ")
-      .split(/\s+/)
-      .filter(Boolean);
+      list = list.filter((u) => {
+        const hay = norm(
+          [
+            u.name,
+            u.email,
+            u.phone,
+            u.id_number,
+            u.role,                 // באנגלית
+            roleHe(u.role),         // בעברית
+            u.building_name,        // שם בניין
+            u.building_full_address // כתובת בניין
+          ]
+            .filter(Boolean)
+            .join(" ")
+        );
+        return tokens.every((t) => hay.includes(t));
+      });
+    }
 
-    return list.filter((u) => {
-      const hay = norm(
-        [
-          u.name,
-          u.email,
-          u.phone,
-          u.id_number,
-          u.role,                 // באנגלית
-          roleHe(u.role),         // בעברית
-          u.building_name,        // ⬅️ שם בניין
-          u.building_full_address // ⬅️ כתובת בניין
-        ]
-          .filter(Boolean)
-          .join(" ")
-      );
-      return tokens.every((t) => hay.includes(t));
+    // ✅ מיון: מנהל → עובד → דייר; בתוך עובדים ניתן לתת עדיפות לאב בית/מנקה,
+    // ואז ל-by name (עברית)
+    list.sort((a, b) => {
+      const rd = roleWeight(a.role) - roleWeight(b.role);
+      if (rd !== 0) return rd;
+
+      // שניהם עובדים? אפשר לתת סדר עדין לפי position
+      if (String(a.role).toLowerCase() === "worker" && String(b.role).toLowerCase() === "worker") {
+        const pd = positionWeight(a.position) - positionWeight(b.position);
+        if (pd !== 0) return pd;
+      }
+
+      // ברירת מחדל: לפי שם
+      return (a.name || "").localeCompare(b.name || "", "he", { numeric: true, sensitivity: "base" });
     });
+
+    return list;
   }, [users, search, buildingFilter]);
 
   return (
@@ -146,41 +181,39 @@ export default function UserManagementPage() {
       </div>
 
       <div className={classes.rightPanel}>
-      <FiltersBar>
-  <SearchInput
-    value={search}
-    onChange={setSearch}
-    placeholder="חפש לפי שם, ת.ז., תפקיד, טלפון, מייל או שם בניין…"
-    width={520}
-  />
+        <FiltersBar>
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="חפש לפי שם, ת.ז., תפקיד, טלפון, מייל או שם בניין…"
+            width={520}
+          />
 
-  {/* סלקט מעוצב כ'פיל' */}
-  <div className={classes.searchSelectWrap}>
-    <select
-      className={classes.searchSelect}
-      value={buildingFilter}
-      onChange={(e) => setBuildingFilter(e.target.value)}
-      aria-label="סינון לפי בניין"
-    >
-      <option value="">כל הבניינים</option>
-      <option value="__none">ללא בניין</option>
-      {buildings
-        .slice()
-        .sort((a, b) => (a?.name || "").localeCompare(b?.name || "", "he", { numeric: true }))
-        .map((b) => (
-          <option key={b.building_id} value={b.building_id}>
-            {b.name || b.full_address || `בניין #${b.building_id}`}
-          </option>
-        ))}
-    </select>
-  </div>
-</FiltersBar>
-
-
+          {/* סלקט מעוצב כ'פיל' */}
+          <div className={classes.searchSelectWrap}>
+            <select
+              className={classes.searchSelect}
+              value={buildingFilter}
+              onChange={(e) => setBuildingFilter(e.target.value)}
+              aria-label="סינון לפי בניין"
+            >
+              <option value="">כל הבניינים</option>
+              <option value="__none">ללא בניין</option>
+              {buildings
+                .slice()
+                .sort((a, b) => (a?.name || "").localeCompare(b?.name || "", "he", { numeric: true }))
+                .map((b) => (
+                  <option key={b.building_id} value={b.building_id}>
+                    {b.name || b.full_address || `בניין #${b.building_id}`}
+                  </option>
+                ))}
+            </select>
+          </div>
+        </FiltersBar>
 
         <UsersTable
           users={filtered}
-          buildings={buildings}     // ⬅️ כדי שה־select בעמודה "שם בניין" יעבוד בעריכה
+          buildings={buildings}
           editId={editId}
           setEditId={setEditId}
           editForm={editForm}
