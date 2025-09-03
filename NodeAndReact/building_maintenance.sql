@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 20, 2025 at 05:20 PM
+-- Generation Time: Sep 03, 2025 at 04:10 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -44,12 +44,12 @@ CREATE TABLE `buildings` (
 --
 
 INSERT INTO `buildings` (`building_id`, `full_address`, `maintenance_type`, `name`, `apartments`, `floors`, `committee`, `phone`, `assigned_workers`) VALUES
-(1, '123 Main Street', 'Full', 'מרכז העיר', 46, 11, 'יוסי ', '0542101515', '2,9,11'),
-(2, '123 Herzl St, Haifa', 'Full', 'נוף ים', 20, 6, 'שמעון אבדוליאני', '0545565785', '4,9'),
-(5, 'ברל כצלנסון 47 , חיפה', 'Full', 'ברל', 44, 10, 'גדי חדד', '0542510949', '9'),
-(6, 'קיבוץ גליות 20 נשר', 'Full', 'אלמוגים', 4, 2, 'גיל חדד', '0542510949', '9,2'),
-(7, 'העמוס 18 נשר', 'Full', 'עמוס 18', 48, 18, 'אליעד ממן', '0541349549', '2,11'),
-(9, 'שמואל שרירא 3', 'Full', 'שמואל', 24, 8, 'אלון', '0503817422', '2');
+(1, '123 Main Street', 'Full', 'מרכז העיר', 46, 11, 'יוסי ', '0542101105', '19,17'),
+(2, '123 Herzl St, Haifa', 'Full', 'נוף ים', 20, 6, 'שמעון אבדוליאני', '0545657582', '4,2'),
+(5, 'ברל כצלנסון 47 , חיפה', 'Full', 'ברל', 44, 10, 'גדי חדד', '0542510949', '18,20'),
+(6, 'קיבוץ גליות 20 נשר', 'Full', 'אלמוגים', 4, 2, 'גיל חדד', '0542510949', '18,19'),
+(7, 'העמוס 18 נשר', 'Full', 'עמוס 18', 48, 18, 'אליעד ממן', '0541349549', '17,2'),
+(9, 'שמואל שרירא 3', 'Full', 'שמואל', 24, 8, 'אלון', '0503817422', '2,4');
 
 -- --------------------------------------------------------
 
@@ -72,16 +72,23 @@ CREATE TABLE `building_finance` (
 --
 
 INSERT INTO `building_finance` (`building_id`, `name`, `address`, `total_paid`, `balance_due`, `maintenance`, `month`) VALUES
-(1, NULL, NULL, 5000.00, 700.00, 1800.00, '2025-05'),
-(1, NULL, NULL, 5000.00, 700.00, 1800.00, '2025-06'),
-(2, NULL, NULL, 5000.00, 700.00, 1800.00, '2025-08'),
-(5, NULL, NULL, 5000.00, 700.00, 1800.00, '2025-05'),
-(5, NULL, NULL, 5000.00, 700.00, 1800.00, '2025-08'),
-(6, NULL, NULL, 5000.00, 700.00, 1800.00, '2025-05'),
-(6, NULL, NULL, 5000.00, 700.00, 1800.00, '2025-08'),
-(7, NULL, NULL, 5000.00, 700.00, 1800.00, '2025-05'),
-(7, NULL, NULL, 5000.00, 700.00, 1800.00, '2025-08'),
-(9, NULL, NULL, 5000.00, 700.00, 1800.00, '2025-08');
+(1, NULL, NULL, 500.00, 555.00, 123.00, '2025-05'),
+(1, NULL, NULL, 0.00, 0.00, 153.00, '2025-08'),
+(1, NULL, NULL, 0.00, 0.00, 0.00, '2025-09'),
+(2, NULL, NULL, 450.00, 0.00, 685.00, '2025-08'),
+(2, NULL, NULL, 0.00, 0.00, 0.00, '2025-09'),
+(5, NULL, NULL, 100.00, 0.00, 0.00, '2025-05'),
+(5, NULL, NULL, 5450.00, 450.00, 1395.00, '2025-08'),
+(5, NULL, NULL, 0.00, 643.00, 0.00, '2025-09'),
+(6, NULL, NULL, 500.00, 0.00, 80.00, '2025-05'),
+(6, NULL, NULL, 1000.00, 0.00, 1221.00, '2025-08'),
+(6, NULL, NULL, 456.00, 0.00, 0.00, '2025-09'),
+(7, NULL, NULL, 0.00, 600.00, 0.00, '2025-05'),
+(7, NULL, NULL, 0.00, 0.00, 19.00, '2025-06'),
+(7, NULL, NULL, 350.00, 1500.00, 1353.00, '2025-08'),
+(7, NULL, NULL, 555.00, 0.00, 0.00, '2025-09'),
+(9, NULL, NULL, 0.00, 0.00, 220.00, '2025-08'),
+(9, NULL, NULL, 320.00, 0.00, 0.00, '2025-09');
 
 -- --------------------------------------------------------
 
@@ -129,9 +136,10 @@ CREATE TABLE `external_suppliers` (
 --
 
 INSERT INTO `external_suppliers` (`id`, `name`, `field`, `phone`, `email`, `buildings`) VALUES
-(1, 'גיל חדד', 'משאבות מים', '0542510949', 'gil7hadad@gmail.com', NULL),
+(1, 'גיל חדד', 'משאבות מים', '0542510945', 'gil7hadad@gmail.com', NULL),
 (2, 'חמו משאבות', 'משאבות', '0540646612', 'midan@gmail.com', NULL),
-(3, 'אלון ג אחזקות בעמ', 'שערים חשמליים', '0503874710', 'meidan@admin.com', NULL);
+(3, 'אלון ג אחזקות בעמ', 'שערים חשמליים', '0503874710', 'meidan@admin.com', NULL),
+(4, 'מערכת הפעלת קודונים ', 'קודנים', '0503874710', 'aphala@walla.com', NULL);
 
 -- --------------------------------------------------------
 
@@ -167,7 +175,13 @@ INSERT INTO `payments` (`payment_id`, `tenant_id`, `building_id`, `payment_date`
 (13, 12, 5, '2025-08-14', 'תחזוקת בניין', 'תשלום חודשי', 450.00, 'שולם', '2025-08-13 13:14:58'),
 (14, 12, 7, '2025-08-18', 'תחזוקת בניין', 'תשלום חודשי', 350.00, 'שולם', '2025-08-13 13:19:02'),
 (15, 10, 5, '2025-08-18', 'תחזוקת בניין', '11', 4500.00, 'שולם', '2025-08-18 13:49:19'),
-(16, 15, 7, '2025-08-20', 'תחזוקת בניין', '', 1500.00, 'חוב', '2025-08-20 13:10:42');
+(16, 15, 7, '2025-08-20', 'תחזוקת בניין', '', 1500.00, 'ממתין', '2025-08-20 13:10:42'),
+(17, 3, 5, '2025-08-28', 'תחזוקת בניין', 'תשלום חודשי', 450.00, 'חוב', '2025-08-27 14:37:48'),
+(18, 3, 5, '2025-09-01', 'תחזוקת בניין', 'תשלום חודשי', 123.00, 'ממתין', '2025-09-01 11:16:42'),
+(19, 3, 5, '2025-09-03', 'תחזוקת בניין', 'תשלום חודשי', 520.00, 'ממתין', '2025-09-02 14:06:48'),
+(20, 12, 7, '2025-09-03', 'תחזוקת בניין', 'תשלום חודשי', 555.00, 'שולם', '2025-09-02 19:01:09'),
+(21, 10, 6, '2025-09-03', 'תחזוקת בניין', 'תשלום חודשי', 456.00, 'שולם', '2025-09-02 19:02:15'),
+(22, 14, 9, '2025-09-04', 'קנס איחור', 'שילם על נזק שביצע במעלית שרט את הדלתות של המעלית בכוונה עם המפתח', 320.00, 'שולם', '2025-09-02 19:03:05');
 
 -- --------------------------------------------------------
 
@@ -194,7 +208,8 @@ INSERT INTO `reminder_logs` (`id`, `payment_id`, `tenant_id`, `reminder_date`) V
 (9, 10, 3, '2025-08-08 12:55:32'),
 (10, 10, 3, '2025-08-09 14:21:15'),
 (12, 10, 3, '2025-08-11 14:39:10'),
-(13, 10, 3, '2025-08-12 16:22:04');
+(13, 10, 3, '2025-08-12 16:22:04'),
+(14, 16, 15, '2025-08-26 12:37:56');
 
 -- --------------------------------------------------------
 
@@ -221,24 +236,28 @@ CREATE TABLE `routinetasks` (
   `building_id` int(11) DEFAULT NULL,
   `task_name` varchar(100) DEFAULT NULL,
   `frequency` varchar(50) DEFAULT NULL,
-  `next_date` date DEFAULT NULL,
+  `next_date` date NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `type` varchar(100) DEFAULT NULL,
-  `task_time` time NOT NULL
+  `task_time` time DEFAULT NULL,
+  `responsible_user_id` int(11) DEFAULT NULL,
+  `description` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `routinetasks`
 --
 
-INSERT INTO `routinetasks` (`task_id`, `building_id`, `task_name`, `frequency`, `next_date`, `created_at`, `type`, `task_time`) VALUES
-(2, 1, 'ניקיון לובי קומת קרקע', 'שבועי', '2025-08-22', '2025-05-12 06:00:01', 'ניקיון', '12:30:00'),
-(3, 2, 'שטיפת חדר מדרגות', 'שבועי', '2025-08-21', '2025-05-12 07:42:39', 'ניקיון', '11:15:00'),
-(11, 5, 'ניקיון תקרה', 'חודשי', '2025-04-27', '2025-05-14 16:21:59', 'חשמל', '10:30:00'),
-(18, 6, 'ניקיון חנייה', 'שבועי', '2025-05-12', '2025-05-18 13:22:19', 'ניקיון', '09:00:00'),
-(19, 5, 'חשמלאי', 'שבועי', '2025-08-07', '2025-08-06 12:14:45', 'תיקון', '12:00:00'),
-(20, 7, 'מלא גוקים בקומה 14', 'חודשי', '2025-08-20', '2025-08-06 13:16:19', 'הדברה', '17:00:00'),
-(21, 9, 'ניקיון קומות', 'שבועי', '2025-08-08', '2025-08-08 10:01:39', 'ניקיון', '09:00:00');
+INSERT INTO `routinetasks` (`task_id`, `building_id`, `task_name`, `frequency`, `next_date`, `created_at`, `type`, `task_time`, `responsible_user_id`, `description`) VALUES
+(2, 1, 'ניקיון לובי קומת קרקע', 'שבועי', '2025-08-22', '2025-05-12 06:00:01', 'ניקיון', '12:30:00', 17, NULL),
+(3, 2, 'שטיפת חדר מדרגות', 'שבועי', '2025-08-21', '2025-05-12 07:42:39', 'ניקיון', '11:15:00', 4, NULL),
+(11, 5, 'ניקיון תקרה', 'חודשי', '2025-04-27', '2025-05-14 16:21:59', 'חשמל', '10:30:00', 18, NULL),
+(18, 6, 'ניקיון חנייה', 'שבועי', '2025-05-12', '2025-05-18 13:22:19', 'ניקיון', '09:00:00', 18, NULL),
+(19, 5, 'חשמלאי', 'שבועי', '2025-08-07', '2025-08-06 12:14:45', 'תיקון', '12:00:00', 20, NULL),
+(20, 7, 'מלא גוקים בקומה 14', 'חודשי', '2025-08-20', '2025-08-06 13:16:19', 'הדברה', '17:00:00', 2, NULL),
+(21, 9, 'ניקיון קומות', 'שבועי', '2025-08-08', '2025-08-08 10:01:39', 'ניקיון', '09:00:00', 4, NULL),
+(22, 5, 'טיפולים כללים', 'חודשי', '2025-09-09', '2025-09-02 15:08:59', 'תחזוקה', '09:00:00', 20, NULL),
+(23, 7, 'בחניה יש בעיה של דבורים וגוקים', 'חודשי', '2025-09-06', '2025-09-02 15:14:32', 'הדברה', '10:00:00', 2, NULL);
 
 -- --------------------------------------------------------
 
@@ -267,7 +286,7 @@ CREATE TABLE `servicecalls` (
 
 INSERT INTO `servicecalls` (`call_id`, `building_id`, `read_index`, `service_type`, `status`, `description`, `created_at`, `created_by`, `image_url`, `location_in_building`, `cost`, `closed_by`) VALUES
 (24, 1, '0', 'חשמל', 'Closed', 'כי ככה', '2025-05-11 12:24:52', 'Meidan Chemo', 'http://localhost:8801/uploads/1747228107049.png', 'שדגשדג', NULL, 'מידן חמו'),
-(25, 1, '0', 'תקלה אישית', 'Closed', 'הדלת לא נסגרת ', '2025-05-12 08:32:21', 'Meidan Chemo', 'http://localhost:8801/uploads/1747038741912.png', 'קומה 5 דירה 20', NULL, NULL),
+(25, 1, '0', 'תקלה אישית', 'Closed', 'הדלת לא נסגרת ', '2025-05-12 08:32:21', 'Meidan Chemo', 'http://localhost:8801/uploads/1747038741912.png', 'קומה 5 דירה 20', 123.00, 'מידן חמו'),
 (26, 6, '0', 'אינסטלציה', 'Closed', 'קקי בתחתון של מידן חמו ', '2025-05-28 11:48:42', 'מידן חמו', 'http://localhost:8801/uploads/1748432954002.png', 'קומה 4 ליד דלת 15', 80.00, 'מידן חמו'),
 (27, 7, '0', 'אחר', 'Closed', 'לידי', '2025-06-03 10:07:36', 'מידן חמו', 'http://localhost:8801/uploads/1749382502120.png', 'לידור בחדר אשפה', NULL, 'מידן חמו'),
 (28, 7, '0', 'נזילה', 'Closed', 'נזילה בביוב', '2025-06-08 12:00:09', 'מידן חמו', 'http://localhost:8801/uploads/1749384009073.png', 'קומה 23 ליד דלת 69', 19.00, 'מידן חמו'),
@@ -279,7 +298,21 @@ INSERT INTO `servicecalls` (`call_id`, `building_id`, `read_index`, `service_typ
 (40, 9, '0', 'חשמל', 'Closed', '2', '2025-08-18 10:32:38', 'מידן חמו', NULL, '123', 220.00, 'מידן חמו'),
 (41, 6, '0', 'חשמל', 'Closed', '1', '2025-08-20 09:42:41', 'מידן חמו', NULL, '2', 333.00, 'מידן חמו'),
 (42, 6, '0', 'חשמל', 'Closed', 'תקלה בקומות 12 13 לא עובד מנורות', '2025-08-20 09:50:43', 'מידן חמו', NULL, '2', 555.00, 'מידן חמו'),
-(43, 7, '0', 'חשמל', 'Closed', 'תקלה במנורה', '2025-08-20 10:08:17', 'מידן חמו', NULL, '2', 1200.00, 'מידן חמו');
+(43, 7, '0', 'חשמל', 'Closed', 'תקלה במנורה', '2025-08-20 10:08:17', 'מידן חמו', NULL, '2', 1200.00, 'מידן חמו'),
+(44, 5, '0', 'תקלה טכנית', 'Open', 'מנורה נשרפה 1 מקודם', '2025-08-21 12:20:19', 'נועה לוי', 'http://localhost:8801/uploads/1755780492917.png', 'קומה 10', NULL, NULL),
+(45, 5, '0', 'נזק', 'Open', 'שבר בקיר העליון', '2025-08-21 13:13:02', 'נועה לוי', 'http://localhost:8801/uploads/1755782699076.png', 'קומה 3', 333.00, NULL),
+(46, 5, '0', 'חשמל', 'Open', 'מנורה התקלקלה', '2025-08-24 12:52:05', 'מידן חמו', 'http://localhost:8801/uploads/1756039925164.png', 'קומה 7', NULL, NULL),
+(47, 2, '0', 'נזילה', 'Closed', 'נזילה בקיר', '2025-08-24 12:52:22', 'מידן חמו', 'http://localhost:8801/uploads/1756039982451.png', 'קומה 4 צד שמאל', 532.00, 'מידן חמו'),
+(48, 7, '0', 'אינסטלציה', 'Open', 'נזילה בשירותי עובדים', '2025-08-24 12:52:54', 'מידן חמו', 'http://localhost:8801/uploads/1756039974433.png', 'קומת כניסה', NULL, NULL),
+(49, 5, '0', 'חשמל', 'Closed', 'מנורה שרופה', '2025-08-25 13:51:59', 'נועה לוי', 'http://localhost:8801/uploads/1756129919965.png', 'קומה 3 דירה 7', 453.00, 'מידן חמו'),
+(50, 1, '0', 'חשמל', 'Closed', 'מנורה נשרפה', '2025-08-25 17:18:30', 'מידן חמו', 'http://localhost:8801/uploads/1756142310133.png', 'קומה 6', 153.00, 'מידן חמו'),
+(51, 5, '0', 'חשמל', 'Open', 'מנורה התקלקלה בקומה 17', '2025-08-27 11:50:20', 'נועה לוי', 'http://localhost:8801/uploads/1756295420856.png', 'קומה 15', NULL, NULL),
+(52, 2, '0', 'אינסטלציה', 'Closed', 'נזילה בביוב בקומה 4 ליד המעלית', '2025-09-02 08:31:53', 'לידור סויסה', 'http://localhost:8801/uploads/1756801913795.png', 'קומה 4', NULL, 'לידור סויסה'),
+(53, 2, '0', 'חשמל', 'Closed', 'מנורה נשרפה', '2025-09-02 08:37:40', 'לידור סויסה', 'http://localhost:8801/uploads/1756802260931.png', 'קומה 7', NULL, 'לידור סויסה'),
+(54, 2, '0', 'נזק', 'Closed', 'מראה נשברה', '2025-09-02 08:37:57', 'לידור סויסה', 'http://localhost:8801/uploads/1756802277876.png', 'לובי כניסה', NULL, 'לידור סויסה'),
+(55, 5, '0', 'חשמל', 'Open', 'נפל החשמל', '2025-09-02 11:25:01', 'נועה לוי', 'http://localhost:8801/uploads/1756812310645.png', 'בכל הבניין', NULL, NULL),
+(56, 2, '0', 'נזילה', 'Open', 'דשגדשג', '2025-09-03 09:20:34', 'לידור סויסה', 'http://localhost:8801/uploads/1756891234146.png', '123', NULL, NULL),
+(57, 5, '0', 'חשמל', 'Open', 'נפילת חשמל בבנין', '2025-09-03 10:23:30', 'נועה לוי', 'http://localhost:8801/uploads/1756895010182.png', 'לובי', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -326,13 +359,15 @@ INSERT INTO `users` (`user_id`, `id_number`, `name`, `email`, `role`, `building_
 (3, '456709123', 'נועה לוי', 'noa@tenant.com', 'tenant', 5, NULL, '12', NULL, 'tenant123', '0500000003'),
 (4, '206415574', 'לידור סויסה', 'lidi@worker.com', 'worker', NULL, 'cleaner', NULL, NULL, '1234', '0543365055'),
 (7, '207433368', 'גיל חדד', 'gil7hadad@gmail.com', 'manager', NULL, NULL, NULL, NULL, '1234', '0542510949'),
-(9, '204181511', 'בר סטיאוי', 'stiavi@gmail.com', 'worker', NULL, NULL, NULL, NULL, '1234', '0525051505'),
 (10, '206455149', 'מידן חמו', 'meidanchemo10@gmail.com', 'tenant', 6, NULL, NULL, NULL, '123456', '0503874710'),
-(11, '207455194', 'תום חמו', 'meidan@admin.com', 'worker', NULL, NULL, NULL, NULL, '123456', '0506667576'),
 (12, '204455149', 'דולב חזיזה', 'haziza@gmail.com', 'tenant', 7, NULL, NULL, NULL, '123456', '0503745124'),
 (13, '204556661', 'אביב קציר', 'aviv@gmail.com', 'tenant', 9, NULL, NULL, NULL, '1234789', '0546325541'),
 (14, '204555566', 'אביב', 'lidi@worker.com', 'tenant', 9, NULL, NULL, NULL, '123', '0546666666'),
-(15, '204565149', 'ארז', 'erez@gmail.com', 'tenant', 7, NULL, NULL, NULL, '123456', '0547896321');
+(15, '204565149', 'ארז', 'erez@gmail.com', 'tenant', 7, NULL, NULL, NULL, '123456', '0547896321'),
+(17, '205456666', 'יוסי חמו', 'meidan@gmail.com', 'worker', NULL, 'cleaner', NULL, NULL, '1234', '0503847744'),
+(18, '123456789', 'בר סטיאוי', 'bar@gmail.com', 'worker', NULL, 'cleaner', NULL, NULL, '123456', '0544666225'),
+(19, '240546794', 'גדי חדד', 'gadihadad@gmail.com', 'worker', NULL, 'super', NULL, NULL, '123456', '0546755462'),
+(20, '123456755', 'איתי מרדכי', 'itay@walla.com', 'worker', NULL, 'super', NULL, NULL, '1234', '0546878231');
 
 --
 -- Indexes for dumped tables
@@ -349,7 +384,8 @@ ALTER TABLE `buildings`
 --
 ALTER TABLE `building_finance`
   ADD PRIMARY KEY (`building_id`,`month`),
-  ADD UNIQUE KEY `uq_building_month` (`building_id`,`month`);
+  ADD UNIQUE KEY `uq_building_month` (`building_id`,`month`),
+  ADD UNIQUE KEY `uniq_building_month` (`building_id`,`month`);
 
 --
 -- Indexes for table `employee_reports`
@@ -437,19 +473,19 @@ ALTER TABLE `employee_reports`
 -- AUTO_INCREMENT for table `external_suppliers`
 --
 ALTER TABLE `external_suppliers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT for table `reminder_logs`
 --
 ALTER TABLE `reminder_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `routinetaskexecutions`
@@ -461,13 +497,13 @@ ALTER TABLE `routinetaskexecutions`
 -- AUTO_INCREMENT for table `routinetasks`
 --
 ALTER TABLE `routinetasks`
-  MODIFY `task_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `task_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT for table `servicecalls`
 --
 ALTER TABLE `servicecalls`
-  MODIFY `call_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
+  MODIFY `call_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
 
 --
 -- AUTO_INCREMENT for table `servicecallupdates`
@@ -479,7 +515,7 @@ ALTER TABLE `servicecallupdates`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- Constraints for dumped tables
