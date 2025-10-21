@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db");
 
-/* ===================== עוזרי זמן/תדירות ===================== */
+/* ===================== date helpers ===================== */
 function toDate(x) {
   const d = new Date(x);
   return isNaN(d) ? null : d;
@@ -13,13 +13,12 @@ function addDays(d, n) {
   return c;
 }
 function startOfMonth(ym) {
-  // ym: 'YYYY-MM'
   const [y, m] = ym.split("-").map(Number);
   return new Date(y, m - 1, 1, 0, 0, 0, 0);
 }
 function endOfMonth(ym) {
   const [y, m] = ym.split("-").map(Number);
-  return new Date(y, m, 0, 23, 59, 59, 999); // היום האחרון בחודש
+  return new Date(y, m, 0, 23, 59, 59, 999);
 }
 function ymd(d) {
   return d.toISOString().slice(0, 10);
@@ -30,18 +29,14 @@ function normFreq(s) {
   if (t.includes("biweek") || t.includes("דו") || t.includes("פעמיים")) return "biweekly";
   if (t.includes("week") || t.includes("שבוע")) return "weekly";
   if (t.includes("month") || t.includes("חוד")) return "monthly";
-  return "once"; // ברירת מחדל: חד-פעמי
+  return "once";
 }
 
-/** -------------------------------------------
- *  עוזרים לזיהוי המשתמש (פיתוח/פרודקשן)
- *  ------------------------------------------- */
-
-// מי הדייר המחובר: קודם session, אחרת query/header
+/* ===================== auth helpers ===================== */
 function getLoggedUser(req) {
   if (req.session?.userId) {
     return {
-      user_id: req.session.userId,
+      user_id: Number(req.session.userId),
       name: req.session.userName || null,
       building_id: req.session.buildingId ?? null,
     };
@@ -55,56 +50,51 @@ function getLoggedUser(req) {
   };
 }
 
-// hydrate: משלים name/building_id מה-DB. וגם מאפשר override של buildingId
-function hydrateUser(u, req) {
-  return new Promise((resolve, reject) => {
-    if (!u.user_id) {
-      const e = new Error("not authenticated");
-      e.code = 401;
-      return reject(e);
-    }
-
-    const overrideBuilding = Number(req.query.buildingId || req.headers["x-building-id"] || NaN);
-    if (Number.isFinite(overrideBuilding)) {
-      u.building_id = overrideBuilding;
-    }
-
-    if (u.building_id != null && u.name) return resolve(u);
-
-    db.query(
-      "SELECT name, building_id FROM users WHERE user_id = ? LIMIT 1",
-      [u.user_id],
-      (err, rows) => {
-        if (err) return reject(err);
-        const r = rows?.[0] || {};
-        const user = {
-          user_id: u.user_id,
-          name: u.name ?? r.name ?? null,
-          building_id:
-            u.building_id != null ? u.building_id : r.building_id != null ? r.building_id : null,
-        };
-
-        if (user.building_id != null) return resolve(user);
-
-        // fallback: להסיק בניין מתשלומים
-        db.query(
-          "SELECT building_id FROM payments WHERE tenant_id = ? ORDER BY payment_date DESC LIMIT 1",
-          [user.user_id],
-          (e2, rows2) => {
-            if (e2) return reject(e2);
-            const b = rows2?.[0]?.building_id ?? null;
-            if (b != null) user.building_id = b;
-            resolve(user);
-          }
-        );
-      }
-    );
-  });
+function q(db, sql, params = []) {
+  return new Promise((resolve, reject) =>
+    db.query(sql, params, (err, rows) => (err ? reject(err) : resolve(rows)))
+  );
 }
 
-/** -------------------------------------------
- *  בריאות
- *  ------------------------------------------- */
+/** hydrate from DB. Also tries to infer building_id if missing. */
+async function hydrateUser(u, req) {
+  if (!u.user_id) {
+    const e = new Error("not authenticated");
+    e.code = 401;
+    throw e;
+  }
+
+  const overrideBuilding = Number(req.query.buildingId || req.headers["x-building-id"] || NaN);
+  if (Number.isFinite(overrideBuilding)) u.building_id = overrideBuilding;
+
+  if (u.building_id != null && u.name) return u;
+
+  const rows = await q(db, "SELECT name, building_id FROM users WHERE user_id = ? LIMIT 1", [
+    u.user_id,
+  ]);
+  const r = rows?.[0] || {};
+  const user = {
+    user_id: u.user_id,
+    name: u.name ?? r.name ?? null,
+    building_id:
+      u.building_id != null ? u.building_id : r.building_id != null ? r.building_id : null,
+  };
+
+  if (user.building_id != null) return user;
+
+  // fallback: infer from last payment
+  const rows2 = await q(
+    db,
+    "SELECT building_id FROM payments WHERE tenant_id = ? ORDER BY payment_date DESC LIMIT 1",
+    [user.user_id]
+  );
+  const b = rows2?.[0]?.building_id ?? null;
+  if (b != null) user.building_id = b;
+
+  return user;
+}
+
+/* ===================== health ===================== */
 router.get("/health", async (req, res) => {
   try {
     const raw = getLoggedUser(req);
@@ -115,9 +105,7 @@ router.get("/health", async (req, res) => {
   }
 });
 
-/** -------------------------------------------
- *  overview (כמו שהיה)
- *  ------------------------------------------- */
+/* ===================== overview (unchanged) ===================== */
 router.get("/overview", async (req, res) => {
   try {
     const raw = getLoggedUser(req);
@@ -170,20 +158,12 @@ router.get("/overview", async (req, res) => {
 
     const [buildingRows, paymentsRows, lastPayRows, openCallsRows, myCallsRows, finRows] =
       await Promise.all([
-        new Promise((r, j) => db.query(qBuilding, [user.building_id], (e, rows) => (e ? j(e) : r(rows)))),
-        new Promise((r, j) =>
-          db.query(qMyPayments, [user.user_id, user.building_id], (e, rows) => (e ? j(e) : r(rows)))
-        ),
-        new Promise((r, j) =>
-          db.query(qLastPayment, [user.user_id, user.building_id], (e, rows) => (e ? j(e) : r(rows)))
-        ),
-        new Promise((r, j) => db.query(qOpenCallsCount, [user.building_id], (e, rows) => (e ? j(e) : r(rows)))),
-        new Promise((r, j) =>
-          db.query(qMyRecentCalls, [user.building_id, user.name, user.name], (e, rows) =>
-            e ? j(e) : r(rows)
-          )
-        ),
-        new Promise((r, j) => db.query(qFinanceMonth, [user.building_id, ym], (e, rows) => (e ? j(e) : r(rows)))),
+        q(db, qBuilding, [user.building_id]),
+        q(db, qMyPayments, [user.user_id, user.building_id]),
+        q(db, qLastPayment, [user.user_id, user.building_id]),
+        q(db, qOpenCallsCount, [user.building_id]),
+        q(db, qMyRecentCalls, [user.building_id, user.name, user.name]),
+        q(db, qFinanceMonth, [user.building_id, ym]),
       ]);
 
     const building = buildingRows?.[0] || {};
@@ -209,9 +189,7 @@ router.get("/overview", async (req, res) => {
   }
 });
 
-/** -------------------------------------------
- *  היסטוריית תשלומי הבניין (ללא שינוי)
- *  ------------------------------------------- */
+/* ===================== payments history ===================== */
 router.get("/payments-history", async (req, res) => {
   try {
     const user = await hydrateUser(getLoggedUser(req), req);
@@ -219,7 +197,7 @@ router.get("/payments-history", async (req, res) => {
       return res.status(401).json({ error: "not authenticated (no building)" });
     }
 
-    const all = (req.query.all || "1") === "1";
+    const all = (req.query.all || "0") === "1";
     const month = String(req.query.month || "").slice(0, 7);
 
     const whereMonth = all ? "" : "AND DATE_FORMAT(payment_date, '%Y-%m') = ?";
@@ -234,34 +212,26 @@ router.get("/payments-history", async (req, res) => {
       ORDER BY payment_date DESC, payment_id DESC
     `;
 
-    db.query(sql, params, (err, rows) => {
-      if (err) {
-        console.error("payments-history db error:", err);
-        return res.status(500).json({ error: "db error" });
-      }
-      const items = rows || [];
-      const totals = items.reduce(
-        (acc, r) => {
-          const a = Number(r.amount || 0);
-          const st = String(r.status || "");
-          if (st === "שולם") acc.paid += a;
-          else if (st === "חוב" || st === "ממתין") acc.debt += a;
-          return acc;
-        },
-        { paid: 0, debt: 0 }
-      );
-      res.json({ totals, items });
-    });
+    const rows = await q(db, sql, params);
+    const items = rows || [];
+    const totals = items.reduce(
+      (acc, r) => {
+        const a = Number(r.amount || 0);
+        const st = String(r.status || "");
+        if (st === "שולם") acc.paid += a;
+        else if (st === "חוב" || st === "ממתין") acc.debt += a;
+        return acc;
+      },
+      { paid: 0, debt: 0 }
+    );
+    res.json({ totals, items });
   } catch (e) {
-    console.error("payments-history failed:", e);
+    console.error("payments-history db failed:", e);
     res.status(e.code === 401 ? 401 : 500).json({ error: e.message || "server error" });
   }
 });
 
-/** -------------------------------------------
- *  פעילות חודשית בבניין (מעודכן – מפיק occurrences)
- *  GET /api/tenant/reports/activity?month=YYYY-MM
- *  ------------------------------------------- */
+/* ===================== monthly activity (with occurrences) ===================== */
 router.get("/activity", async (req, res) => {
   try {
     const user = await hydrateUser(getLoggedUser(req), req);
@@ -275,7 +245,6 @@ router.get("/activity", async (req, res) => {
     const mStart = startOfMonth(ym);
     const mEnd = endOfMonth(ym);
 
-    // קריאות שירות (ללא שינוי)
     const qCalls = `
       SELECT call_id, service_type, description, status, created_at, location_in_building
       FROM servicecalls
@@ -284,7 +253,6 @@ router.get("/activity", async (req, res) => {
       ORDER BY created_at DESC, call_id DESC
     `;
 
-    // משימות קבועות – מביאים כולן לבניין, ונחשב מופעים בחודש
     const qTasks = `
       SELECT
         task_id,
@@ -298,22 +266,20 @@ router.get("/activity", async (req, res) => {
     `;
 
     const [callRows, taskRows] = await Promise.all([
-      new Promise((r, j) => db.query(qCalls, [user.building_id, ym], (e, rows) => (e ? j(e) : r(rows)))),
-      new Promise((r, j) => db.query(qTasks, [user.building_id], (e, rows) => (e ? j(e) : r(rows)))),
+      q(db, qCalls, [user.building_id, ym]),
+      q(db, qTasks, [user.building_id]),
     ]);
 
     const calls = callRows || [];
     const closed = calls.filter((c) => /^(closed|סגור)$/i.test(String(c.status || ""))).length;
 
-    // מייצרים מופעים לכל משימה לפי התדירות והעוגן (next_date)
     const occurrences = [];
     for (const t of taskRows || []) {
-      const anchor = toDate(t.next_date) || mStart; // אם אין next_date – נתחיל מתחילת החודש
+      const anchor = toDate(t.next_date) || mStart;
       const freq = normFreq(t.frequency);
       const time = t.task_time || "";
 
       if (freq === "monthly") {
-        // פעם בחודש ביום של העוגן
         const d = new Date(mStart);
         const day = anchor.getDate();
         d.setDate(Math.min(day, new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()));
@@ -327,12 +293,10 @@ router.get("/activity", async (req, res) => {
       } else if (freq === "weekly" || freq === "biweekly" || freq === "daily") {
         const step = freq === "daily" ? 1 : freq === "weekly" ? 7 : 14;
 
-        // נסוג מהעוגן אחורה עד שמגיעים/עוברים את תחילת החודש
         let s = new Date(anchor);
         while (s > mStart) s = addDays(s, -step);
         while (s < mStart) s = addDays(s, step);
 
-        // עכשיו נזרום עד סוף החודש
         for (let d = s; d <= mEnd; d = addDays(d, step)) {
           occurrences.push({
             task_id: t.task_id,
@@ -343,7 +307,6 @@ router.get("/activity", async (req, res) => {
           });
         }
       } else {
-        // once / לא מזוהה – אם העוגן בתוך החודש: נציג אותו
         if (anchor >= mStart && anchor <= mEnd) {
           occurrences.push({
             task_id: t.task_id,
@@ -356,8 +319,11 @@ router.get("/activity", async (req, res) => {
       }
     }
 
-    // מיון לפי תאריך ואז שם משימה
-    occurrences.sort((a, b) => (a.when === b.when ? (a.task_name || "").localeCompare(b.task_name || "") : a.when.localeCompare(b.when)));
+    occurrences.sort((a, b) =>
+      a.when === b.when
+        ? (a.task_name || "").localeCompare(b.task_name || "")
+        : a.when.localeCompare(b.when)
+    );
 
     res.json({
       service_calls: { total: calls.length, closed, items: calls },
@@ -368,10 +334,5 @@ router.get("/activity", async (req, res) => {
     res.status(e.code === 401 ? 401 : 500).json({ error: e.message || "server error" });
   }
 });
-
-/** -------------------------------------------
- *  הורדות CSV + דפי HTML + PDF (כמו שהיה)
- *  ------------------------------------------- */
-// ... שאר הקובץ ללא שינוי ...
 
 module.exports = router;

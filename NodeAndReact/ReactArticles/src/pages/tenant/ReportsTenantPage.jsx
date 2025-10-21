@@ -1,14 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import classes from "./ReportsTenantPage.module.css";
 
-/* ---------- בסיס API אחיד כמו בשאר הפרויקט ---------- */
+/* ---------- API base (ENV → fallback) ---------- */
 const API =
   (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.VITE_API_BASE) ||
   (typeof process !== "undefined" && process.env && process.env.REACT_APP_API_BASE) ||
   "http://localhost:8801";
 
-/* ---------- בזמן פיתוח: fallback אם אין זיהוי ---------- */
+/* ---------- Dev fallback ---------- */
 const DEV_USER_ID = 1;
+
+/* ---------- storage keys ---------- */
+const STORAGE_KEY = "tenantCtx";
 
 /* ---------- utils ---------- */
 const pad2 = (n) => String(n).padStart(2, "0");
@@ -27,47 +30,22 @@ function formatIL(input) {
   return d.toLocaleDateString("he-IL", { day: "numeric", month: "numeric", year: "numeric" });
 }
 
-/* ---------- הקשר דייר: userId + buildingId ---------- */
-async function getTenantContext() {
-  // 1) קודם כל – אחסון מקומי (כדי למנוע 401 בקונסול כשאין סשן)
-  for (const k of ["authUser", "user", "currentUser"]) {
-    try {
-      const raw = localStorage.getItem(k) || sessionStorage.getItem(k);
-      if (raw) {
-        const u = JSON.parse(raw);
-        if (u?.id || u?.user_id) {
-          return {
-            userId: Number(u.id ?? u.user_id),
-            buildingId: u.building_id ?? u?.tenant?.building_id ?? null,
-            name: u.name || "",
-          };
-        }
-      }
-    } catch {}
-  }
-
-  // 2) אם יש עוגיית סשן – ננסה להביא מהשרת
+/* ---------- storage helpers ---------- */
+const readSavedCtx = () => {
   try {
-    if (document.cookie && /connect\.sid=/.test(document.cookie)) {
-      const r = await fetch(`${API}/api/auth/me`, { credentials: "include" });
-      if (r.ok) {
-        const u = await r.json();
-        if (u?.id || u?.user_id) {
-          return {
-            userId: Number(u.id ?? u.user_id),
-            buildingId: u.building_id ?? null,
-            name: u.name || "",
-          };
-        }
-      }
-    }
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+const saveCtx = (ctx) => {
+  try {
+    if (ctx?.userId) localStorage.setItem(STORAGE_KEY, JSON.stringify(ctx));
   } catch {}
+};
 
-  // 3) fallback לפיתוח
-  return { userId: DEV_USER_ID, buildingId: null, name: "" };
-}
-
-/* ---------- בנאי URL עם userId/buildingId ---------- */
+/* ---------- URL helpers ---------- */
 function buildUrl(path, { userId, buildingId, params = {} }) {
   const url = new URL(path, API);
   url.searchParams.set("userId", String(userId));
@@ -82,111 +60,172 @@ async function apiJson(path, ctx, params = {}) {
   return r.json();
 }
 
+/* ---------- Discover tenant context (survives refresh) ---------- */
+async function discoverTenantContext() {
+  const saved = readSavedCtx();
+  if (saved?.userId) return saved;
+
+  for (const k of ["authUser", "user", "currentUser"]) {
+    try {
+      const raw = localStorage.getItem(k) || sessionStorage.getItem(k);
+      if (raw) {
+        const u = JSON.parse(raw);
+        if (u?.id || u?.user_id) {
+          const preliminary = {
+            userId: Number(u.id ?? u.user_id),
+            buildingId: u.building_id ?? u?.tenant?.building_id ?? null,
+            name: u.name || "",
+          };
+          try {
+            const qs = preliminary.userId ? `?userId=${preliminary.userId}` : "";
+            const r = await fetch(`${API}/api/tenant/reports/health${qs}`, { credentials: "include" });
+            if (r.ok) {
+              const j = await r.json();
+              const hydrated = {
+                userId: Number(j?.user?.user_id ?? preliminary.userId ?? DEV_USER_ID),
+                buildingId: j?.user?.building_id ?? preliminary.buildingId ?? null,
+                name: j?.user?.name ?? preliminary.name ?? "",
+              };
+              saveCtx(hydrated);
+              return hydrated;
+            }
+          } catch {}
+          saveCtx(preliminary);
+          return preliminary;
+        }
+      }
+    } catch {}
+  }
+
+  try {
+    const r = await fetch(`${API}/api/tenant/reports/health`, { credentials: "include" });
+    if (r.ok) {
+      const j = await r.json();
+      const hydrated = {
+        userId: Number(j?.user?.user_id ?? DEV_USER_ID),
+        buildingId: j?.user?.building_id ?? null,
+        name: j?.user?.name ?? "",
+      };
+      saveCtx(hydrated);
+      return hydrated;
+    }
+  } catch {}
+
+  const dev = { userId: DEV_USER_ID, buildingId: null, name: "" };
+  saveCtx(dev);
+  return dev;
+}
+
 export default function ReportsTenantPage() {
   const [ctx, setCtx] = useState({ userId: null, buildingId: null, name: "" });
   const [ctxReady, setCtxReady] = useState(false);
 
-  // חיתוך חודש
+  // Month & toggles
   const [selectedMonth, setSelectedMonth] = useState(nowYM());
   const [showAllHistory, setShowAllHistory] = useState(false);
 
-  // Payments
+  // Payments state
   const [payTotals, setPayTotals] = useState({ paid: 0, debt: 0 });
   const [payItems, setPayItems] = useState([]);
   const [loadingPay, setLoadingPay] = useState(false);
 
-  // Activity
+  // Activity state
   const [activity, setActivity] = useState({
     service_calls: { total: 0, closed: 0, items: [] },
     routine_tasks: { total: 0, items: [] },
   });
   const [loadingAct, setLoadingAct] = useState(false);
 
-  /* --- הבאת הקשר הדייר פעם אחת --- */
+  /* --- load tenant context on mount --- */
   useEffect(() => {
     (async () => {
-      const u = await getTenantContext();
+      const u = await discoverTenantContext();
       setCtx(u);
       setCtxReady(true);
     })();
   }, []);
 
-  /* ------- היסטוריית תשלומים של הבניין ------- */
+  /* --- persist ctx whenever it changes (survive refresh) --- */
   useEffect(() => {
-    if (!ctxReady || !ctx.userId) return;
-    (async () => {
-      setLoadingPay(true);
-      try {
-        const params = showAllHistory
-          ? { all: "1" }
-          : { all: "0", month: selectedMonth || nowYM() };
-        const j = await apiJson(`/api/tenant/reports/payments-history`, ctx, params);
-        setPayTotals(j.totals || { paid: 0, debt: 0 });
-        setPayItems(Array.isArray(j.items) ? j.items : []);
-      } catch (e) {
-        console.error("payments-history failed:", e);
-        setPayTotals({ paid: 0, debt: 0 });
-        setPayItems([]);
-      } finally {
-        setLoadingPay(false);
-      }
-    })();
-  }); // ✅ תלויות נכונות
+    if (ctx?.userId) saveCtx(ctx);
+  }, [ctx]);
 
-  /* ------- פעילות חודשית בבניין ------- */
+  // Destructure ctx to stable primitives (cleans ESLint deps)
+  const { userId, buildingId } = ctx;
+
+  /* --- fetchers (memoized) --- */
+  const fetchPayments = useCallback(async () => {
+    if (!ctxReady || !userId) return;
+    setLoadingPay(true);
+    try {
+      const params = showAllHistory ? { all: "1" } : { all: "0", month: selectedMonth || nowYM() };
+      const j = await apiJson(`/api/tenant/reports/payments-history`, { userId, buildingId }, params);
+      setPayTotals(j.totals || { paid: 0, debt: 0 });
+      setPayItems(Array.isArray(j.items) ? j.items : []);
+    } catch (e) {
+      console.error("payments-history failed:", e);
+      setPayTotals({ paid: 0, debt: 0 });
+      setPayItems([]);
+    } finally {
+      setLoadingPay(false);
+    }
+  }, [ctxReady, userId, buildingId, selectedMonth, showAllHistory]);
+
+  const fetchActivity = useCallback(async () => {
+    if (!ctxReady || !userId) return;
+    setLoadingAct(true);
+    try {
+      const ym = selectedMonth || nowYM();
+      let j = await apiJson(`/api/tenant/reports/activity`, { userId, buildingId }, { month: ym });
+
+      if (!j?.routine_tasks?.items?.length) {
+        try {
+          const ov = await apiJson(`/api/worker/reports/overview`, { userId, buildingId }, { month: ym });
+          const upcoming = Array.isArray(ov?.routine_tasks?.upcoming) ? ov.routine_tasks.upcoming : [];
+          const routines = upcoming.map((t) => ({
+            task_id: t.task_id,
+            task_name: t.task_name || "משימה קבועה",
+            when: t.when,
+            time: t.time,
+            frequency: t.frequency || "",
+          }));
+          j = {
+            service_calls: j?.service_calls || { total: 0, closed: 0, items: [] },
+            routine_tasks: { total: routines.length, items: routines },
+          };
+        } catch {}
+      }
+
+      setActivity({
+        service_calls: j?.service_calls || { total: 0, closed: 0, items: [] },
+        routine_tasks: j?.routine_tasks || { total: 0, items: [] },
+      });
+    } catch (e) {
+      console.error("activity failed:", e);
+      setActivity({
+        service_calls: { total: 0, closed: 0, items: [] },
+        routine_tasks: { total: 0, items: [] },
+      });
+    } finally {
+      setLoadingAct(false);
+    }
+  }, [ctxReady, userId, buildingId, selectedMonth]);
+
+  /* --- trigger fetches on relevant changes --- */
   useEffect(() => {
-    if (!ctxReady || !ctx.userId) return;
-    (async () => {
-      setLoadingAct(true);
-      try {
-        const ym = selectedMonth || nowYM();
+    fetchPayments();
+  }, [fetchPayments]);
 
-        // ראוט הדייר (מחזיר לפי buildingId)
-        let j = await apiJson(`/api/tenant/reports/activity`, ctx, { month: ym });
+  useEffect(() => {
+    fetchActivity();
+  }, [fetchActivity]);
 
-        // אם אין משימות קבועות – ננסה להשלים מ־overview של עובד (אופציונלי)
-        if (!j?.routine_tasks?.items?.length) {
-          try {
-            const ov = await apiJson(`/api/worker/reports/overview`, ctx, { month: ym });
-            const upcoming = Array.isArray(ov?.routine_tasks?.upcoming)
-              ? ov.routine_tasks.upcoming
-              : [];
-            const routines = upcoming.map((t) => ({
-              task_id: t.task_id,
-              task_name: t.task_name || "משימה קבועה",
-              when: t.when,
-              time: t.time,
-              frequency: t.frequency || "",
-            }));
-            j = {
-              service_calls: j?.service_calls || { total: 0, closed: 0, items: [] },
-              routine_tasks: { total: routines.length, items: routines },
-            };
-          } catch {}
-        }
-
-        setActivity({
-          service_calls: j?.service_calls || { total: 0, closed: 0, items: [] },
-          routine_tasks: j?.routine_tasks || { total: 0, items: [] },
-        });
-      } catch (e) {
-        console.error("activity failed:", e);
-        setActivity({
-          service_calls: { total: 0, closed: 0, items: [] },
-          routine_tasks: { total: 0, items: [] },
-        });
-      } finally {
-        setLoadingAct(false);
-      }
-    })();
-  }); // ✅ תלויות נכונות
-
-  /* ==== הורדת PDF ==== */
+  /* ==== PDF download ==== */
   async function downloadPdf(kind) {
     const params = { month: selectedMonth };
     if (kind === "payments") params.all = showAllHistory ? "1" : "0";
 
-    const url = buildUrl(`/api/tenant/reports/pdf/${kind}`, { ...ctx, params });
+    const url = buildUrl(`/api/tenant/reports/pdf/${kind}`, { userId, buildingId, params });
 
     try {
       const res = await fetch(url, {
