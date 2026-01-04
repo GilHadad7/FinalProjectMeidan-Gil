@@ -1,3 +1,4 @@
+// src/components/TasksTable.jsx
 import React, { useState } from "react";
 import classes from "./TasksTable.module.css";
 import DatePicker from "react-datepicker";
@@ -84,13 +85,54 @@ export default function TasksTable({ tasks, search, onRefresh }) {
     return tokens.every((t) => haystack.includes(t));
   });
 
+  function calcNextDate(startDateStr, frequency) {
+    try {
+      const today = new Date();
+      let date = new Date(startDateStr);
+      if (isNaN(date.getTime())) return null;
+
+      while (date < today) {
+        if (frequency === "יומי") date.setDate(date.getDate() + 1);
+        else if (frequency === "שבועי") date.setDate(date.getDate() + 7);
+        else if (frequency === "חודשי") date.setMonth(date.getMonth() + 1);
+        else break;
+      }
+
+      // אם חודשי ונפל על שבת -> ראשון
+      date = bumpIfSaturdayForMonthly(date, frequency) || date;
+      return date;
+    } catch {
+      return null;
+    }
+  }
+
+  function getNextOccurrence(startDateStr, frequency) {
+    const date = calcNextDate(startDateStr, frequency);
+    return date ? date.toLocaleDateString("he-IL") : "תאריך לא תקין";
+  }
+
+  function getHebrewDay(startDateStr, frequency) {
+    const date = calcNextDate(startDateStr, frequency);
+    return date
+      ? date.toLocaleDateString("he-IL", { weekday: "long" })
+      : "לא ידוע";
+  }
+
+  // ✅ תיקון: בכניסה לעריכה – נטען ל-DatePicker את "המופע הבא" שמוצג בשורה
   const handleEditClick = (idx) => {
     const task = filtered[idx];
     const [hour = "", minute = ""] = (task.task_time || "").split(":");
+
+    // מה שמוצג בשורה הוא תוצאה של calcNextDate, לכן זה מה שנכניס לעריכה
+    const computedNext = calcNextDate(task.next_date, task.frequency);
+
+    // גיבוי אם במקרה לא הצלחנו לחשב
     const parsed = parseDateString(task.next_date);
     const fallback = new Date(task.next_date);
     const localNextDate =
-      parsed || (!isNaN(fallback.getTime()) ? fallback : new Date());
+      computedNext ||
+      parsed ||
+      (!isNaN(fallback.getTime()) ? fallback : new Date());
 
     setEditIdx(idx);
     setEditForm({
@@ -117,7 +159,8 @@ export default function TasksTable({ tasks, search, onRefresh }) {
       const task_time = `${h}:${m}`;
 
       // אם חודשי ונבחרה שבת — נזיז לראשון לפני שליחה
-      const adjustedDate = bumpIfSaturdayForMonthly(editForm.next_date, editForm.frequency) || editForm.next_date;
+      const adjustedDate =
+        bumpIfSaturdayForMonthly(editForm.next_date, editForm.frequency) || editForm.next_date;
       const formattedDate = formatDateLocal(adjustedDate);
 
       const res = await fetch(`http://localhost:3000/api/tasks/${taskId}`, {
@@ -153,39 +196,6 @@ export default function TasksTable({ tasks, search, onRefresh }) {
     if (res.ok) onRefresh();
     else alert("שגיאה במחיקה");
   };
-
-  function calcNextDate(startDateStr, frequency) {
-    try {
-      const today = new Date();
-      let date = new Date(startDateStr);
-      if (isNaN(date.getTime())) return null;
-
-      while (date < today) {
-        if (frequency === "יומי") date.setDate(date.getDate() + 1);
-        else if (frequency === "שבועי") date.setDate(date.getDate() + 7);
-        else if (frequency === "חודשי") date.setMonth(date.getMonth() + 1);
-        else break;
-      }
-
-      // אם חודשי ונפל על שבת -> ראשון
-      date = bumpIfSaturdayForMonthly(date, frequency) || date;
-      return date;
-    } catch {
-      return null;
-    }
-  }
-
-  function getNextOccurrence(startDateStr, frequency) {
-    const date = calcNextDate(startDateStr, frequency);
-    return date ? date.toLocaleDateString("he-IL") : "תאריך לא תקין";
-  }
-
-  function getHebrewDay(startDateStr, frequency) {
-    const date = calcNextDate(startDateStr, frequency);
-    return date
-      ? date.toLocaleDateString("he-IL", { weekday: "long" })
-      : "לא ידוע";
-  }
 
   return (
     <BaseTable
@@ -234,18 +244,14 @@ export default function TasksTable({ tasks, search, onRefresh }) {
                 <td>
                   <DatePicker
                     selected={editForm.next_date}
-                    onChange={(date) =>
-                      setEditForm({ ...editForm, next_date: date })
-                    }
+                    onChange={(date) => setEditForm({ ...editForm, next_date: date })}
                     dateFormat="dd/MM/yyyy"
                     locale="he"
                     className={classes.input}
                     calendarStartDay={0}
                     placeholderText="בחר תאריך"
                     // לא לאפשר לבחור שבת כשחודשי
-                    filterDate={(d) =>
-                      editForm.frequency !== "חודשי" || d.getDay() !== 6
-                    }
+                    filterDate={(d) => editForm.frequency !== "חודשי" || d.getDay() !== 6}
                   />
                 </td>
                 <td>{getHebrewDay(editForm.next_date, editForm.frequency)}</td>
@@ -265,10 +271,7 @@ export default function TasksTable({ tasks, search, onRefresh }) {
                 </td>
 
                 <td className={classes.actions}>
-                  <button
-                    className={classes.btn}
-                    onClick={() => handleEditSave(task.task_id)}
-                  >
+                  <button className={classes.btn} onClick={() => handleEditSave(task.task_id)}>
                     💾
                   </button>
                   <button className={classes.btn} onClick={handleEditCancel}>
@@ -286,16 +289,10 @@ export default function TasksTable({ tasks, search, onRefresh }) {
                 <td>{getHebrewDay(task.next_date, task.frequency)}</td>
                 <td>{task.task_time}</td>
                 <td className={classes.actions}>
-                  <button
-                    className={classes.btn}
-                    onClick={() => handleEditClick(i)}
-                  >
+                  <button className={classes.btn} onClick={() => handleEditClick(i)}>
                     ✏️
                   </button>
-                  <button
-                    className={classes.btn}
-                    onClick={() => handleDelete(task.task_id)}
-                  >
+                  <button className={classes.btn} onClick={() => handleDelete(task.task_id)}>
                     🗑️
                   </button>
                 </td>

@@ -240,7 +240,7 @@ export default function WorkerReportsTable({
                 <td>{r.name}</td>
                 <td>{toHeb(r.roleCode)}</td>
                 <td>שובצו: <b>{r.tasksAssigned}</b> | הושלמו: <b>{r.tasksDone}</b></td>
-                <td>טיפל: <b>{r.callsHandled}</b> | סגר: <b>{r.callsClosed}</b></td>
+                <td> נפתח: <b>{r.callsHandled}</b> | נסגר: <b>{r.callsClosed}</b></td>
                 <td>{r.lastActivity ? toDateKey(new Date(r.lastActivity)) : "—"}</td>
                 <td>
                   <button
