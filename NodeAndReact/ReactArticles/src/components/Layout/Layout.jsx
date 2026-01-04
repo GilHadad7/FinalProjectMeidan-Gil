@@ -15,19 +15,19 @@ export default function Layout() {
   const navItems = useMemo(() => {
     if (isTenant) {
       return [
-        { to: "/tenant/service-calls", label: "Service calls" },
-        { to: "/tenant/schedule",      label: "Schedule" },
-        { to: "/tenant/payments",      label: "Payments" },
-        { to: "/tenant/reports",       label: "Reports" },
+        { to: "/tenant/service-calls", label: "קריאות שירות" },
+        { to: "/tenant/schedule",      label: "לוח זמנים" },
+        { to: "/tenant/payments",      label: "תשלומים" },
+        { to: "/tenant/reports",       label: "דוחות" },
       ];
     }
 
     if (isWorker) {
       // ⬅️ עובד: רק שלושת הדפים שביקשת
       return [
-        { to: "/worker/service-calls", label: "Service calls" },
-        { to: "/worker/schedule",      label: "Schedule" },
-        { to: "/worker/reports",       label: "Reports" },
+        { to: "/worker/service-calls", label: "קריאות שירות" },
+        { to: "/worker/schedule",      label: "לוח זמנים" },
+        { to: "/worker/reports",       label: "דוחות" },
       ];
     }
 
