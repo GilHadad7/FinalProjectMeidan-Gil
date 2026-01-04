@@ -70,15 +70,6 @@ export default function SettingsCog({ user, onLogout, onSwitchAccount, onOpenFul
               התנתקות
             </button>
 
-            <button
-              className={s.btnSecondary}
-              onClick={() => {
-                setOpen(false);
-                onOpenFull?.();
-              }}
-            >
-              הגדרות מתקדמות
-            </button>
           </div>
         </div>
       )}

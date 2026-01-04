@@ -1,3 +1,4 @@
+// src/pages/ReportsTenantPage.jsx
 import React, { useEffect, useState, useCallback } from "react";
 import classes from "./ReportsTenantPage.module.css";
 
@@ -220,46 +221,6 @@ export default function ReportsTenantPage() {
     fetchActivity();
   }, [fetchActivity]);
 
-  /* ==== PDF download ==== */
-  async function downloadPdf(kind) {
-    const params = { month: selectedMonth };
-    if (kind === "payments") params.all = showAllHistory ? "1" : "0";
-
-    const url = buildUrl(`/api/tenant/reports/pdf/${kind}`, { userId, buildingId, params });
-
-    try {
-      const res = await fetch(url, {
-        method: "GET",
-        credentials: "include",
-        headers: { Accept: "application/pdf" },
-      });
-
-      const ct = (res.headers.get("content-type") || "").toLowerCase();
-      if (!res.ok || !ct.includes("application/pdf")) {
-        const text = await res.text();
-        console.error("PDF fetch failed:", res.status, ct, text.slice(0, 300));
-        alert("לא הצלחתי להפיק PDF. ודא שאתה מחובר ונסה שוב.");
-        return;
-      }
-
-      const blob = await res.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = blobUrl;
-      a.download =
-        kind === "payments"
-          ? `payments_${showAllHistory ? "all" : selectedMonth}.pdf`
-          : `service_calls_${selectedMonth}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 4000);
-    } catch (e) {
-      console.error(e);
-      alert("תקלה בהורדת הקובץ.");
-    }
-  }
-
   return (
     <div className={classes.container}>
       <h2 className={classes.title}>דוחות (דייר)</h2>
@@ -287,16 +248,6 @@ export default function ReportsTenantPage() {
             value={selectedMonth}
             onChange={(e) => setSelectedMonth(e.target.value)}
           />
-        </div>
-
-        <div className={classes.card}>
-          <h3 className={classes.cardTitle}>הורדות מהירות</h3>
-          <button className={classes.btn} onClick={() => downloadPdf("payments")}>
-            הורד דף תשלומים
-          </button>
-          <button className={classes.btn} onClick={() => downloadPdf("service-calls")}>
-            הורד דף קריאות שירות
-          </button>
         </div>
       </div>
 
