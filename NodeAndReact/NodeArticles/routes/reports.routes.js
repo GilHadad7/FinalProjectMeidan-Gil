@@ -35,6 +35,7 @@ router.get("/workers-by-role", (req, res) => {
     // ---- דוח מנקה ----
     if (role === "cleaner") {
       const bFilter = buildingId ? "AND sc.building_id = ?" : "";
+
       const sql = `
         SELECT 
           u.user_id,
@@ -43,14 +44,26 @@ router.get("/workers-by-role", (req, res) => {
           b.name                         AS building_name,
           rt.task_id,
           rt.task_name,
-          rt.description                 AS task_description,  /* ✅ תיאור משימה למנקה */
+          rt.description                 AS task_description,
           rt.frequency,
           rt.next_date,
           rt.task_time,
 
+          /* ✅ עדכון אחרון אמיתי למשימה (לפי שינוי בפועל) */
+          MAX(rt.updated_at)             AS last_task_update_at,
+
           /* ביצועי משימות בחודש */
           COUNT(rte.execution_id)        AS done_in_month,
           MAX(rte.executed_at)           AS last_done_at,
+
+          /* ✅ עדכון אחרון אמיתי לקריאות שנפתחו ע"י המנקה בחודש */
+          (
+            SELECT MAX(sc.updated_at)
+            FROM servicecalls sc
+            WHERE sc.created_by = u.name
+              AND DATE(sc.created_at) BETWEEN ? AND ?
+              ${bFilter}
+          ) AS last_call_update_at,
 
           /* קריאות שירות שנפתחו ע"י המנקה בחודש */
           (
@@ -87,11 +100,23 @@ router.get("/workers-by-role", (req, res) => {
       `;
 
       const params = [];
-      params.push(start, end); // calls_opened
+
+      // last_call_update_at
+      params.push(start, end);
       if (buildingId) params.push(buildingId);
-      params.push(start, end); // calls_opened_closed
+
+      // calls_opened
+      params.push(start, end);
       if (buildingId) params.push(buildingId);
-      params.push(start, end); // executions
+
+      // calls_opened_closed
+      params.push(start, end);
+      if (buildingId) params.push(buildingId);
+
+      // executions
+      params.push(start, end);
+
+      // rt.building_id filter
       if (buildingId) params.push(buildingId);
 
       return db.query(sql, params, (err, rows) => {
@@ -143,12 +168,22 @@ router.get("/workers-by-role", (req, res) => {
               AND DATE(rte.executed_at) BETWEEN ? AND ?
           ) AS last_task_done_at,
 
+          /* ✅ עדכון אחרון אמיתי למשימות (לפי שינוי בפועל) */
+          (
+            SELECT MAX(rt.updated_at)
+            FROM routinetasks rt
+            WHERE rt.building_id = b.building_id
+              AND rt.responsible_user_id = u.user_id
+              AND LOWER(TRIM(COALESCE(rt.type,''))) NOT LIKE '%ניקיון%'
+          ) AS last_task_update_at,
+
           /* קריאות שירות */
           sc.call_id,
           sc.service_type,
           sc.status,
           sc.description,
           sc.created_at,
+          sc.updated_at,
           sc.closed_by
 
         FROM users u
@@ -192,23 +227,23 @@ router.get("/worker/calls", (req, res) => {
   if (!name) return res.status(400).json({ error: "name is required" });
 
   const qOpen = `
-    SELECT sc.call_id, sc.created_at, sc.status, sc.service_type,
+    SELECT sc.call_id, sc.created_at, sc.updated_at, sc.status, sc.service_type,
            b.full_address AS building_address
     FROM servicecalls sc
     LEFT JOIN buildings b ON b.building_id = sc.building_id
     WHERE DATE_FORMAT(sc.created_at, '%Y-%m') = ?
       AND sc.created_by = ?
-    ORDER BY sc.created_at DESC, sc.call_id DESC
+    ORDER BY sc.updated_at DESC, sc.created_at DESC, sc.call_id DESC
   `;
 
   const qHandled = `
-    SELECT sc.call_id, sc.created_at, sc.status, sc.service_type,
+    SELECT sc.call_id, sc.created_at, sc.updated_at, sc.status, sc.service_type,
            b.full_address AS building_address
     FROM servicecalls sc
     LEFT JOIN buildings b ON b.building_id = sc.building_id
     WHERE DATE_FORMAT(sc.created_at, '%Y-%m') = ?
       AND (sc.closed_by = ? OR sc.updated_by_name = ?)
-    ORDER BY sc.created_at DESC, sc.call_id DESC
+    ORDER BY sc.updated_at DESC, sc.created_at DESC, sc.call_id DESC
   `;
 
   const sql = by === "handled" ? qHandled : qOpen;
@@ -224,15 +259,25 @@ router.get("/worker/calls", (req, res) => {
    ✅ פירוט משימות קבועות לפי עובד וחודש (לפרונט)
    =========================================
    GET /api/reports/worker/tasks?month=YYYY-MM&name=WORKER_NAME
-   - מחזיר:
-     * למנקה: כל המשימות ששויכו אליו
-     * לאב בית: רק משימות "לא ניקיון"
+
+   ✅ חשוב: מחזיר רק משימות "רלוונטיות לחודש":
+   - next_date בתוך החודש
+   - או שיש להן ביצוע בחודש (executed_at בתוך החודש)
 */
 router.get("/worker/tasks", (req, res) => {
   try {
     const month = (req.query.month || new Date().toISOString().slice(0, 7)).slice(0, 7);
     const name = String(req.query.name || "").trim();
     if (!name) return res.status(400).json({ error: "name is required" });
+
+    if (!/^\d{4}-\d{2}$/.test(month)) {
+      return res.status(400).json({ error: "month must be YYYY-MM" });
+    }
+
+    const [y, m] = month.split("-").map(Number);
+    const start = `${y}-${String(m).padStart(2, "0")}-01`;
+    const lastDay = new Date(y, m, 0).getDate();
+    const end = `${y}-${String(m).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
 
     const sql = `
       SELECT
@@ -242,6 +287,7 @@ router.get("/worker/tasks", (req, res) => {
         rt.frequency,
         rt.next_date,
         rt.task_time,
+        rt.updated_at,
         b.name AS building_name,
         u.name AS worker_name,
 
@@ -250,7 +296,7 @@ router.get("/worker/tasks", (req, res) => {
           SELECT COUNT(*)
           FROM routinetaskexecutions rte
           WHERE rte.task_id = rt.task_id
-            AND DATE_FORMAT(rte.executed_at, '%Y-%m') = ?
+            AND DATE(rte.executed_at) BETWEEN ? AND ?
         ) AS done_in_month,
 
         /* ביצוע אחרון */
@@ -263,18 +309,39 @@ router.get("/worker/tasks", (req, res) => {
       FROM routinetasks rt
       JOIN users u ON u.user_id = rt.responsible_user_id
       LEFT JOIN buildings b ON b.building_id = rt.building_id
+
       WHERE u.name = ?
         AND (
-          /* מנקה */
           u.position IN ('cleaner','מנקה')
           OR
-          /* אב בית: לא ניקיון */
-          (u.position IN ('super','אב בית','janitor') AND LOWER(TRIM(COALESCE(rt.type,''))) NOT LIKE '%ניקיון%')
+          (u.position IN ('super','אב בית','janitor')
+            AND LOWER(TRIM(COALESCE(rt.type,''))) NOT LIKE '%ניקיון%'
+          )
         )
-      ORDER BY rt.next_date ASC, rt.task_time ASC, rt.task_id ASC
+        AND (
+          /* ✅ רלוונטי לחודש אם next_date בתוך החודש */
+          (rt.next_date IS NOT NULL AND DATE(rt.next_date) BETWEEN ? AND ?)
+          OR
+          /* ✅ או אם בוצע בפועל בחודש */
+          EXISTS (
+            SELECT 1
+            FROM routinetaskexecutions rte2
+            WHERE rte2.task_id = rt.task_id
+              AND DATE(rte2.executed_at) BETWEEN ? AND ?
+          )
+        )
+
+      ORDER BY rt.updated_at DESC, rt.next_date ASC, rt.task_time ASC, rt.task_id ASC
     `;
 
-    db.query(sql, [month, name], (err, rows) => {
+    const params = [
+      start, end,           // done_in_month
+      name,                 // u.name
+      start, end,           // next_date range
+      start, end,           // EXISTS executions in month
+    ];
+
+    db.query(sql, params, (err, rows) => {
       if (err) {
         console.error("❌ worker/tasks error:", err);
         return res.status(500).json({ error: "DB error" });
@@ -376,7 +443,7 @@ router.post("/buildings/recalc", (req, res) => {
 });
 
 /* =========================================
-   🔎 פירוט לפי בניין וחודש  (נדרש למודאל “פירוט”)
+   🔎 פירוט לפי בניין וחודש
    =========================================
    GET /api/reports/building/:buildingId/details?month=YYYY-MM
 */

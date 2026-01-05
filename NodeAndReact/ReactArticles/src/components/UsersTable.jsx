@@ -201,7 +201,7 @@ export default function UsersTable({
                 <div className={classes.readonlyCell}>
                   {user.worker_buildings_names ||
                    user.worker_buildings_full_addresses ||
-                   "—"}
+                   "-"}
                 </div>
               )}
               {buildingRequired && !buildingOk && (
@@ -267,8 +267,8 @@ export default function UsersTable({
             {/* דייר → בניין; עובד → רשימת בניינים שהוקצו לו */}
             <td>
               {user.role === "worker"
-                ? (user.worker_buildings_names || user.worker_buildings_full_addresses || "—")
-                : (user.building_name || user.building_full_address || "—")}
+                ? (user.worker_buildings_names || user.worker_buildings_full_addresses || "-")
+                : (user.building_name || user.building_full_address || "-")}
             </td>
 
             <td dir="ltr" style={{ textAlign: "center" }}>

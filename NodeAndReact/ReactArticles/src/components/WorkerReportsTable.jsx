@@ -1,5 +1,5 @@
 // 📁 src/components/WorkerReportsTable.jsx
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import classes from "./WorkerReportsTable.module.css";
 
 const ROLE_CODE_TO_HE = { super: "אב בית", cleaner: "מנקה", manager: "מנהל", tenant: "דייר" };
@@ -96,6 +96,17 @@ const isTaskOverdue = (t) => {
   return d.getTime() < today0.getTime();
 };
 
+// הערה: מחלץ timestamp של "עודכן לאחרונה" מתוך משימה (עדיפות: updated_at ואז last_done_at)
+const taskUpdatedTs = (t) => {
+  try {
+    const u = t?.updated_at ? new Date(t.updated_at).getTime() : 0;
+    const a = t?.last_done_at ? new Date(t.last_done_at).getTime() : 0;
+    return Math.max(u || 0, a || 0);
+  } catch {
+    return 0;
+  }
+};
+
 // הערה: קומפוננטת טבלת דוחות עובדים
 export default function WorkerReportsTable({ filterMonth = "", filterRole = "", onCountChange }) {
   const [users, setUsers] = useState([]);
@@ -110,6 +121,9 @@ export default function WorkerReportsTable({ filterMonth = "", filterRole = "", 
   // cache עבור משימות לעובדים (גם מנקה וגם אב בית)
   const [tasksByWorker, setTasksByWorker] = useState({});
   const [loadingTasksFor, setLoadingTasksFor] = useState("");
+
+  // סט שמוודא שלא נטען משימות פעמיים
+  const tasksLoadedRef = useRef(new Set());
 
   const roleCode = useMemo(() => {
     const c = toCode(filterRole);
@@ -155,10 +169,20 @@ export default function WorkerReportsTable({ filterMonth = "", filterRole = "", 
     }
   }, [roleCode, monthStr]);
 
-  // הערה: טעינת משימות (כולל description + frequency) עבור עובד
+  // הערה: איפוס caches כשמחליפים חודש/תפקיד כדי למנוע נתונים "דיפולטיים"
+  useEffect(() => {
+    setOpenRow(null);
+    setCallsByWorker({});
+    setTasksByWorker({});
+    tasksLoadedRef.current = new Set();
+  }, [monthStr, roleCode]);
+
+  // הערה: טעינת משימות (כולל updated_at) עבור עובד
   const ensureTasksLoaded = async (workerName) => {
     if (!workerName) return;
-    if (tasksByWorker[workerName]) return;
+
+    if (tasksLoadedRef.current.has(workerName)) return;
+    tasksLoadedRef.current.add(workerName);
 
     try {
       setLoadingTasksFor(workerName);
@@ -176,31 +200,33 @@ export default function WorkerReportsTable({ filterMonth = "", filterRole = "", 
     }
   };
 
-  // ✅ חדש: ברגע שיש רשימת עובדים בדוח – נטען משימות לכל העובדים (כדי ש"הושלמו" יתמלא בטבלה הראשית)
+  // הערה: אחרי שהדוח נטען – נטען משימות לכל העובדים אוטומטית
   useEffect(() => {
-    const names = users
-      .filter((u) => {
-        const c = toCode(u.position);
-        return roleCode ? c === roleCode : c === "cleaner" || c === "super";
-      })
-      .map((u) => u.name)
-      .filter(Boolean);
+    const namesSet = new Set();
 
+    if (!roleCode || roleCode === "cleaner") {
+      (rowsCleaner || []).forEach((r) => r?.worker_name && namesSet.add(r.worker_name));
+    }
+    if (!roleCode || roleCode === "super") {
+      (rowsSuper || []).forEach((r) => r?.worker_name && namesSet.add(r.worker_name));
+    }
+
+    const names = Array.from(namesSet).filter(Boolean);
     if (names.length === 0) return;
 
-    // טוענים רק למי שלא נטען עדיין
-    const toLoad = names.filter((n) => !tasksByWorker[n]);
-    if (toLoad.length === 0) return;
+    let cancelled = false;
 
     (async () => {
-      for (const n of toLoad) {
-        // טעינה סדרתית כדי לא להפציץ את השרת
-        // אם תרצה מקבילי – אפשר Promise.all עם limit
+      for (const n of names) {
+        if (cancelled) return;
         await ensureTasksLoaded(n);
       }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [users, roleCode, monthStr]);
+
+    return () => {
+      cancelled = true;
+    };
+  });
 
   const rows = useMemo(() => {
     const include = (pos) => {
@@ -229,7 +255,7 @@ export default function WorkerReportsTable({ filterMonth = "", filterRole = "", 
     const seenCleanerCountFor = new Set();
     const seenSuperTasksFor = new Set();
 
-    // מנקות – סיכומים בסיסיים (עד שנחליף בהשלמה לפי זמן)
+    // מנקות – סיכומים בסיסיים
     for (const r of rowsCleaner) {
       const key = r.worker_name;
       if (!key) continue;
@@ -249,10 +275,7 @@ export default function WorkerReportsTable({ filterMonth = "", filterRole = "", 
       const acc = init.get(key);
       acc.roleCode = "cleaner";
 
-      // שובצו = מספר משימות קבועות
-      acc.tasksAssigned += 1;
-
-      // fallback עד שהמשימות נטענו (נחליף למטה לפי tasksByWorker)
+      acc.tasksAssigned += 1; // fallback עד שנחליף לפי tasksByWorker
       acc.tasksDone += Number(r.done_in_month || 0);
 
       const lastDone = r.last_done_at ? new Date(r.last_done_at).getTime() : 0;
@@ -267,7 +290,7 @@ export default function WorkerReportsTable({ filterMonth = "", filterRole = "", 
       }
     }
 
-    // אבות בית – סיכומים + פירוט קריאות
+    // אבות בית – סיכומים + קריאות
     for (const r of rowsSuper) {
       const key = r.worker_name;
       if (!key) continue;
@@ -323,23 +346,18 @@ export default function WorkerReportsTable({ filterMonth = "", filterRole = "", 
       }
     }
 
-    // ✅ חדש: אם נטענו משימות לעובד – "הושלמו" לפי next_date שעבר
+    // ✅ תיקון: אם המשימות נטענו (גם אם ריק) – מאפסים/מסנכרנים לפי החודש
     for (const [name, acc] of init.entries()) {
       const tasks = tasksByWorker[name];
-      if (!Array.isArray(tasks) || tasks.length === 0) continue;
 
-      // שובצו = מספר משימות בפועל
+      // אם לא נטען עדיין – לא נוגעים (יישאר fallback)
+      if (!Array.isArray(tasks)) continue;
+
+      // אם נטען וריק – זה בדיוק מה שרצינו: שובצו=0
       acc.tasksAssigned = tasks.length;
-
-      // הושלמו = משימות שעבר התאריך שלהן
       acc.tasksDone = tasks.filter(isTaskOverdue).length;
 
-      // עודכן לאחרונה (אופציונלי): תאריך פעילות אחרון = מקסימום last_done_at / next_date
-      const lastTs = tasks.reduce((mx, t) => {
-        const a = t?.last_done_at ? new Date(t.last_done_at).getTime() : 0;
-        const b = parseYMDLocal(t?.next_date)?.getTime?.() || 0;
-        return Math.max(mx, a, b);
-      }, 0);
+      const lastTs = tasks.reduce((mx, t) => Math.max(mx, taskUpdatedTs(t)), 0);
       if (lastTs > acc.lastActivity) acc.lastActivity = lastTs;
     }
 
@@ -462,8 +480,9 @@ export default function WorkerReportsTable({ filterMonth = "", filterRole = "", 
                               return (
                                 <div key={t.task_id}>
                                   {date} · {title}
-                                  {building ? ` · ${building}` : ""}
-                                  {freq ? ` · ${freq}` : ""}
+                                  {building ? ` · ${building}` : ""}{" "}
+                                  {freq ? ` · ${freq}` : ""}{" "}
+                                  {t?.updated_at ? ` · עודכן: ${toDateKey(new Date(t.updated_at))}` : ""}
                                 </div>
                               );
                             })}
