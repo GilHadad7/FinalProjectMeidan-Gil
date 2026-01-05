@@ -1,145 +1,186 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import AddPaymentTenant from '../../components/tenant/AddPaymentTenant';
-import PaymentsTableTenant from '../../components/tenant/PaymentsTableTenant';
-import FormWithTableLayout from '../../components/ui/FormWithTableLayout';
-import SearchInput from '../../components/ui/SearchInput';
-import classes from './PaymentsTenantPage.module.css';
+// 📁 C:\PATH\TO\YOUR\PROJECT\client\src\pages\tenant\PaymentsTenantPage.jsx
+// דף תשלומים לדייר: מציג רק את התשלומים שלו + מאפשר עריכה/מחיקה לתשלומים במצב "ממתין"
+
+import React, { useState, useEffect, useCallback } from "react";
+import AddPaymentTenant from "../../components/tenant/AddPaymentTenant";
+import PaymentsTableTenant from "../../components/tenant/PaymentsTableTenant";
+import FormWithTableLayout from "../../components/ui/FormWithTableLayout";
+import classes from "./PaymentsTenantPage.module.css";
 
 export default function PaymentsTenantPage() {
   const [payments, setPayments] = useState([]);
   const [filteredPayments, setFilteredPayments] = useState([]);
 
   const [filters, setFilters] = useState({
-    tenant: '',
-    building: '',
-    status: '',
-    fromDate: '',
-    toDate: '',
+    status: "",
+    fromDate: "",
+    toDate: "",
   });
 
-  // 📌 שליפת הדייר והבניין שלו מה-sessionStorage
+  // פונקציה ששולפת את המשתמש המחובר מה-sessionStorage בצורה בטוחה
   const user = (() => {
-    try { return JSON.parse(sessionStorage.getItem('user')) || null; } catch { return null; }
+    try {
+      return JSON.parse(sessionStorage.getItem("user")) || null;
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
   })();
+
   const tenantBuildingId = user?.building_id ?? user?.buildingId ?? null;
+  const tenantId = user?.user_id ?? user?.userId ?? user?.id ?? null;
 
   useEffect(() => {
-    fetchPayments();
+    try {
+      fetchPayments();
+    } catch (e) {
+      console.error(e);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tenantBuildingId]);
+  }, [tenantBuildingId, tenantId]);
 
+  // פונקציה שמביאה מהשרת רק תשלומים של הדייר לפי tenant_id
   const fetchPayments = () => {
-    const base = 'http://localhost:8801/api/tenant/payments';
-    const url =
-      tenantBuildingId != null
-        ? `${base}?building_id=${encodeURIComponent(tenantBuildingId)}`
-        : base;
+    try {
+      const base = "http://localhost:8801/api/tenant/payments";
 
-    // ⬅️ בלי credentials כדי למנוע CORS עם '*'
-    fetch(url)
-      .then((res) => res.json())
-      .then((data) => setPayments(Array.isArray(data) ? data : []))
-      .catch((err) => {
-        console.error('Error fetching tenant payments:', err);
-        setPayments([]);
-      });
+      const params = new URLSearchParams();
+      if (tenantId != null) params.append("tenant_id", String(tenantId));
+      if (tenantBuildingId != null) params.append("building_id", String(tenantBuildingId));
+
+      const url = params.toString() ? `${base}?${params.toString()}` : base;
+
+      fetch(url)
+        .then((res) => res.json())
+        .then((data) => setPayments(Array.isArray(data) ? data : []))
+        .catch((err) => {
+          console.error("Error fetching tenant payments:", err);
+          setPayments([]);
+        });
+    } catch (e) {
+      console.error(e);
+      setPayments([]);
+    }
   };
 
-  const cleanString = (str) =>
-    String(str ?? '')
-      .normalize('NFKD')
-      .replace(/[\u200E\u200F\u202A-\u202E]/g, '')
-      .replace(/\s+/g, '')
-      .trim()
-      .toLowerCase();
-
-  const getVal = (v) =>
-    v && typeof v === 'object' && 'target' in v ? v.target.value : (v ?? '');
+  // פונקציה שמנקה מחרוזות לצורך חיפוש
+  const cleanString = (str) => {
+    try {
+      return String(str ?? "")
+        .normalize("NFKD")
+        .replace(/[\u200E\u200F\u202A-\u202E]/g, "")
+        .replace(/\s+/g, "")
+        .trim()
+        .toLowerCase();
+    } catch (e) {
+      console.error(e);
+      return "";
+    }
+  };
 
   const applyFilters = useCallback(() => {
-    let result = payments;
+    try {
+      let result = payments;
 
-    if (filters.tenant) {
-      const q = cleanString(filters.tenant);
-      result = result.filter((p) => cleanString(p?.tenant_name).includes(q));
+      if (filters.status) {
+        const q = cleanString(filters.status);
+        result = result.filter((p) => cleanString(p?.status) === q);
+      }
+
+      if (filters.fromDate) {
+        const from = new Date(filters.fromDate).setHours(0, 0, 0, 0);
+        result = result.filter((p) => new Date(p.payment_date).setHours(0, 0, 0, 0) >= from);
+      }
+
+      if (filters.toDate) {
+        const to = new Date(filters.toDate).setHours(0, 0, 0, 0);
+        result = result.filter((p) => new Date(p.payment_date).setHours(0, 0, 0, 0) <= to);
+      }
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      result = [...result].sort((a, b) => {
+        const da = Math.abs(new Date(a.payment_date).setHours(0, 0, 0, 0) - today);
+        const db = Math.abs(new Date(b.payment_date).setHours(0, 0, 0, 0) - today);
+        return da - db;
+      });
+
+      setFilteredPayments(result);
+    } catch (e) {
+      console.error(e);
+      setFilteredPayments([]);
     }
-
-    if (filters.building) {
-      const q = cleanString(filters.building);
-      result = result.filter((p) => cleanString(p?.building_name).includes(q));
-    }
-
-    if (filters.status) {
-      const q = cleanString(filters.status);
-      result = result.filter((p) => cleanString(p?.status) === q);
-    }
-
-    if (filters.fromDate) {
-      const from = new Date(filters.fromDate).setHours(0, 0, 0, 0);
-      result = result.filter(
-        (p) => new Date(p.payment_date).setHours(0, 0, 0, 0) >= from
-      );
-    }
-
-    if (filters.toDate) {
-      const to = new Date(filters.toDate).setHours(0, 0, 0, 0);
-      result = result.filter(
-        (p) => new Date(p.payment_date).setHours(0, 0, 0, 0) <= to
-      );
-    }
-
-    const today = new Date(); today.setHours(0, 0, 0, 0);
-    result = [...result].sort((a, b) => {
-      const da = Math.abs(new Date(a.payment_date).setHours(0,0,0,0) - today);
-      const db = Math.abs(new Date(b.payment_date).setHours(0,0,0,0) - today);
-      return da - db;
-    });
-
-    setFilteredPayments(result);
   }, [payments, filters]);
 
-  useEffect(() => { applyFilters(); }, [filters, payments, applyFilters]);
+  useEffect(() => {
+    try {
+      applyFilters();
+    } catch (e) {
+      console.error(e);
+    }
+  }, [filters, payments, applyFilters]);
 
+  // פונקציה שמוחקת תשלום של הדייר
   const handleDelete = (paymentId) => {
-    if (!window.confirm('האם אתה בטוח שברצונך למחוק את התשלום?')) return;
+    try {
+      if (!window.confirm("האם אתה בטוח שברצונך למחוק את התשלום?")) return;
 
-    // ⬅️ בלי credentials
-    fetch(`http://localhost:8801/api/tenant/payments/${paymentId}`, { method: 'DELETE' })
-      .then((res) => res.json())
-      .then(() => fetchPayments())
-      .catch((err) => console.error('Error deleting payment:', err));
+      const params = new URLSearchParams();
+      if (tenantId != null) params.append("tenant_id", String(tenantId));
+      if (tenantBuildingId != null) params.append("building_id", String(tenantBuildingId));
+
+      const url = `http://localhost:8801/api/tenant/payments/${paymentId}?${params.toString()}`;
+
+      fetch(url, { method: "DELETE" })
+        .then(async (res) => {
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            alert("לא ניתן למחוק (אולי כבר אושר ע\"י מנהל)");
+            console.error("delete failed:", data);
+            return;
+          }
+          fetchPayments();
+        })
+        .catch((err) => console.error("Error deleting payment:", err));
+    } catch (e) {
+      console.error(e);
+    }
   };
 
+  // פונקציה שמעדכנת תשלום של הדייר
   const handleEdit = (updatedPayment) => {
-    // ⬅️ בלי credentials
-    fetch(`http://localhost:8801/api/tenant/payments/${updatedPayment.payment_id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updatedPayment),
-    })
-      .then(async (res) => {
-        if (!res.ok) {
-          const err = await res.json();
-          console.error('❌ שגיאה מהשרת:', err);
-          alert('שגיאה בשמירת התשלום');
-          return;
-        }
-        await res.json();
-        fetchPayments();
+    try {
+      fetch(`http://localhost:8801/api/tenant/payments/${updatedPayment.payment_id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...updatedPayment,
+          tenant_id: tenantId,
+          building_id: tenantBuildingId,
+        }),
       })
-      .catch((err) => {
-        console.error('❌ שגיאת חיבור לשרת:', err);
-        alert('בעיה בחיבור לשרת');
-      });
+        .then(async (res) => {
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            alert("לא ניתן לערוך (אולי כבר אושר ע\"י מנהל)");
+            console.error("patch failed:", data);
+            return;
+          }
+          fetchPayments();
+        })
+        .catch((err) => {
+          console.error("❌ שגיאת חיבור לשרת:", err);
+          alert("בעיה בחיבור לשרת");
+        });
+    } catch (e) {
+      console.error(e);
+    }
   };
 
-  const totalPaid = filteredPayments.reduce(
-    (s, p) => s + (p.status === 'שולם' ? Number(p.amount) : 0), 0
-  );
-  const openDebts = filteredPayments.reduce(
-    (s, p) => s + (p.status !== 'שולם' ? Number(p.amount) : 0), 0
-  );
-  const debtTenants = filteredPayments.filter(p => p.status !== 'שולם').map(p => p.tenant_name);
+  const totalPaid = filteredPayments.reduce((s, p) => s + (p.status === "שולם" ? Number(p.amount) : 0), 0);
+  const openDebts = filteredPayments.reduce((s, p) => s + (p.status !== "שולם" ? Number(p.amount) : 0), 0);
+  const debtTenants = filteredPayments.filter((p) => p.status !== "שולם").map((p) => p.tenant_name);
 
   return (
     <FormWithTableLayout
@@ -147,23 +188,21 @@ export default function PaymentsTenantPage() {
       formComponent={<AddPaymentTenant onAdd={fetchPayments} />}
       summaryComponent={
         <div className={classes.summaryCards}>
-          <div className={classes.card}>💰 סה״כ גבייה: <b>{totalPaid.toLocaleString()} ₪</b></div>
-          <div className={classes.card}>❌ חובות פתוחים: <b>{openDebts.toLocaleString()} ₪</b></div>
-          <div className={classes.card}>🧍‍♂️ דיירים חייבים: <b>{debtTenants.length}</b></div>
+          <div className={classes.card}>
+            💰 סה״כ גבייה: <b>{totalPaid.toLocaleString()} ₪</b>
+          </div>
+          <div className={classes.card}>
+            ❌ חובות פתוחים: <b>{openDebts.toLocaleString()} ₪</b>
+          </div>
+          <div className={classes.card}>
+            🧍‍♂️ תשלומים לא משולמים: <b>{debtTenants.length}</b>
+          </div>
         </div>
       }
       tableComponent={
         <>
           <div className={classes.filtersRow}>
             <div className={classes.rowLine}>
-              <div className={classes.search}>
-                <SearchInput
-                  placeholder="חפש לפי דייר"
-                  value={filters.tenant}
-                  onChange={(v) => setFilters((f) => ({ ...f, tenant: getVal(v) }))}
-                />
-              </div>
-
               <select
                 className={classes.statusSelect}
                 value={filters.status}
@@ -197,11 +236,7 @@ export default function PaymentsTenantPage() {
             </div>
           </div>
 
-          <PaymentsTableTenant
-            payments={filteredPayments}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
+          <PaymentsTableTenant payments={filteredPayments} onEdit={handleEdit} onDelete={handleDelete} />
         </>
       }
       plainTableArea
