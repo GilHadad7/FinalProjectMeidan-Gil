@@ -34,7 +34,7 @@ export default function ScheduleWorkerPage() {
 
   useEffect(() => {
     // כתובת ה־API של דיירים
-    const base = "http://localhost:3000/api/schedule/tenant";
+    const base = "http://localhost:3000/api/schedule/worker";
     const url =
       tenantBuildingId != null
         ? `${base}?building_id=${encodeURIComponent(tenantBuildingId)}`
