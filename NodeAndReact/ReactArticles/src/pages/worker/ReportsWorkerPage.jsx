@@ -1,6 +1,6 @@
 // src/pages/ReportsWorkerPage.jsx
 import React, { useEffect, useMemo, useState } from "react";
-import classes from "../tenant/ReportsTenantPage.module.css";
+import classes from "../worker/ReportsWorkerPage.module.css";
 
 /* ========= Config ========= */
 const API_BASE =

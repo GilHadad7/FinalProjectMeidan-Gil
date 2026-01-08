@@ -161,6 +161,36 @@ router.post("/", async (req, res) => {
     res.status(500).json({ error: "Insert failed" });
   }
 });
+// הערה: שליפת בניינים לפי עובד מהעמודה assigned_workers
+
+router.get("/by-worker/:workerId", (req, res) => {
+  // הערה: מחזיר את כל הבניינים שה-worker מופיע אצלם ב-assigned_workers
+  try {
+    const workerId = Number(req.params.workerId || 0);
+    if (!workerId) return res.status(400).json({ error: "bad workerId" });
+
+    const sql = `
+      SELECT
+        building_id,
+        name,
+        full_address AS address
+      FROM buildings
+      WHERE FIND_IN_SET(?, REPLACE(assigned_workers,' ','')) > 0
+      ORDER BY building_id DESC
+    `;
+
+    db.query(sql, [workerId], (err, rows) => {
+      if (err) {
+        console.error("Error in by-worker:", err);
+        return res.status(500).json({ error: "Database error" });
+      }
+      return res.json(rows);
+    });
+  } catch (e) {
+    console.error("Error in by-worker try:", e);
+    return res.status(500).json({ error: "Server error" });
+  }
+});
 
 /* ---------- PUT: עדכון בניין ---------- */
 router.put("/:id", async (req, res) => {
@@ -219,4 +249,127 @@ router.delete("/:id", (req, res) => {
   });
 });
 
+
+// הערה: ראוט שמחזיר את הבניינים שמשויכים לעובד לפי assigned_workers (CSV)
+
+router.get("/by-worker/:workerId", (req, res) => {
+  // הערה: מחזיר בניינים לעובד לפי FIND_IN_SET על העמודה assigned_workers
+  try {
+    const workerId = Number(req.params.workerId);
+    if (!workerId) return res.status(400).json({ error: "workerId is required" });
+
+    const sql = `
+      SELECT building_id, name, full_address
+      FROM buildings
+      WHERE FIND_IN_SET(?, assigned_workers)
+      ORDER BY building_id ASC
+    `;
+
+    db.query(sql, [workerId], (err, rows) => {
+      if (err) {
+        console.error("Error fetching buildings by worker:", err);
+        return res.status(500).json({ error: "Database error" });
+      }
+      return res.json(rows || []);
+    });
+  } catch (e) {
+    console.error("buildings by-worker crash:", e);
+    return res.status(500).json({ error: "Server error" });
+  }
+});
+// ראוט: שליפת בניינים לפי עובד (לפי עמודת assigned_workers בבניינים)
+
+router.get("/buildings/by-worker/:workerId", (req, res) => {
+  // הערה: מחזיר את כל הבניינים שבהם העובד מופיע בשדה assigned_workers (CSV כמו: "2,7")
+  try {
+    const workerId = Number(req.params.workerId);
+    if (!workerId) return res.status(400).json({ message: "invalid workerId" });
+
+    const sql = `
+      SELECT building_id, name, address, assigned_workers
+      FROM buildings
+      WHERE
+        FIND_IN_SET(?, REPLACE(IFNULL(assigned_workers,''), ' ', '')) > 0
+        OR assigned_workers LIKE ?
+        OR assigned_workers LIKE ?
+        OR assigned_workers = ?
+    `;
+
+    const likeMid = `%${workerId}%`;
+    const likeStart = `${workerId},%`;
+    const likeEnd = `%,${workerId}`;
+
+    db.query(sql, [workerId, likeStart, likeEnd, String(workerId)], (err, rows) => {
+      try {
+        if (err) return res.status(500).json({ message: "db error", error: err.message });
+        return res.json(Array.isArray(rows) ? rows : []);
+      } catch {
+        return res.json([]);
+      }
+    });
+  } catch (e) {
+    return res.status(500).json({ message: "server error", error: String(e.message || e) });
+  }
+});
+router.get("/buildings/by-worker/:workerId", (req, res) => {
+  // הערה: מחזיר רשימת בניינים שהעובד משויך אליהם (assigned_workers)
+  try {
+    const workerId = Number(req.params.workerId);
+    if (!workerId) return res.status(400).json({ message: "missing workerId" });
+
+    const sql = `
+      SELECT 
+        building_id,
+        name,
+        COALESCE(full_address, address, '') AS address
+      FROM buildings
+      WHERE 
+        (
+          JSON_CONTAINS(assigned_workers, CAST(? AS JSON), '$')
+          OR FIND_IN_SET(?, REPLACE(assigned_workers, ' ', ''))
+          OR assigned_workers LIKE CONCAT('%', ?, '%')
+        )
+      ORDER BY building_id DESC
+    `;
+
+    db.query(sql, [workerId, String(workerId), String(workerId)], (err, rows) => {
+      if (err) {
+        console.error("by-worker error:", err);
+        return res.status(500).json({ message: "db error" });
+      }
+      return res.json(Array.isArray(rows) ? rows : []);
+    });
+  } catch (e) {
+    console.error("by-worker crash:", e);
+    return res.status(500).json({ message: "server error" });
+  }
+});
+
+router.get("/by-worker/:workerId", (req, res) => {
+  // הערה: מחזיר בניינים שבהם workerId נמצא בעמודת assigned_workers
+  try {
+    const workerId = Number(req.params.workerId);
+    if (!workerId) return res.status(400).json({ message: "invalid workerId" });
+
+    const sql = `
+      SELECT
+        building_id,
+        name,
+        full_address AS address
+      FROM buildings
+      WHERE FIND_IN_SET(?, REPLACE(IFNULL(assigned_workers,''), ' ', '')) > 0
+      ORDER BY name ASC
+    `;
+
+    db.query(sql, [workerId], (err, rows) => {
+      if (err) {
+        console.error("buildings/by-worker db error:", err);
+        return res.status(500).json({ message: "db error", error: err.message });
+      }
+      return res.json(Array.isArray(rows) ? rows : []);
+    });
+  } catch (e) {
+    return res.status(500).json({ message: "server error", error: String(e.message || e) });
+  }
+});
 module.exports = router;

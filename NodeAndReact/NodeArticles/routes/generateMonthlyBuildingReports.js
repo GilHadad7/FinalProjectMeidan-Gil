@@ -14,7 +14,7 @@ function generateMonthlyBuildingReports() {
       console.error("❌ שגיאה במחיקת נתוני דמו מ-building_finance:", err);
       return;
     }
-    console.log(`🧹 נמחקו ${result.affectedRows || 0} רשומות דמו מ-building_finance.`);
+
   });
 }
 

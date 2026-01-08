@@ -312,4 +312,46 @@ router.delete("/:id", (req, res) => {
   });
 });
 
+
+// הערה: קריאות שירות לפי בניין או לפי עובד (הכל לפי assigned_workers)
+
+router.get("/by-building", (req, res) => {
+  // הערה: GET /api/service-calls/by-building?building_id=ID  או  ?worker_id=ID
+  try {
+    const buildingId = req.query.building_id ? Number(req.query.building_id) : null;
+    const workerId = req.query.worker_id ? Number(req.query.worker_id) : null;
+
+    const where = [];
+    const params = [];
+
+    if (buildingId) {
+      where.push("sc.building_id = ?");
+      params.push(buildingId);
+    } else if (workerId) {
+      where.push("FIND_IN_SET(?, b.assigned_workers)");
+      params.push(workerId);
+    } else {
+      return res.status(400).json({ error: "building_id or worker_id is required" });
+    }
+
+    const sql = `
+      SELECT sc.*, b.full_address AS building_address
+      FROM servicecalls sc
+      JOIN buildings b ON sc.building_id = b.building_id
+      WHERE ${where.join(" AND ")}
+      ORDER BY sc.call_id DESC
+    `;
+
+    db.query(sql, params, (err, rows) => {
+      if (err) {
+        console.error("service-calls by-building error:", err);
+        return res.status(500).json({ error: "Database error" });
+      }
+      return res.json(rows || []);
+    });
+  } catch (e) {
+    console.error("service-calls by-building crash:", e);
+    return res.status(500).json({ error: "Server error" });
+  }
+});
 module.exports = router;
