@@ -1,5 +1,7 @@
-// src/components/worker/ServiceCallFormWorker.jsx
-import React, { useEffect, useMemo, useState } from "react";
+// 📁 C:\PATH\TO\YOUR\PROJECT\client\src\components\worker\ServiceCallFormWorker.jsx
+// הערה: טופס פתיחת קריאת שירות לעובד – הבניין מגיע מהדף למעלה (מציג כתובת בלבד)
+
+import React, { useMemo, useState } from "react";
 import FormCard from "../ui/FormCard";
 import form from "../ui/FormKit.module.css";
 
@@ -8,13 +10,7 @@ const API_BASE =
   (typeof process !== "undefined" && process.env && process.env.REACT_APP_API_BASE) ||
   "http://localhost:8801";
 
-function buildingLabel(b) {
-  return b?.full_address || b?.name || `בניין #${b?.building_id ?? ""}`;
-}
-
-export default function ServiceCallFormWorker({ onSuccess }) {
-  const [buildings, setBuildings] = useState([]);
-  const [buildingId, setBuildingId] = useState("");
+export default function ServiceCallFormWorker({ buildingId, buildingAddress, onSuccess }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
@@ -25,65 +21,31 @@ export default function ServiceCallFormWorker({ onSuccess }) {
 
   // המשתמש המחובר
   const user = useMemo(() => {
-    try { return JSON.parse(sessionStorage.getItem("user") || "{}"); }
-    catch { return {}; }
+    try {
+      return JSON.parse(sessionStorage.getItem("user") || "{}");
+    } catch {
+      return {};
+    }
   }, []);
-  const myBuildingId = user?.building_id ? String(user.building_id) : "";
 
-  // טען בניין/ים וקבע בחירה אוטומטית
-  useEffect(() => {
-    (async () => {
-      try {
-        // אם לדייר יש בניין צמוד – נבחר בו ונטען את פרטיו להצגה
-        if (myBuildingId) {
-          setBuildingId(myBuildingId);
-
-          // ננסה להביא בניין ספציפי; אם אין ראוט כזה – נביא את כולם ונמצא את המתאים
-          let one = null;
-          try {
-            const r1 = await fetch(`${API_BASE}/api/buildings/${myBuildingId}`);
-            if (r1.ok) one = await r1.json();
-          } catch (_) {}
-
-          if (!one) {
-            const r2 = await fetch(`${API_BASE}/api/buildings`);
-            const all = await r2.json();
-            one = (Array.isArray(all) ? all : []).find(
-              (b) => String(b.building_id) === myBuildingId
-            );
-          }
-
-          if (one) setBuildings([one]);
-          else setBuildings([]); // fallback
-        } else {
-          // אין בניין קבוע לדייר – נטען רשימה מלאה
-          const res = await fetch(`${API_BASE}/api/buildings`);
-          const data = await res.json();
-          setBuildings(Array.isArray(data) ? data : []);
-        }
-      } catch (err) {
-        console.error("Failed to fetch buildings:", err);
-        setBuildings([]);
-      }
-    })();
-  }, [myBuildingId]);
-
+  // הערה: בחירת תמונה + תצוגה מקדימה
   function handleImageChange(e) {
     const file = e.target.files?.[0] || null;
     setImageFile(file);
     setImagePreview(file ? URL.createObjectURL(file) : null);
   }
 
+  // הערה: שליחת קריאת שירות לשרת
   async function handleSubmit(e) {
     e.preventDefault();
     if (submitting) return;
 
-    if (!buildingId) return alert("בחר/י בניין");
-    if (!title) return alert("בחר/י סוג תקלה");
-    if (!description.trim()) return alert("כתוב/כתבי תיאור תקלה");
+    if (!buildingId) return alert("בחר בניין למעלה");
+    if (!title) return alert("בחר סוג תקלה");
+    if (!description.trim()) return alert("כתוב תיאור תקלה");
 
     const fd = new FormData();
-    fd.append("building_id", buildingId);
+    fd.append("building_id", String(buildingId));
     fd.append("description", description.trim());
     fd.append("location_in_building", (location || "").trim());
     fd.append("service_type", title);
@@ -95,11 +57,14 @@ export default function ServiceCallFormWorker({ onSuccess }) {
 
     try {
       setSubmitting(true);
+
       const res = await fetch(`${API_BASE}/api/service-calls`, {
         method: "POST",
         body: fd,
+        credentials: "include",
       });
-      const data = await res.json();
+
+      const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
         console.error("Server response error:", data);
@@ -110,8 +75,7 @@ export default function ServiceCallFormWorker({ onSuccess }) {
       alert("הקריאה נשלחה בהצלחה ✅");
       onSuccess?.();
 
-      // reset (לא לשנות בניין אם זה בניין קבוע לדייר)
-      if (!myBuildingId) setBuildingId("");
+      // reset
       setTitle("");
       setDescription("");
       setLocation("");
@@ -127,27 +91,15 @@ export default function ServiceCallFormWorker({ onSuccess }) {
 
   return (
     <FormCard title="פתיחת קריאת שירות">
-      {/* בניין: נבחר אוטומטית ו"ננעל" אם שויך לדייר */}
-      <select
-        className={form.select}
-        value={buildingId}
-        onChange={(e) => setBuildingId(e.target.value)}
-        disabled={!!myBuildingId || buildings.length === 1}
-      >
-        {!buildingId && <option value="">בחר בניין…</option>}
-        {buildings.map((b) => (
-          <option key={b.building_id} value={b.building_id}>
-            {buildingLabel(b)}
-          </option>
-        ))}
-      </select>
+      {/* כתובת בלבד */}
+      {buildingAddress ? (
+        <div style={{ marginBottom: 10, fontWeight: 700, opacity: 0.9 }}>
+          {buildingAddress}
+        </div>
+      ) : null}
 
       {/* סוג תקלה */}
-      <select
-        className={form.select}
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-      >
+      <select className={form.select} value={title} onChange={(e) => setTitle(e.target.value)}>
         <option value="">בחר סוג תקלה…</option>
         <option value="חשמל">חשמל</option>
         <option value="נזילה">נזילה</option>
@@ -165,7 +117,7 @@ export default function ServiceCallFormWorker({ onSuccess }) {
         onChange={(e) => setDescription(e.target.value)}
       />
 
-      {/* מיקום בבניין */}
+      {/* מיקום */}
       <input
         className={form.input}
         type="text"

@@ -547,15 +547,18 @@ export default function AdminPage() {
                           {formatLocalHM(ev.start)} · {ev.title}
                           {(() => {
                             const lbl = (() => {
-                              const d = smartParseDate(ev.start);
-                              if (!d) return "";
-                              const today = new Date();
-                              const base = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-                              const diff = Math.round((new Date(toDateKey(d)) - base) / 86400000);
-                              if (diff === 0) return "היום";
-                              if (diff === -1) return "אתמול";
-                              return "";
-                            })();
+                                const d = smartParseDate(ev.start);
+                                if (!d) return "";
+
+                                const startOfDay = (x) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+                                const today = new Date();
+                                const diff = Math.round((startOfDay(d) - startOfDay(today)) / 86400000);
+
+                                if (diff === 0) return "היום";
+                                if (diff === -1) return "אתמול";
+                                return "";
+                              })();
+
                             return lbl ? (
                               <span style={{ marginInlineStart: 8, fontSize: 12, color: "#7a6c5d", background:"#efe7dc", padding:"2px 6px", borderRadius:6 }}>
                                 {lbl}

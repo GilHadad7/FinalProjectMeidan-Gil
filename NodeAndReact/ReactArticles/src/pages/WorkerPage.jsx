@@ -1,4 +1,4 @@
-// src/pages/WorkerPage.jsx
+// 📁 C:\PATH\TO\YOUR\PROJECT\client\src\pages\WorkerPage.jsx
 // הערה: דף הבית של העובד + בחירת בניין נשמרת ב-sessionStorage לכל הממשק
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -39,7 +39,6 @@ const bumpIfSaturday = (dateObj) => {
   return d;
 };
 
-
 // הערה: ממיר תאריך בצורה חכמה גם אם מגיע כמחרוזת/מספר
 const smartParseDate = (val) => {
   if (!val) return null;
@@ -78,6 +77,25 @@ const statusHe = (s) => {
   if (["open", "פתוח"].includes(t)) return "פתוח";
   if (["pending", "awaiting", "waiting", "ממתין"].includes(t)) return "ממתין";
   return s || "";
+};
+
+// הערה: מחזיר תווית "היום/אתמול" לפי start של אירוע (כמו אצל מנהל)
+const getTodayYesterdayLabel = (startVal) => {
+  try {
+    const d = smartParseDate(startVal);
+    if (!d) return "";
+
+    const now = new Date();
+    const base = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const evDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+
+    const diff = Math.round((evDay.getTime() - base.getTime()) / 86400000);
+    if (diff === 0) return "היום";
+    if (diff === -1) return "אתמול";
+    return "";
+  } catch {
+    return "";
+  }
 };
 
 // הערה: מנרמל URL לתמונה כדי לעבוד מול uploads
@@ -350,7 +368,7 @@ export default function WorkerPage() {
         const res = await fetch(`${API_BASE}/api/buildings/by-worker/${workerId}`);
         const data = res.ok ? await res.json() : [];
         const list = Array.isArray(data) ? data : [];
-        
+
         setBuildings(list);
 
         const stored = readSelectedBuilding();
@@ -675,7 +693,7 @@ export default function WorkerPage() {
 
       {/* הערה: בחירת בניין (לא מנווט לשום עמוד, רק שומר בחירה) */}
       <div style={{ marginTop: 10 }}>
-        <div style={{ fontWeight: 700, marginBottom: 6 }}>בחר בניין:</div>
+        <div style={{ fontWeight: 700, marginBottom: 6 }}>בחר בניין</div>
         <select
           value={selectedBuildingId ?? ""}
           onChange={(e) => {
@@ -698,7 +716,7 @@ export default function WorkerPage() {
         </select>
 
         {currentBuildingLabel ? (
-          <div style={{ marginTop: 6, opacity: 0.8 }}>בניין נבחר: {currentBuildingLabel}</div>
+          <div style={{ marginTop: 6, opacity: 0.8 }}>{currentBuildingLabel}</div>
         ) : null}
       </div>
 
@@ -723,6 +741,9 @@ export default function WorkerPage() {
                   const primary = isService ? fromEvent || fromIndex || null : null;
                   const fallback = primary ? swapPort(primary) : null;
                   const gridCols = primary ? "48px 1fr" : "1fr";
+
+                  // הערה: תווית "היום/אתמול" ליד הכותרת (כמו אצל מנהל)
+                  const dayLabel = getTodayYesterdayLabel(ev.start);
 
                   return (
                     <li
@@ -756,7 +777,24 @@ export default function WorkerPage() {
                         />
                       )}
                       <div>
-                        <div className={classes.notifTitle}>{formatLocalHM(ev.start)} · {ev.title}</div>
+                        <div className={classes.notifTitle}>
+                          {formatLocalHM(ev.start)} · {ev.title}
+                          {dayLabel ? (
+                            <span
+                              style={{
+                                marginInlineStart: 8,
+                                fontSize: 12,
+                                color: "rgb(122, 108, 93)",
+                                background: "rgb(239, 231, 220)",
+                                padding: "2px 6px",
+                                borderRadius: 6,
+                              }}
+                            >
+                              {dayLabel}
+                            </span>
+                          ) : null}
+                        </div>
+
                         <div className={classes.notifMeta}>
                           {ev.building_name}
                           {ev.assignee ? ` · אחראי: ${ev.assignee}` : ""}
